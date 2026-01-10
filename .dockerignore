@@ -1,0 +1,43 @@
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vs/
+.vscode/
+*.user
+*.suo
+
+# .NET
+**/bin/
+**/obj/
+**/*.user
+**/TestResults/
+
+# Node
+**/node_modules/
+**/dist/
+**/build/
+**/.next/
+
+# Logs
+**/*.log
+**/logs/
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+# Docker
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation (not needed in containers)
+docs/
+*.md
+!README.md

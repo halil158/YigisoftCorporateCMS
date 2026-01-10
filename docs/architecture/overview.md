@@ -85,6 +85,8 @@ Page
 | 0.1     | Repo scaffold, architecture docs           | Done        |
 | 0.2a    | Docker Compose base (nginx + postgres)     | Done        |
 | 0.2b    | Nginx routing + placeholder services       | Done        |
+| 0.2c1   | .NET 10 API stub + Dockerfile              | Done        |
+| 0.2c2   | API in Docker Compose + nginx routing      | Planned     |
 | 1.x     | Backend core (auth, pages, sections, API)  | Planned     |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |

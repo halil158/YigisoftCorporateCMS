@@ -18,3 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PostgreSQL with health check and persistent volume
 - Public-web and admin placeholder services (Phase 0.2b)
 - Nginx reverse proxy routing: `/` -> public-web, `/admin/` -> admin
+- .NET 10 minimal API stub with `/health` and `/info` endpoints (Phase 0.2c1)
+- API Dockerfile with multi-stage build
+- Repository .dockerignore file
