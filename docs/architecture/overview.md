@@ -43,7 +43,7 @@ Nginx handles all inbound traffic and routes to appropriate services:
 | `/`            | public-web:80           | Public corporate website             |
 | `/admin/`      | admin:80                | Admin panel (authenticated)          |
 | `/api/*`       | api:5000                | Backend API endpoints                |
-| `/uploads/*`   | Static volume           | User-uploaded media files (planned)  |
+| `/uploads/*`   | Static volume           | User-uploaded media files            |
 
 ---
 
@@ -72,9 +72,11 @@ Page
 ## Uploads Handling
 
 1. **Upload flow:** Admin panel → API → saves to shared volume
-2. **Storage:** `/uploads` volume mounted in both API and Nginx containers
-3. **Serving:** Nginx directly serves `/uploads/*` for performance
+2. **Storage:** `_data/uploads/` on host, mounted in both API and Nginx containers
+3. **Serving:** Nginx directly serves `/uploads/*` for performance (with 7-day cache headers)
 4. **Path format:** `/uploads/{year}/{month}/{filename}`
+
+**Note:** Create `_data/uploads/` manually before first run (folder is gitignored).
 
 ---
 
@@ -100,6 +102,7 @@ Page
 | 0.2c1   | .NET 10 API stub + Dockerfile              | Done        |
 | 0.2c2   | API in Docker Compose + nginx routing      | Done        |
 | 0.2c3   | API logging with Serilog                   | Done        |
+| 0.3a    | Uploads volume + nginx static serving      | Done        |
 | 1.x     | Backend core (auth, pages, sections, API)  | Planned     |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |

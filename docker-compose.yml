@@ -6,6 +6,7 @@ services:
       - "8080:80"
     volumes:
       - ./infra/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./_data/uploads:/uploads:ro
     depends_on:
       - public-web
       - admin
@@ -19,6 +20,7 @@ services:
       ASPNETCORE_URLS: http://+:5000
     volumes:
       - ./_data/logs/api:/app/logs
+      - ./_data/uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
