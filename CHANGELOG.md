@@ -13,3 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Monorepo folder structure (apps/, src/, infra/, docs/)
 - Architecture overview document (docs/architecture/overview.md)
 - Environment template (.env.example)
+- Docker Compose with nginx and postgres services (Phase 0.2a)
+- Nginx placeholder page at localhost:8080
+- PostgreSQL with health check and persistent volume

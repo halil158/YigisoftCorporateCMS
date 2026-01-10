@@ -82,12 +82,23 @@ Page
 
 | Phase   | Focus                                      | Status      |
 |---------|--------------------------------------------|-------------|
-| 0.1     | Repo scaffold, architecture docs           | Current     |
-| 0.2     | Docker Compose, nginx config, DB init      | Planned     |
+| 0.1     | Repo scaffold, architecture docs           | Done        |
+| 0.2a    | Docker Compose base (nginx + postgres)     | Current     |
+| 0.2b    | Full nginx routing config                  | Planned     |
 | 1.x     | Backend core (auth, pages, sections, API)  | Planned     |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |
 | 4.x     | Polish, testing, production readiness      | Planned     |
+
+## Local Development Ports
+
+| Service    | Host Port | Container Port |
+|------------|-----------|----------------|
+| Nginx      | 8080      | 80             |
+| API        | 5000      | 5000           |
+| Public Web | 3000      | 3000           |
+| Admin      | 3001      | 3001           |
+| PostgreSQL | (internal)| 5432           |
 
 ---
 
