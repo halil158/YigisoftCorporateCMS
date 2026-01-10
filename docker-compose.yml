@@ -20,7 +20,7 @@ services:
       ASPNETCORE_URLS: http://+:5000
     volumes:
       - ./_data/logs/api:/app/logs
-      - ./_data/uploads:/app/uploads
+      - ./_data/uploads:/uploads
     depends_on:
       postgres:
         condition: service_healthy

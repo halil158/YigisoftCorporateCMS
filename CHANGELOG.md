@@ -27,3 +27,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - API logs persisted to `_data/logs/api/` on host
 - Shared uploads volume mounted to nginx and API (Phase 0.3a)
 - Nginx serves `/uploads/*` as static files with cache headers
+- Standardized uploads mount path to `/uploads` in all containers (Phase 0.3b)
