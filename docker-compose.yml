@@ -6,10 +6,23 @@ services:
       - "8080:80"
     volumes:
       - ./infra/nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./infra/nginx/html:/usr/share/nginx/html:ro
     depends_on:
-      postgres:
-        condition: service_healthy
+      - public-web
+      - admin
+    restart: unless-stopped
+
+  public-web:
+    image: nginx:alpine
+    container_name: yigisoft-public-web
+    volumes:
+      - ./apps/public-web/_placeholder:/usr/share/nginx/html:ro
+    restart: unless-stopped
+
+  admin:
+    image: nginx:alpine
+    container_name: yigisoft-admin
+    volumes:
+      - ./apps/admin/_placeholder:/usr/share/nginx/html:ro
     restart: unless-stopped
 
   postgres:

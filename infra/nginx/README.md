@@ -13,8 +13,7 @@ Reverse proxy and static file server for the CMS stack.
 | `/uploads/*` | Static volume                   | User-uploaded media files    |
 
 ## Configuration Files
-- `nginx.conf` - main configuration (to be created)
-- `default.conf` - server block definitions (to be created)
+- `conf.d/default.conf` - server block with reverse proxy rules
 
 ## Status
-Placeholder - configuration added in Phase 0.2.
+Active - reverse proxy routing implemented in Phase 0.2b.

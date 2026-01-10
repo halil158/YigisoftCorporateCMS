@@ -4,7 +4,7 @@
 Primary data store for all CMS content, user accounts, and application state.
 
 ## Data Storage
-- **Volume Path:** `./data/postgres` (mounted in docker-compose)
+- **Volume:** Named volume `pgdata` (managed by Docker)
 - **Persistence:** Data survives container restarts via named volume
 
 ## Migration Ownership
@@ -16,4 +16,4 @@ Primary data store for all CMS content, user accounts, and application state.
 - `init.sql` (optional) - seed scripts for development (to be created if needed)
 
 ## Status
-Placeholder - docker-compose integration in Phase 0.2.
+Active - docker-compose integration completed in Phase 0.2a.

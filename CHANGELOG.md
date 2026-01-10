@@ -16,3 +16,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Docker Compose with nginx and postgres services (Phase 0.2a)
 - Nginx placeholder page at localhost:8080
 - PostgreSQL with health check and persistent volume
+- Public-web and admin placeholder services (Phase 0.2b)
+- Nginx reverse proxy routing: `/` -> public-web, `/admin/` -> admin
