@@ -78,6 +78,18 @@ Page
 
 ---
 
+## Logging
+
+| Service | Destination | Notes |
+|---------|-------------|-------|
+| API     | stdout + `_data/logs/api/` | Serilog with daily rolling files, 14-day retention |
+| Nginx   | stdout only | Access via `docker logs yigisoft-nginx` |
+| Postgres| stdout only | Access via `docker logs yigisoft-postgres` |
+
+**API log files:** Located in `_data/logs/api/` on the host (bind mount). Files are named `api-YYYYMMDD.log` and rotate daily.
+
+---
+
 ## Development Phases
 
 | Phase   | Focus                                      | Status      |
@@ -87,6 +99,7 @@ Page
 | 0.2b    | Nginx routing + placeholder services       | Done        |
 | 0.2c1   | .NET 10 API stub + Dockerfile              | Done        |
 | 0.2c2   | API in Docker Compose + nginx routing      | Done        |
+| 0.2c3   | API logging with Serilog                   | Done        |
 | 1.x     | Backend core (auth, pages, sections, API)  | Planned     |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |

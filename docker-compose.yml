@@ -17,6 +17,8 @@ services:
     container_name: yigisoft-api
     environment:
       ASPNETCORE_URLS: http://+:5000
+    volumes:
+      - ./_data/logs/api:/app/logs
     depends_on:
       postgres:
         condition: service_healthy

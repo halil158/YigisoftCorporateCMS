@@ -23,3 +23,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Repository .dockerignore file
 - API service in Docker Compose (Phase 0.2c2)
 - Nginx reverse proxy routing: `/api/*` -> api:5000
+- Serilog logging for API: console + rolling file sink (Phase 0.2c3)
+- API logs persisted to `_data/logs/api/` on host

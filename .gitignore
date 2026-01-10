@@ -73,6 +73,11 @@ docker-compose.override.yml
 .docker/
 
 # =========================
+# Local Data (logs, uploads, etc.)
+# =========================
+_data/
+
+# =========================
 # PostgreSQL
 # =========================
 *.sql.bak
