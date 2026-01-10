@@ -21,3 +21,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - .NET 10 minimal API stub with `/health` and `/info` endpoints (Phase 0.2c1)
 - API Dockerfile with multi-stage build
 - Repository .dockerignore file
+- API service in Docker Compose (Phase 0.2c2)
+- Nginx reverse proxy routing: `/api/*` -> api:5000

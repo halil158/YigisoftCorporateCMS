@@ -9,6 +9,17 @@ services:
     depends_on:
       - public-web
       - admin
+      - api
+    restart: unless-stopped
+
+  api:
+    build: ./src/api
+    container_name: yigisoft-api
+    environment:
+      ASPNETCORE_URLS: http://+:5000
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
   public-web:
