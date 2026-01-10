@@ -35,3 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EF Core entity configuration refactored to dedicated classes (Phase 1.1b1)
 - pgcrypto extension migration for gen_random_uuid() support
 - PostgreSQL exposed on configurable host port (default 5434) for external tools (Phase 1.1b2)
+- Fixed migrations execution in Docker with ASPNETCORE_ENVIRONMENT=Development (Phase 1.1b3)
+- pgcrypto extension now created in InitialCreate migration before pages table
+- Improved migration logging with environment name and error handling

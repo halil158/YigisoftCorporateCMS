@@ -11,6 +11,9 @@ namespace YigisoftCorporateCMS.Api.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Ensure pgcrypto extension exists for gen_random_uuid()
+            migrationBuilder.Sql("CREATE EXTENSION IF NOT EXISTS \"pgcrypto\";");
+
             migrationBuilder.CreateTable(
                 name: "pages",
                 columns: table => new

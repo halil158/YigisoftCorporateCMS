@@ -19,6 +19,8 @@ try
     var builder = WebApplication.CreateBuilder(args);
     builder.Host.UseSerilog();
 
+    Log.Information("Starting API in {Environment} environment", builder.Environment.EnvironmentName);
+
     // Configure EF Core with PostgreSQL
     var connectionString = builder.Configuration.GetConnectionString("Default");
     builder.Services.AddDbContext<AppDbContext>(options =>
@@ -31,16 +33,29 @@ try
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        Log.Information("Applying database migrations...");
-        db.Database.Migrate();
-        Log.Information("Database migrations applied successfully");
+
+        try
+        {
+            Log.Information("Applying database migrations...");
+            db.Database.Migrate();
+            Log.Information("Database migrations applied successfully");
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Failed to apply database migrations");
+            throw;
+        }
+    }
+    else
+    {
+        Log.Information("Skipping auto-migration (not in Development environment)");
     }
 
     var infoResponse = new
     {
         name = "YigisoftCorporateCMS.Api",
         version = "0.0.0",
-        phase = "1.1a"
+        phase = "1.1b3"
     };
 
     // Root-level endpoints (direct container access)
@@ -66,7 +81,7 @@ try
         }
     });
 
-    Log.Information("API started - phase {Phase}", "1.1a");
+    Log.Information("API started - phase {Phase}", "1.1b3");
 
     app.Run();
 }
