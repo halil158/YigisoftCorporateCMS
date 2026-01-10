@@ -10,3 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial project setup
 - Repository hygiene files (.gitignore, README.md, CHANGELOG.md)
+- Monorepo folder structure (apps/, src/, infra/, docs/)
+- Architecture overview document (docs/architecture/overview.md)
+- Environment template (.env.example)

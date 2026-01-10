@@ -16,15 +16,17 @@ A modular corporate website content management system with a section-based page 
 
 ```
 YigisoftCorporateCMS/
+├── apps/
+│   ├── public-web/       # React public-facing site
+│   └── admin/            # React admin panel
 ├── src/
-│   ├── Api/              # .NET 10 Web API
-│   ├── Web.Public/       # React public-facing site
-│   └── Web.Admin/        # React admin panel
-├── docker/               # Dockerfiles and compose configs
-├── nginx/                # Nginx configuration
-├── scripts/              # Utility scripts
-├── docs/                 # Documentation
-└── tests/                # Test projects
+│   └── api/              # .NET 10 Web API
+├── infra/
+│   ├── nginx/            # Nginx configuration
+│   └── postgres/         # PostgreSQL config/scripts
+├── docs/
+│   └── architecture/     # Architecture documentation
+└── .env.example          # Environment template
 ```
 
 ## Planned Nginx Routes
