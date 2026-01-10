@@ -28,3 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shared uploads volume mounted to nginx and API (Phase 0.3a)
 - Nginx serves `/uploads/*` as static files with cache headers
 - Standardized uploads mount path to `/uploads` in all containers (Phase 0.3b)
+- EF Core with PostgreSQL integration (Phase 1.1a)
+- Pages table with JSONB sections column
+- Automatic migrations at startup (Development only)
+- `/api/db-check` endpoint for database connectivity verification

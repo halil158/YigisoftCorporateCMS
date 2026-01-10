@@ -53,13 +53,28 @@ Nginx handles all inbound traffic and routes to appropriate services:
 
 Pages are stored with their content as structured JSONB, enabling flexible section-based composition.
 
-```
-Page
-├── id, slug, title, meta
-└── sections: JSONB[]
-    ├── { type: "hero", data: { ... } }
-    ├── { type: "features", data: { ... } }
-    └── { type: "cta", data: { ... } }
+### Pages Table Schema
+
+| Column           | Type          | Constraints                    |
+|------------------|---------------|--------------------------------|
+| id               | uuid          | PK, default gen_random_uuid() |
+| slug             | text          | unique, required               |
+| title            | text          | required                       |
+| meta_title       | text          | nullable                       |
+| meta_description | text          | nullable                       |
+| sections         | jsonb         | required, default '[]'         |
+| is_published     | boolean       | default false                  |
+| created_at       | timestamptz   | default now()                  |
+| updated_at       | timestamptz   | default now()                  |
+
+### Sections JSONB Structure
+
+```json
+[
+  { "type": "hero", "data": { ... } },
+  { "type": "features", "data": { ... } },
+  { "type": "cta", "data": { ... } }
+]
 ```
 
 **Benefits:**
@@ -104,6 +119,7 @@ Page
 | 0.2c3   | API logging with Serilog                   | Done        |
 | 0.3a    | Uploads volume + nginx static serving      | Done        |
 | 0.3b    | Standardize uploads mount path             | Done        |
+| 1.1a    | EF Core + PostgreSQL, Pages table          | Done        |
 | 1.x     | Backend core (auth, pages, sections, API)  | Planned     |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |

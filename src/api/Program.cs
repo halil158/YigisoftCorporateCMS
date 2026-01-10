@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using Serilog;
+using YigisoftCorporateCMS.Api.Data;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -17,13 +19,28 @@ try
     var builder = WebApplication.CreateBuilder(args);
     builder.Host.UseSerilog();
 
+    // Configure EF Core with PostgreSQL
+    var connectionString = builder.Configuration.GetConnectionString("Default");
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(connectionString));
+
     var app = builder.Build();
+
+    // Apply migrations in Development
+    if (app.Environment.IsDevelopment())
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Log.Information("Applying database migrations...");
+        db.Database.Migrate();
+        Log.Information("Database migrations applied successfully");
+    }
 
     var infoResponse = new
     {
         name = "YigisoftCorporateCMS.Api",
         version = "0.0.0",
-        phase = "0.2c3"
+        phase = "1.1a"
     };
 
     // Root-level endpoints (direct container access)
@@ -35,7 +52,21 @@ try
     api.MapGet("/health", () => Results.Ok("OK"));
     api.MapGet("/info", () => Results.Ok(infoResponse));
 
-    Log.Information("API started - phase {Phase}", "0.2c3");
+    // Database connectivity check
+    api.MapGet("/db-check", async (AppDbContext db) =>
+    {
+        try
+        {
+            var canConnect = await db.Database.CanConnectAsync();
+            return Results.Ok(new { ok = true, canConnect });
+        }
+        catch
+        {
+            return Results.Ok(new { ok = false, canConnect = false });
+        }
+    });
+
+    Log.Information("API started - phase {Phase}", "1.1a");
 
     app.Run();
 }

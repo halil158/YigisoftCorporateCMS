@@ -18,6 +18,7 @@ services:
     container_name: yigisoft-api
     environment:
       ASPNETCORE_URLS: http://+:5000
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-cms_db};Username=${POSTGRES_USER:-cms_user};Password=${POSTGRES_PASSWORD:-changeme}"
     volumes:
       - ./_data/logs/api:/app/logs
       - ./_data/uploads:/uploads
