@@ -133,7 +133,7 @@ Pages are stored with their content as structured JSONB, enabling flexible secti
 | API        | 5000      | 5000           |
 | Public Web | 3000      | 3000           |
 | Admin      | 3001      | 3001           |
-| PostgreSQL | (internal)| 5432           |
+| PostgreSQL | 5434      | 5432           |
 
 ---
 

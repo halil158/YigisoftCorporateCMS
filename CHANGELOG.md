@@ -32,3 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pages table with JSONB sections column
 - Automatic migrations at startup (Development only)
 - `/api/db-check` endpoint for database connectivity verification
+- EF Core entity configuration refactored to dedicated classes (Phase 1.1b1)
+- pgcrypto extension migration for gen_random_uuid() support
+- PostgreSQL exposed on configurable host port (default 5434) for external tools (Phase 1.1b2)
