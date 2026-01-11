@@ -50,6 +50,15 @@ docker compose up -d --build
 curl http://localhost:8080/health
 ```
 
+### Swagger / OpenAPI (Dev only)
+
+In Development, Swagger UI is available for API exploration:
+
+- **Swagger UI:** http://localhost:8080/api/swagger
+- **OpenAPI JSON:** http://localhost:8080/api/swagger/v1/swagger.json
+
+Use the "Authorize" button to enter your JWT token for protected endpoints.
+
 ### Authentication (Dev)
 
 1. **Seed the dev admin user:**

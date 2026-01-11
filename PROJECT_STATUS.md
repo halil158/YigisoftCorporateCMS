@@ -175,6 +175,13 @@ Build fix:
 - Program.cs now a thin composition root (~30 lines)
 - No behavior change; SOLID-friendly structure
 
+### Phase 1.5a — Swagger/OpenAPI (Development only)
+- Swagger UI at `/api/swagger` (Development only)
+- OpenAPI JSON at `/api/swagger/v1/swagger.json`
+- JWT Bearer security scheme for "Authorize" button
+- Added Swashbuckle.AspNetCore 7.2.0
+- Not exposed in Production environment
+
 Verification note:
 - If endpoints appear missing, check running version:
   - `GET /api/info` -> phase should match latest
@@ -186,11 +193,12 @@ Verification note:
 
 ## Current State (Verified)
 
-- `GET /api/info` returns phase: `1.4b`
+- `GET /api/info` returns phase: `1.5a`
 - `POST /api/dev/seed` works
 - `POST /api/dev/token` works (Development only)
 - `GET /api/admin/pages` works with dev token and Admin role
 - `POST /api/admin/uploads` works with dev token and Admin role
+- Swagger UI at `/api/swagger` works (Development only)
 
 ---
 

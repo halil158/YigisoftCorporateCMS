@@ -58,6 +58,15 @@ Nginx handles all inbound traffic and routes to appropriate services:
 | POST   | `/api/dev/seed`      | Seed sample data (Development only)  |
 | POST   | `/api/dev/token`     | Generate JWT token (Development only)|
 
+### Swagger / OpenAPI (Development only)
+
+| Route                              | Description                          |
+|------------------------------------|--------------------------------------|
+| `/api/swagger`                     | Swagger UI                           |
+| `/api/swagger/v1/swagger.json`     | OpenAPI 3.0 specification            |
+
+**Note:** Swagger is only available when `ASPNETCORE_ENVIRONMENT=Development`. Not exposed in Production.
+
 ### Admin Endpoints (require Admin role)
 
 | Method | Endpoint                          | Description                     |
@@ -249,6 +258,8 @@ Section types are validated at the API layer using a registry pattern. Each sect
 | 1.3a    | Admin Pages CRUD endpoints                 | Done        |
 | 1.3b    | Sections schema validation (type registry) | Done        |
 | 1.4a    | Admin uploads API (multipart)              | Done        |
+| 1.4b    | Program.cs bootstrap refactor              | Done        |
+| 1.5a    | Swagger/OpenAPI (Development only)         | Done        |
 | 1.x     | Backend core (auth, pages, sections, API)  | In Progress |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |

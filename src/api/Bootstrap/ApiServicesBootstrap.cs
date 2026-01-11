@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using YigisoftCorporateCMS.Api.Data;
 using YigisoftCorporateCMS.Api.Extensions;
@@ -35,7 +36,53 @@ public static class ApiServicesBootstrap
         // Register application services
         builder.Services.AddUploads(builder.Configuration);
 
+        // OpenAPI / Swagger (Development only, but services registered always for simplicity)
+        if (builder.Environment.IsDevelopment())
+        {
+            ConfigureSwagger(builder);
+        }
+
         return builder;
+    }
+
+    private static void ConfigureSwagger(WebApplicationBuilder builder)
+    {
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "YigisoftCorporateCMS API",
+                Version = "v1",
+                Description = "Corporate website CMS API with section-based page builder"
+            });
+
+            // JWT Bearer security scheme
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Enter your JWT token (without 'Bearer ' prefix)"
+            });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+        });
     }
 
     private static void ConfigureAuthentication(WebApplicationBuilder builder)

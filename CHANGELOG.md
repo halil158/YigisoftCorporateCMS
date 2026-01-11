@@ -99,3 +99,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `Bootstrap/ApiAppBootstrap.cs` - App pipeline (migrations, middleware, endpoints)
   - Program.cs reduced to thin composition root (~30 lines)
   - No behavior change; SOLID-friendly structure
+- Swagger/OpenAPI documentation (Phase 1.5a)
+  - Swagger UI available at `/api/swagger` (Development only)
+  - OpenAPI JSON at `/api/swagger/v1/swagger.json`
+  - JWT Bearer security scheme for "Authorize" button
+  - API metadata: title, version, description
+  - Added Swashbuckle.AspNetCore 7.2.0
