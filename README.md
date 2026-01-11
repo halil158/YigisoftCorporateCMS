@@ -74,6 +74,8 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/dev/seed" -Method POST
 
 **Uploads:**
 - Uploaded files are served at `/uploads/*` via nginx
+- Max file size: 10 MB (enforced by API; nginx allows up to 12 MB)
+- Allowed types: PNG, JPG, JPEG, WebP, SVG, PDF
 - Use the "Copy URL" button in Media Library to get the public URL
 - Use copied URLs in page sections JSON, e.g.:
   ```json

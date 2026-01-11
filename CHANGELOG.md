@@ -198,3 +198,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Open link opens file in new tab
   - Delete with confirmation removes file and database record
   - Allowed files: PNG, JPG, JPEG, WebP, SVG, PDF (max 10 MB)
+
+### Fixed
+- nginx `client_max_body_size` set to 12m for `/api/` to allow uploads up to 10 MB (was defaulting to 1 MB, causing 413 errors)

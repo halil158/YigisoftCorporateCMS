@@ -350,6 +350,7 @@ Verification note:
 - Open link opens file in new tab
 - Delete with confirmation removes file and database record
 - Uploads served at `/uploads/*` via nginx
+- Fix: nginx `client_max_body_size 12m` for `/api/` (was 1 MB default, caused 413 errors)
 
 ---
 
