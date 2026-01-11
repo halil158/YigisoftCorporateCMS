@@ -173,3 +173,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `dotnet restore --locked-mode` in CI workflow for deterministic builds
   - CI fails if packages.lock.json is out of sync with package references
   - ReportGenerator step now includes PATH fix for dotnet tools
+- Admin UI scaffold (Phase 2.0)
+  - React + Vite + TypeScript app in `apps/admin`
+  - Configured for `/admin/` subpath (Vite base + React Router basename)
+  - JWT auth flow: login page calls `/api/auth/login`, stores token in localStorage
+  - ProtectedRoute wrapper redirects to login when unauthenticated
+  - API client with automatic `Authorization: Bearer` header
+  - Dashboard placeholder page with logout
+  - Multi-stage Docker build (node build -> nginx serve)
+  - SPA routing with nginx try_files fallback

@@ -321,9 +321,25 @@ Verification note:
 
 ---
 
+## Frontend
+
+### Phase 2.0 — Admin UI scaffold (React)
+- Vite + React + TypeScript app in `apps/admin`
+- Configured for `/admin/` subpath (Vite base + React Router basename)
+- JWT auth flow: login page calls `/api/auth/login`, stores token in localStorage
+- ProtectedRoute wrapper redirects to `/admin/login` when unauthenticated
+- API client with automatic `Authorization: Bearer` header
+- Dashboard placeholder page with logout button
+- Multi-stage Docker build (node -> nginx)
+- SPA routing with nginx try_files fallback
+
+---
+
 ## Current State (Verified)
 
 - `GET /api/info` returns phase: `1.8d`
+- Admin UI at `/admin/` redirects to `/admin/login` if not authenticated
+- Admin login with `admin@yigisoft.local` / `Admin123!` works after seeding
 - `POST /api/dev/seed` works
 - `POST /api/dev/token` works (Development only)
 - `GET /api/admin/pages` works with dev token and Admin role
@@ -341,14 +357,6 @@ Verification note:
 ---
 
 ## Planned Phases (Roadmap)
-
-### Phase 2.0 — Admin UI scaffold (React)
-Bootstrap the admin panel with auth flow.
-- Vite + React + TypeScript setup
-- React Router for navigation
-- Login page + JWT token storage
-- Protected route wrapper
-- Basic layout (sidebar, header, content area)
 
 ### Phase 2.1 — Admin Pages UI
 Full pages management interface.

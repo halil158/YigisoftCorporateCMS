@@ -347,8 +347,8 @@ Built-in rate limiting using `Microsoft.AspNetCore.RateLimiting` to protect agai
 | 1.8b    | Integration tests + CI (Testcontainers)    | Done        |
 | 1.8c    | CI quality gate (cache, coverage)          | Done        |
 | 1.8d    | CI locked-mode enforcement                 | Done        |
-| 1.x     | Backend core (auth, pages, sections, API)  | In Progress |
-| 2.x     | Admin panel (section builder, media)       | Planned     |
+| 2.0     | Admin UI scaffold (React + Vite + TS)      | Done        |
+| 2.x     | Admin panel (section builder, media)       | In Progress |
 | 3.x     | Public web (rendering, SEO)                | Planned     |
 | 4.x     | Polish, testing, production readiness      | Planned     |
 

@@ -38,10 +38,10 @@ services:
     restart: unless-stopped
 
   admin:
-    image: nginx:1.28.1-alpine
+    build:
+      context: ./apps/admin
+      dockerfile: Dockerfile
     container_name: yigisoft-admin
-    volumes:
-      - ./apps/admin/_placeholder:/usr/share/nginx/html:ro
     restart: unless-stopped
 
   postgres:

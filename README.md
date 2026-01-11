@@ -50,6 +50,21 @@ docker compose up -d --build
 curl http://localhost:8080/health
 ```
 
+### Admin Panel
+
+The admin panel is accessible at http://localhost:8080/admin/
+
+1. **Seed the dev admin user** (if not already done):
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8080/api/dev/seed" -Method POST
+```
+
+2. **Open the admin panel** and login with:
+   - Email: `admin@yigisoft.local`
+   - Password: `Admin123!`
+
+**Note:** The admin app runs under the `/admin/` subpath. All routes (login, dashboard) are prefixed with `/admin/`.
+
 ### Swagger / OpenAPI (Dev only)
 
 In Development, Swagger UI is available for API exploration:
