@@ -237,6 +237,25 @@ New section types added to the validation registry:
 
 Supported section types: `hero`, `features`, `cta`, `testimonials`, `gallery`, `contact-form`
 
+### Phase 1.7a — Contact form submissions
+Public endpoint and database storage for contact form submissions.
+
+**Data model:**
+- `contact_messages` table: id, page_slug, recipient_email, fields (jsonb), created_at, ip, user_agent, processed_at
+- Indexed on page_slug and processed_at
+
+**Public endpoint:**
+- `POST /api/pages/{slug}/contact` - submit contact form
+- Validates against page's contact-form section schema
+- Enforces required fields, email format, phone format
+- Rate limited: 10 requests/hour per IP
+- Returns 202 Accepted with `{ id, createdAt }`
+
+**Admin endpoints:**
+- `GET /api/admin/contact-messages` - list messages (ordered by created_at desc)
+- `GET /api/admin/contact-messages/{id}` - get message with full fields JSON
+- `PATCH /api/admin/contact-messages/{id}/mark-processed` - mark message as processed
+
 Verification note:
 - If endpoints appear missing, check running version:
   - `GET /api/info` -> phase should match latest
@@ -248,7 +267,7 @@ Verification note:
 
 ## Current State (Verified)
 
-- `GET /api/info` returns phase: `1.6b`
+- `GET /api/info` returns phase: `1.7a`
 - `POST /api/dev/seed` works
 - `POST /api/dev/token` works (Development only)
 - `GET /api/admin/pages` works with dev token and Admin role
@@ -256,9 +275,12 @@ Verification note:
 - `GET /api/admin/uploads` works with dev token and Admin role
 - `DELETE /api/admin/uploads/{id}` works with dev token and Admin role
 - Swagger UI at `/api/swagger` works (Development only)
-- Rate limiting: spam login/uploads triggers 429 with JSON response
+- Rate limiting: spam login/uploads/contact triggers 429 with JSON response
 - `/api/health` and `/api/info` unaffected by rate limits
 - Section validation: supports `hero`, `features`, `cta`, `testimonials`, `gallery`, `contact-form`
+- `POST /api/pages/{slug}/contact` - public contact form submission
+- `GET /api/admin/contact-messages` - list contact messages
+- `PATCH /api/admin/contact-messages/{id}/mark-processed` - mark as processed
 
 ---
 

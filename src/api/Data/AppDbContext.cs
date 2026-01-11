@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<ClaimEntity> Claims => Set<ClaimEntity>();
     public DbSet<UserClaimEntity> UserClaims => Set<UserClaimEntity>();
     public DbSet<UploadEntity> Uploads => Set<UploadEntity>();
+    public DbSet<ContactMessageEntity> ContactMessages => Set<ContactMessageEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

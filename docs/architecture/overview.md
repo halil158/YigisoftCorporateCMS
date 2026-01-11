@@ -47,16 +47,17 @@ Nginx handles all inbound traffic and routes to appropriate services:
 
 ### API Endpoints
 
-| Method | Endpoint             | Description                          |
-|--------|----------------------|--------------------------------------|
-| GET    | `/api/health`        | Health check                         |
-| GET    | `/api/info`          | API version and phase info           |
-| GET    | `/api/db-check`      | Database connectivity check          |
-| GET    | `/api/pages/{slug}`  | Get published page by slug           |
-| POST   | `/api/auth/login`    | Authenticate and get JWT token       |
-| GET    | `/api/auth/me`       | Get authenticated user info (protected) |
-| POST   | `/api/dev/seed`      | Seed sample data (Development only)  |
-| POST   | `/api/dev/token`     | Generate JWT token (Development only)|
+| Method | Endpoint                    | Description                          |
+|--------|-----------------------------|--------------------------------------|
+| GET    | `/api/health`               | Health check                         |
+| GET    | `/api/info`                 | API version and phase info           |
+| GET    | `/api/db-check`             | Database connectivity check          |
+| GET    | `/api/pages/{slug}`         | Get published page by slug           |
+| POST   | `/api/pages/{slug}/contact` | Submit contact form (rate limited)   |
+| POST   | `/api/auth/login`           | Authenticate and get JWT token       |
+| GET    | `/api/auth/me`              | Get authenticated user info (protected) |
+| POST   | `/api/dev/seed`             | Seed sample data (Development only)  |
+| POST   | `/api/dev/token`            | Generate JWT token (Development only)|
 
 ### Swagger / OpenAPI (Development only)
 
@@ -69,16 +70,21 @@ Nginx handles all inbound traffic and routes to appropriate services:
 
 ### Admin Endpoints (require Admin role)
 
-| Method | Endpoint                          | Description                     |
-|--------|-----------------------------------|---------------------------------|
-| GET    | `/api/admin/pages`                | List all pages                  |
-| GET    | `/api/admin/pages/{id}`           | Get page by ID                  |
-| POST   | `/api/admin/pages`                | Create page                     |
-| PUT    | `/api/admin/pages/{id}`           | Update page                     |
-| DELETE | `/api/admin/pages/{id}`           | Delete page                     |
-| POST   | `/api/admin/pages/{id}/publish`   | Publish page                    |
-| POST   | `/api/admin/pages/{id}/unpublish` | Unpublish page                  |
-| POST   | `/api/admin/uploads`              | Upload file (multipart/form-data) |
+| Method | Endpoint                                       | Description                     |
+|--------|------------------------------------------------|---------------------------------|
+| GET    | `/api/admin/pages`                             | List all pages                  |
+| GET    | `/api/admin/pages/{id}`                        | Get page by ID                  |
+| POST   | `/api/admin/pages`                             | Create page                     |
+| PUT    | `/api/admin/pages/{id}`                        | Update page                     |
+| DELETE | `/api/admin/pages/{id}`                        | Delete page                     |
+| POST   | `/api/admin/pages/{id}/publish`                | Publish page                    |
+| POST   | `/api/admin/pages/{id}/unpublish`              | Unpublish page                  |
+| POST   | `/api/admin/uploads`                           | Upload file (multipart/form-data) |
+| GET    | `/api/admin/uploads`                           | List uploads                    |
+| DELETE | `/api/admin/uploads/{id}`                      | Delete upload                   |
+| GET    | `/api/admin/contact-messages`                  | List contact messages           |
+| GET    | `/api/admin/contact-messages/{id}`             | Get contact message by ID       |
+| PATCH  | `/api/admin/contact-messages/{id}/mark-processed` | Mark message as processed    |
 
 ---
 
@@ -167,6 +173,47 @@ Section types are validated at the API layer using a registry pattern. Each sect
 
 ---
 
+## Contact Form Submissions
+
+Public endpoint for visitors to submit contact forms on published pages with `contact-form` sections.
+
+### Contact Messages Table Schema
+
+| Column           | Type          | Constraints                    |
+|------------------|---------------|--------------------------------|
+| id               | uuid          | PK, default gen_random_uuid() |
+| page_slug        | text          | required, indexed              |
+| recipient_email  | text          | required                       |
+| fields           | jsonb         | required                       |
+| created_at       | timestamptz   | default now()                  |
+| ip               | text          | nullable                       |
+| user_agent       | text          | nullable                       |
+| processed_at     | timestamptz   | nullable, indexed              |
+
+### Submission Flow
+
+1. **Endpoint:** `POST /api/pages/{slug}/contact`
+2. **Requirements:**
+   - Page must exist and be published
+   - Page must have a `contact-form` section
+3. **Validation:**
+   - Only fields defined in the section's `fields` array are allowed
+   - Required fields (field.required = true) must have non-empty values
+   - Email fields must contain `@` and no spaces
+   - Phone fields allow digits, spaces, +, -, (), .
+4. **Storage:** Message saved with page slug, recipient email from section, and submitted fields as JSON
+5. **Rate limit:** 10 requests per hour per IP
+
+**Response (202 Accepted):**
+```json
+{
+  "id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+  "createdAt": "2026-01-12T10:30:00Z"
+}
+```
+
+---
+
 ## Authentication
 
 **JWT Bearer authentication with normalized user/claims tables:**
@@ -235,6 +282,7 @@ Built-in rate limiting using `Microsoft.AspNetCore.RateLimiting` to protect agai
 |----------|-------|--------|-----|
 | POST `/api/auth/login` | 5 requests | 1 minute | Client IP |
 | POST `/api/admin/uploads` | 30 requests | 1 minute | Client IP |
+| POST `/api/pages/{slug}/contact` | 10 requests | 1 hour | Client IP |
 
 **429 Response Format:**
 ```json
@@ -293,6 +341,7 @@ Built-in rate limiting using `Microsoft.AspNetCore.RateLimiting` to protect agai
 | 1.5b    | Uploads metadata persistence + management  | Done        |
 | 1.6a    | Rate limiting + real client IP behind nginx| Done        |
 | 1.6b    | Section registry expansion (testimonials, gallery, contact-form) | Done |
+| 1.7a    | Contact form submissions (store in DB)     | Done        |
 | 1.x     | Backend core (auth, pages, sections, API)  | In Progress |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |

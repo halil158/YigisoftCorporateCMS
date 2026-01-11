@@ -225,6 +225,55 @@ curl -X DELETE "http://localhost:8080/api/admin/uploads/{id}" \
 
 Allowed file types: `.png`, `.jpg`, `.jpeg`, `.webp`, `.svg`, `.pdf` (max 10 MB).
 
+### Contact Form Submission
+
+Submit contact form data for published pages with a `contact-form` section.
+
+```powershell
+# 1. First create a page with a contact-form section
+$page = @{
+    slug = "contact"
+    title = "Contact Us"
+    sections = '[{"type":"contact-form","data":{"title":"Get in Touch","recipientEmail":"info@example.com","fields":[{"name":"email","label":"Email","type":"email","required":true},{"name":"message","label":"Message","type":"textarea","required":true}]}}]'
+    isPublished = $true
+} | ConvertTo-Json
+Invoke-RestMethod -Uri "http://localhost:8080/api/admin/pages" -Method POST -Body $page -ContentType "application/json" -Headers $headers
+
+# 2. Submit contact form (public, no auth required)
+$submission = @{
+    fields = @{
+        email = "visitor@example.com"
+        message = "Hello, I have a question..."
+    }
+} | ConvertTo-Json
+Invoke-RestMethod -Uri "http://localhost:8080/api/pages/contact/contact" -Method POST -Body $submission -ContentType "application/json"
+# Returns 202: { id: "guid", createdAt: "2026-01-12T10:30:00Z" }
+
+# 3. List contact messages (admin)
+Invoke-RestMethod -Uri "http://localhost:8080/api/admin/contact-messages" -Headers $headers
+
+# 4. Get message details (admin)
+Invoke-RestMethod -Uri "http://localhost:8080/api/admin/contact-messages/{id}" -Headers $headers
+
+# 5. Mark as processed (admin)
+Invoke-RestMethod -Uri "http://localhost:8080/api/admin/contact-messages/{id}/mark-processed" -Method PATCH -Headers $headers
+```
+
+#### Bash / Linux
+
+```bash
+# Submit contact form (public)
+curl -X POST http://localhost:8080/api/pages/contact/contact \
+  -H "Content-Type: application/json" \
+  -d '{"fields":{"email":"visitor@example.com","message":"Hello!"}}'
+
+# List messages (admin)
+curl http://localhost:8080/api/admin/contact-messages \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Rate limit:** 10 submissions per hour per IP address.
+
 ### Local Ports
 
 | Service    | Port |

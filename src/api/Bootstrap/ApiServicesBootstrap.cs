@@ -22,6 +22,7 @@ public static class ApiServicesBootstrap
     // Rate limiting policy names
     public const string LoginRateLimitPolicy = "login";
     public const string UploadRateLimitPolicy = "upload";
+    public const string ContactSubmitRateLimitPolicy = "contact-submit";
     public const string GlobalRateLimitPolicy = "global";
 
     /// <summary>
@@ -118,6 +119,18 @@ public static class ApiServicesBootstrap
                     {
                         PermitLimit = 30,
                         Window = TimeSpan.FromMinutes(1),
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0
+                    }));
+
+            // Contact form submission: 10 requests per hour per IP
+            options.AddPolicy(ContactSubmitRateLimitPolicy, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: GetClientIp(httpContext),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 10,
+                        Window = TimeSpan.FromHours(1),
                         QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                         QueueLimit = 0
                     }));

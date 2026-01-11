@@ -129,3 +129,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Contact form field types: text, email, textarea, phone
   - Duplicate field name detection in contact-form
   - Basic email validation (contains @ and no spaces)
+- Contact form submissions (Phase 1.7a)
+  - `contact_messages` table: id, page_slug, recipient_email, fields (jsonb), created_at, ip, user_agent, processed_at
+  - POST `/api/pages/{slug}/contact` - public endpoint to submit contact form
+    - Validates submission against page's contact-form section schema
+    - Enforces required fields, email format, phone format
+    - Rate limited to 10 requests/hour per IP
+    - Returns 202 Accepted with { id, createdAt }
+  - GET `/api/admin/contact-messages` - list messages (ordered by created_at desc)
+  - GET `/api/admin/contact-messages/{id}` - get message with full fields JSON
+  - PATCH `/api/admin/contact-messages/{id}/mark-processed` - mark message as processed
