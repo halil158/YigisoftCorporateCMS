@@ -314,11 +314,16 @@ Verification note:
 - Coverage report uploaded as CI artifact (30-day retention)
 - Coverage summary displayed in CI logs
 
+### Phase 1.8d — CI locked-mode enforcement
+- `dotnet restore --locked-mode` in CI for deterministic builds
+- CI fails if packages.lock.json is out of sync with package references
+- ReportGenerator step includes PATH fix for dotnet tools
+
 ---
 
 ## Current State (Verified)
 
-- `GET /api/info` returns phase: `1.8c`
+- `GET /api/info` returns phase: `1.8d`
 - `POST /api/dev/seed` works
 - `POST /api/dev/token` works (Development only)
 - `GET /api/admin/pages` works with dev token and Admin role

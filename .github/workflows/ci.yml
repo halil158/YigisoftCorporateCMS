@@ -27,8 +27,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Restore dependencies
-        run: dotnet restore
+      - name: Restore dependencies (locked-mode)
+        run: dotnet restore --locked-mode
 
       - name: Build
         run: dotnet build --no-restore --configuration Release
@@ -41,6 +41,7 @@ jobs:
 
       - name: Generate coverage report
         run: |
+          export PATH="$PATH:$HOME/.dotnet/tools"
           reportgenerator \
             -reports:"TestResults/**/coverage.cobertura.xml" \
             -targetdir:"coverage-report" \

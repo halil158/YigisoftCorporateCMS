@@ -36,7 +36,7 @@ public static class EndpointExtensions
         admin.MapAdminUploadsEndpoints();
         admin.MapAdminContactMessagesEndpoints();
 
-        Log.Information("API started - phase {Phase}", "1.8c");
+        Log.Information("API started - phase {Phase}", "1.8d");
 
         return app;
     }

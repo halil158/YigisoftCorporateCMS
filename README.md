@@ -323,8 +323,11 @@ reportgenerator -reports:"TestResults/**/coverage.cobertura.xml" -targetdir:"cov
 
 GitHub Actions runs on push and pull request to `main`:
 - NuGet package caching for faster builds
+- Locked-mode restore (`--locked-mode`) for deterministic builds
 - Build and test with code coverage collection
 - Coverage report uploaded as workflow artifact (downloadable from Actions tab)
+
+**Note:** CI will fail if `packages.lock.json` is out of sync. Run `dotnet restore` locally to regenerate it after package changes.
 
 ## License
 

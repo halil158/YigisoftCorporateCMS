@@ -169,3 +169,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - ReportGenerator for HTML coverage reports
   - Coverage report uploaded as CI artifact (30-day retention)
   - Coverage summary displayed in CI logs
+- CI locked-mode enforcement (Phase 1.8d)
+  - `dotnet restore --locked-mode` in CI workflow for deterministic builds
+  - CI fails if packages.lock.json is out of sync with package references
+  - ReportGenerator step now includes PATH fix for dotnet tools
