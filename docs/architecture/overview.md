@@ -224,6 +224,33 @@ Section types are validated at the API layer using a registry pattern. Each sect
 
 ---
 
+## Rate Limiting
+
+Built-in rate limiting using `Microsoft.AspNetCore.RateLimiting` to protect against brute-force attacks and abuse.
+
+| Endpoint | Limit | Window | Key |
+|----------|-------|--------|-----|
+| POST `/api/auth/login` | 5 requests | 1 minute | Client IP |
+| POST `/api/admin/uploads` | 30 requests | 1 minute | Client IP |
+
+**429 Response Format:**
+```json
+{
+  "error": "RateLimited",
+  "message": "Too many requests",
+  "retryAfterSeconds": 60
+}
+```
+
+**Real Client IP behind nginx:**
+- Forwarded headers middleware enabled (`UseForwardedHeaders`)
+- nginx sets `X-Forwarded-For`, `X-Real-IP`, `X-Forwarded-Proto`
+- `KnownIPNetworks.Clear()` trusts all proxies in Docker network
+
+**Unaffected endpoints:** `/api/health`, `/api/info` have no rate limits.
+
+---
+
 ## Logging
 
 | Service | Destination | Notes |
@@ -260,6 +287,8 @@ Section types are validated at the API layer using a registry pattern. Each sect
 | 1.4a    | Admin uploads API (multipart)              | Done        |
 | 1.4b    | Program.cs bootstrap refactor              | Done        |
 | 1.5a    | Swagger/OpenAPI (Development only)         | Done        |
+| 1.5b    | Uploads metadata persistence + management  | Done        |
+| 1.6a    | Rate limiting + real client IP behind nginx| Done        |
 | 1.x     | Backend core (auth, pages, sections, API)  | In Progress |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |

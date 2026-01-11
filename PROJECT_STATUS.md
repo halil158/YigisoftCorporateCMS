@@ -1,6 +1,6 @@
 # YigisoftCorporateCMS — Project Status
 
-Last updated: 2026-01-11  
+Last updated: 2026-01-12  
 Timezone: Europe/Istanbul
 
 ## Overview
@@ -192,14 +192,26 @@ Endpoints:
 - GET `/api/admin/uploads?take=N` - list uploads (default 50, max 200)
 - DELETE `/api/admin/uploads/{id}` - delete DB record + file from disk
 
-### Phase 1.6a — Documentation & SOLID verification
+### Phase 1.6a — Rate limiting + Documentation
+Documentation:
 - README Uploads section improved:
   - PS7+ examples using `-Form` parameter
   - PS5.1 examples using `curl.exe` (Windows PowerShell 5.1 lacks `-Form`)
   - Inline test.png generation (base64 1x1 PNG)
   - Bash/Linux examples reorganized
-- Verified Program.cs remains minimal (~30 lines, SOLID-friendly)
-- No code changes to API behavior
+
+Rate limiting:
+- POST `/api/auth/login` - 5 requests/min per client IP
+- POST `/api/admin/uploads` - 30 requests/min per client IP
+- 429 JSON response: `{ error: "RateLimited", message: "Too many requests", retryAfterSeconds: N }`
+- Uses built-in Microsoft.AspNetCore.RateLimiting
+
+Real client IP behind nginx:
+- Forwarded headers middleware enabled (`UseForwardedHeaders`)
+- nginx already sets X-Forwarded-For, X-Real-IP, X-Forwarded-Proto
+- `KnownIPNetworks.Clear()` trusts Docker network proxies
+
+Program.cs remains minimal (~30 lines, SOLID-friendly)
 
 Verification note:
 - If endpoints appear missing, check running version:
@@ -220,6 +232,8 @@ Verification note:
 - `GET /api/admin/uploads` works with dev token and Admin role
 - `DELETE /api/admin/uploads/{id}` works with dev token and Admin role
 - Swagger UI at `/api/swagger` works (Development only)
+- Rate limiting: spam login/uploads triggers 429 with JSON response
+- `/api/health` and `/api/info` unaffected by rate limits
 
 ---
 
@@ -228,4 +242,4 @@ Verification note:
 - Sections "type registry" expansion and stronger schema typing
 - Admin UI (React) consuming `/api/admin/*`
 - Audit logs (who changed what)
-- Rate limiting / basic security hardening
+- Additional security hardening (CORS, CSRF, etc.)

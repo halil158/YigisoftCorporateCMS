@@ -1,7 +1,9 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Serilog;
+using YigisoftCorporateCMS.Api.Bootstrap;
 using YigisoftCorporateCMS.Api.Data;
 using YigisoftCorporateCMS.Api.Entities;
 using YigisoftCorporateCMS.Api.Uploads;
@@ -15,7 +17,7 @@ public static class AdminUploadsEndpoints
 {
     public static IEndpointRouteBuilder MapAdminUploadsEndpoints(this IEndpointRouteBuilder admin)
     {
-        // POST /api/admin/uploads - Upload a file
+        // POST /api/admin/uploads - Upload a file (rate limited: 30/min per IP)
         admin.MapPost("/uploads", async (
             IFormFile? file,
             IUploadService uploadService,
@@ -66,7 +68,8 @@ public static class AdminUploadsEndpoints
             }
 
             return Results.BadRequest(new { error = "ValidationFailed", details = result.Errors });
-        }).DisableAntiforgery();
+        }).DisableAntiforgery()
+          .RequireRateLimiting(ApiServicesBootstrap.UploadRateLimitPolicy);
 
         // GET /api/admin/uploads - List uploads
         admin.MapGet("/uploads", async (

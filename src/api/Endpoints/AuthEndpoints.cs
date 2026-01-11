@@ -1,9 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using YigisoftCorporateCMS.Api.Bootstrap;
 using YigisoftCorporateCMS.Api.Data;
 using YigisoftCorporateCMS.Api.Dtos;
 using YigisoftCorporateCMS.Api.Security;
@@ -17,7 +19,7 @@ public static class AuthEndpoints
 {
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder api)
     {
-        // POST /api/auth/login - Authenticate user and issue JWT
+        // POST /api/auth/login - Authenticate user and issue JWT (rate limited: 5/min per IP)
         api.MapPost("/auth/login", async (LoginRequest request, AppDbContext db, IConfiguration config) =>
         {
             if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
@@ -111,7 +113,7 @@ public static class AuthEndpoints
                     roles = roles.ToArray()
                 }
             });
-        });
+        }).RequireRateLimiting(ApiServicesBootstrap.LoginRateLimitPolicy);
 
         // GET /api/auth/me - Protected endpoint returning authenticated user info
         api.MapGet("/auth/me", (ClaimsPrincipal user) =>

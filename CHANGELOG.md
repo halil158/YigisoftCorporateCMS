@@ -116,3 +116,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added inline test.png generation snippet (base64 1x1 PNG) for easy testing
   - Bash/Linux examples reorganized for clarity
   - Verified Program.cs remains minimal (~30 lines, SOLID-friendly)
+- Rate limiting and real client IP behind nginx (Phase 1.6a)
+  - POST `/api/auth/login` rate limited to 5 requests/min per client IP
+  - POST `/api/admin/uploads` rate limited to 30 requests/min per client IP
+  - 429 response as JSON: `{ error: "RateLimited", message: "Too many requests", retryAfterSeconds: N }`
+  - Forwarded headers middleware enabled to get real client IP from nginx
+  - Uses built-in Microsoft.AspNetCore.RateLimiting (no external dependencies)

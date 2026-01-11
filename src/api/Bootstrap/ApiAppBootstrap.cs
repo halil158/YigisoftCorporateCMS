@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using YigisoftCorporateCMS.Api.Data;
@@ -18,6 +19,9 @@ public static class ApiAppBootstrap
         // Apply migrations in Development
         ApplyMigrationsIfDevelopment(app);
 
+        // Forwarded headers must be FIRST to get real client IP from nginx
+        app.UseForwardedHeaders();
+
         // Swagger UI (Development only)
         if (app.Environment.IsDevelopment())
         {
@@ -35,7 +39,10 @@ public static class ApiAppBootstrap
             Log.Information("Swagger UI enabled at /api/swagger");
         }
 
-        // Middleware
+        // Rate limiting (after forwarded headers so we use real client IP)
+        app.UseRateLimiter();
+
+        // Authentication & Authorization
         app.UseAuthentication();
         app.UseAuthorization();
 

@@ -1,5 +1,8 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -16,12 +19,26 @@ public static class ApiServicesBootstrap
 {
     private const string DevPlaceholderKey = "DEVELOPMENT-ONLY-KEY-REPLACE-IN-PRODUCTION-MIN-32-CHARS";
 
+    // Rate limiting policy names
+    public const string LoginRateLimitPolicy = "login";
+    public const string UploadRateLimitPolicy = "upload";
+    public const string GlobalRateLimitPolicy = "global";
+
     /// <summary>
     /// Registers all application services.
     /// </summary>
     public static WebApplicationBuilder AddApiServices(this WebApplicationBuilder builder)
     {
         Log.Information("Starting API in {Environment} environment", builder.Environment.EnvironmentName);
+
+        // Configure forwarded headers (for nginx proxy)
+        builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            // Trust nginx proxy (clear defaults to accept from any proxy in Docker network)
+            options.KnownIPNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
 
         // Configure EF Core with PostgreSQL
         var connectionString = builder.Configuration.GetConnectionString("Default");
@@ -33,6 +50,9 @@ public static class ApiServicesBootstrap
 
         builder.Services.AddAuthorization();
 
+        // Configure rate limiting
+        ConfigureRateLimiting(builder);
+
         // Register application services
         builder.Services.AddUploads(builder.Configuration);
 
@@ -43,6 +63,83 @@ public static class ApiServicesBootstrap
         }
 
         return builder;
+    }
+
+    private static void ConfigureRateLimiting(WebApplicationBuilder builder)
+    {
+        builder.Services.AddRateLimiter(options =>
+        {
+            // Custom 429 response
+            options.OnRejected = async (context, cancellationToken) =>
+            {
+                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                context.HttpContext.Response.ContentType = "application/json";
+
+                var retryAfter = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfterValue)
+                    ? (int)retryAfterValue.TotalSeconds
+                    : 60;
+
+                if (retryAfterValue != default)
+                {
+                    context.HttpContext.Response.Headers.RetryAfter = retryAfter.ToString();
+                }
+
+                var response = new
+                {
+                    error = "RateLimited",
+                    message = "Too many requests",
+                    retryAfterSeconds = retryAfter
+                };
+
+                await context.HttpContext.Response.WriteAsJsonAsync(response, cancellationToken);
+
+                Log.Warning("Rate limit exceeded for {Policy} from {IP}",
+                    context.Lease.GetType().Name,
+                    context.HttpContext.Connection.RemoteIpAddress);
+            };
+
+            // Login: 5 requests per minute per IP
+            options.AddPolicy(LoginRateLimitPolicy, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: GetClientIp(httpContext),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0
+                    }));
+
+            // Upload: 30 requests per minute per IP
+            options.AddPolicy(UploadRateLimitPolicy, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: GetClientIp(httpContext),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 30,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0
+                    }));
+
+            // Global: 100 requests per minute per IP (mild, for /api/* excluding health/info)
+            options.AddPolicy(GlobalRateLimitPolicy, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: GetClientIp(httpContext),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 100,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0
+                    }));
+        });
+    }
+
+    private static string GetClientIp(HttpContext httpContext)
+    {
+        // After ForwardedHeaders middleware, RemoteIpAddress reflects real client IP
+        return httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
     }
 
     private static void ConfigureSwagger(WebApplicationBuilder builder)
