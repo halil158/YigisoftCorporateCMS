@@ -13,6 +13,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const navItems = [
     { path: '/', label: 'Dashboard' },
     { path: '/pages', label: 'Pages' },
+    { path: '/media', label: 'Media Library' },
   ]
 
   return (

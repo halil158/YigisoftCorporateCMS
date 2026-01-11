@@ -5,6 +5,7 @@ import { DashboardPage } from './pages/DashboardPage'
 import { PagesListPage } from './pages/PagesListPage'
 import { PageCreatePage } from './pages/PageCreatePage'
 import { PageEditPage } from './pages/PageEditPage'
+import { MediaLibraryPage } from './pages/MediaLibraryPage'
 
 function App() {
   return (
@@ -39,6 +40,14 @@ function App() {
         element={
           <ProtectedRoute>
             <PageEditPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/media"
+        element={
+          <ProtectedRoute>
+            <MediaLibraryPage />
           </ProtectedRoute>
         }
       />

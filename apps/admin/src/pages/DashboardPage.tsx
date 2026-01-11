@@ -16,13 +16,15 @@ export function DashboardPage() {
           <li>
             <Link to="/pages/new">Create New Page</Link>
           </li>
+          <li>
+            <Link to="/media">Media Library</Link>
+          </li>
         </ul>
       </div>
 
       <div style={{ marginTop: 24 }}>
         <h2>Coming Soon</h2>
         <ul>
-          <li>Media library (Phase 2.2)</li>
           <li>Contact messages (Phase 2.3)</li>
         </ul>
       </div>

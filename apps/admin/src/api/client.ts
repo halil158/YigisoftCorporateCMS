@@ -140,3 +140,50 @@ export const pagesApi = {
       method: 'POST',
     }),
 }
+
+// Uploads API types
+export interface UploadItem {
+  id: string
+  url: string
+  fileName: string
+  originalFileName: string
+  contentType: string
+  size: number
+  createdAt: string
+  uploadedByUserId: string
+}
+
+// Special upload function for multipart/form-data
+async function uploadFile(file: File): Promise<UploadItem> {
+  const token = localStorage.getItem('token')
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch(`${API_BASE}/admin/uploads`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}))
+    throw {
+      status: response.status,
+      ...errorBody,
+    }
+  }
+
+  return response.json()
+}
+
+export const uploadsApi = {
+  list: (take: number = 50) =>
+    apiRequest<UploadItem[]>(`/admin/uploads?take=${take}`),
+
+  upload: (file: File) => uploadFile(file),
+
+  delete: (id: string) =>
+    apiRequest<void>(`/admin/uploads/${id}`, {
+      method: 'DELETE',
+    }),
+}

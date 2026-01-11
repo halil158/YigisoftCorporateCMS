@@ -190,3 +190,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Validation error display with detailed messages
   - AdminLayout component with sidebar navigation
   - API error handling: 401/403 redirects to login
+- Admin Media Library (Phase 2.2)
+  - Media library at `/admin/media` with upload, list, and delete functionality
+  - File upload via multipart/form-data to `/api/admin/uploads`
+  - Image preview (max 120px), PDF badge, generic file icon
+  - Copy URL button copies absolute public URL to clipboard
+  - Open link opens file in new tab
+  - Delete with confirmation removes file and database record
+  - Allowed files: PNG, JPG, JPEG, WebP, SVG, PDF (max 10 MB)

@@ -342,6 +342,15 @@ Verification note:
 - Validation error display with detailed messages from API
 - API error handling: 401/403 redirects to login
 
+### Phase 2.2 — Admin Media Library
+- Media library at `/admin/media` with upload, list, and delete functionality
+- File upload via multipart/form-data using FormData API
+- Image preview thumbnails (max 120px), PDF badge, generic file icon
+- Copy URL button copies absolute public URL to clipboard
+- Open link opens file in new tab
+- Delete with confirmation removes file and database record
+- Uploads served at `/uploads/*` via nginx
+
 ---
 
 ## Current State (Verified)
@@ -350,6 +359,7 @@ Verification note:
 - Admin UI at `/admin/` redirects to `/admin/login` if not authenticated
 - Admin login with `admin@yigisoft.local` / `Admin123!` works after seeding
 - Admin pages UI at `/admin/pages` - list, create, edit, delete, publish/unpublish
+- Admin media library at `/admin/media` - upload, list, copy URL, delete
 - `POST /api/dev/seed` works
 - `POST /api/dev/token` works (Development only)
 - `GET /api/admin/pages` works with dev token and Admin role
@@ -368,13 +378,11 @@ Verification note:
 
 ## Planned Phases (Roadmap)
 
-### Phase 2.2 — Admin Uploads UI
-Media library for file management.
-- Upload dropzone with progress
-- Grid/list view of uploads
-- Delete with confirmation
-- Copy URL to clipboard
-- Image preview modal
+### Phase 2.3 — Admin Contact Messages UI
+Contact message management.
+- List contact messages with filtering
+- Mark as processed
+- View message details
 
 ### Phase 3.0 — Public Web scaffold
 Visitor-facing website foundation.
