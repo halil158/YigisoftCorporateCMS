@@ -105,6 +105,42 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/admin/pages/$($created.id)/pub
 Invoke-RestMethod -Uri "http://localhost:8080/api/pages/about-us"  # Returns 200 with page data
 ```
 
+### Sections Validation
+
+Sections are validated against a type registry. Supported types: `hero`, `features`, `cta`.
+
+```powershell
+# Valid page with hero section
+$page = @{
+    slug = "valid-page"
+    title = "Valid Page"
+    sections = '[{"type":"hero","data":{"title":"Welcome"}}]'
+    isPublished = $false
+} | ConvertTo-Json
+Invoke-RestMethod -Uri "http://localhost:8080/api/admin/pages" -Method POST -Body $page -ContentType "application/json" -Headers $headers
+# Returns 201 Created
+
+# Invalid: unknown section type
+$page = @{
+    slug = "invalid-type"
+    title = "Invalid"
+    sections = '[{"type":"unknown","data":{}}]'
+    isPublished = $false
+} | ConvertTo-Json
+Invoke-RestMethod -Uri "http://localhost:8080/api/admin/pages" -Method POST -Body $page -ContentType "application/json" -Headers $headers
+# Returns 400: { error: "ValidationFailed", details: ["sections[0].type 'unknown' is not supported..."] }
+
+# Invalid: missing required field
+$page = @{
+    slug = "missing-field"
+    title = "Missing"
+    sections = '[{"type":"cta","data":{"title":"Buy Now"}}]'
+    isPublished = $false
+} | ConvertTo-Json
+Invoke-RestMethod -Uri "http://localhost:8080/api/admin/pages" -Method POST -Body $page -ContentType "application/json" -Headers $headers
+# Returns 400: { error: "ValidationFailed", details: ["sections[0].data.buttonText is required", "sections[0].data.buttonUrl is required"] }
+```
+
 ### Local Ports
 
 | Service    | Port |

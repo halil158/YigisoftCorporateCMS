@@ -107,6 +107,25 @@ Pages are stored with their content as structured JSONB, enabling flexible secti
 - Fast reads (single query per page)
 - Section data validated at API layer
 
+### Sections Type Registry
+
+Section types are validated at the API layer using a registry pattern. Each section type has a validator that enforces required fields and data types.
+
+**Supported section types:**
+
+| Type | Required Fields | Optional Fields |
+|------|-----------------|-----------------|
+| `hero` | `data.title` | `data.subtitle`, `data.imageUrl`, `data.primaryCta` (object with `text`, `url`) |
+| `features` | `data.title`, `data.items` (array, min 1) | Items: `description`, `icon` |
+| `cta` | `data.title`, `data.buttonText`, `data.buttonUrl` | — |
+
+**Validation behavior:**
+- Unknown section types return 400 with list of supported types
+- Missing required fields return 400 with detailed paths (e.g., `sections[0].data.title is required`)
+- Validation errors include all detected issues in a single response
+
+**Extensibility:** New section types can be added by implementing a validator function and registering it in `SectionsValidator.TypeValidators` dictionary (`src/api/Validation/Sections/SectionsValidator.cs`).
+
 ---
 
 ## Uploads Handling
@@ -212,6 +231,7 @@ Pages are stored with their content as structured JSONB, enabling flexible secti
 | 1.2a1.2 | Pin Docker images + locked NuGet restore   | Done        |
 | 1.2a2   | Normalized auth tables + login endpoint    | Done        |
 | 1.3a    | Admin Pages CRUD endpoints                 | Done        |
+| 1.3b    | Sections schema validation (type registry) | Done        |
 | 1.x     | Backend core (auth, pages, sections, API)  | In Progress |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |

@@ -11,6 +11,7 @@ using YigisoftCorporateCMS.Api.Data;
 using YigisoftCorporateCMS.Api.Dtos;
 using YigisoftCorporateCMS.Api.Entities;
 using YigisoftCorporateCMS.Api.Security;
+using YigisoftCorporateCMS.Api.Validation.Sections;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -105,7 +106,7 @@ try
     {
         name = "YigisoftCorporateCMS.Api",
         version = "0.0.0",
-        phase = "1.3a"
+        phase = "1.3b"
     };
 
     // Root-level endpoints (direct container access)
@@ -454,40 +455,46 @@ try
     // Slug validation regex: lowercase alphanumeric with hyphens
     var slugRegex = new Regex(@"^[a-z0-9]+(?:-[a-z0-9]+)*$", RegexOptions.Compiled);
 
-    // Validation helper
-    static (bool isValid, string? error) ValidatePageRequest(PageUpsertRequest request, Regex slugRegex)
+    // Validation helper - returns (isValid, singleError, sectionErrors)
+    // singleError is for simple field errors, sectionErrors is for detailed section validation
+    static (bool isValid, string? error, List<string>? sectionErrors) ValidatePageRequest(PageUpsertRequest request, Regex slugRegex)
     {
         // Validate slug
         if (string.IsNullOrWhiteSpace(request.Slug))
-            return (false, "Slug is required");
+            return (false, "Slug is required", null);
 
         var slug = request.Slug.Trim().ToLowerInvariant();
         if (!slugRegex.IsMatch(slug))
-            return (false, "Slug must be lowercase alphanumeric with hyphens (e.g., 'my-page-slug')");
+            return (false, "Slug must be lowercase alphanumeric with hyphens (e.g., 'my-page-slug')", null);
 
         // Validate title
         if (string.IsNullOrWhiteSpace(request.Title))
-            return (false, "Title is required");
+            return (false, "Title is required", null);
 
         if (request.Title.Length > 200)
-            return (false, "Title must be 200 characters or less");
+            return (false, "Title must be 200 characters or less", null);
 
         // Validate sections JSON
         if (string.IsNullOrWhiteSpace(request.Sections))
-            return (false, "Sections is required");
+            return (false, "Sections is required", null);
 
         try
         {
             using var doc = JsonDocument.Parse(request.Sections);
             if (doc.RootElement.ValueKind != JsonValueKind.Array)
-                return (false, "Sections must be a JSON array");
+                return (false, "Sections must be a JSON array", null);
         }
         catch (JsonException)
         {
-            return (false, "Sections must be valid JSON");
+            return (false, "Sections must be valid JSON", null);
         }
 
-        return (true, null);
+        // Validate sections schema (type registry)
+        var sectionErrors = SectionsValidator.Validate(request.Sections);
+        if (sectionErrors.Count > 0)
+            return (false, null, sectionErrors);
+
+        return (true, null, null);
     }
 
     // GET /api/admin/pages - List all pages
@@ -536,9 +543,13 @@ try
     // POST /api/admin/pages - Create page
     admin.MapPost("/pages", async (PageUpsertRequest request, AppDbContext db) =>
     {
-        var (isValid, error) = ValidatePageRequest(request, slugRegex);
+        var (isValid, error, sectionErrors) = ValidatePageRequest(request, slugRegex);
         if (!isValid)
+        {
+            if (sectionErrors is not null)
+                return Results.BadRequest(new { error = "ValidationFailed", details = sectionErrors });
             return Results.BadRequest(new { error });
+        }
 
         var slug = request.Slug.Trim().ToLowerInvariant();
 
@@ -585,9 +596,13 @@ try
     // PUT /api/admin/pages/{id:guid} - Update page
     admin.MapPut("/pages/{id:guid}", async (Guid id, PageUpsertRequest request, AppDbContext db) =>
     {
-        var (isValid, error) = ValidatePageRequest(request, slugRegex);
+        var (isValid, error, sectionErrors) = ValidatePageRequest(request, slugRegex);
         if (!isValid)
+        {
+            if (sectionErrors is not null)
+                return Results.BadRequest(new { error = "ValidationFailed", details = sectionErrors });
             return Results.BadRequest(new { error });
+        }
 
         var page = await db.Pages.FirstOrDefaultAsync(p => p.Id == id);
         if (page is null)
@@ -678,7 +693,7 @@ try
         return Results.Ok(new { id = page.Id, slug = page.Slug, isPublished = false });
     });
 
-    Log.Information("API started - phase {Phase}", "1.3a");
+    Log.Information("API started - phase {Phase}", "1.3b");
 
     app.Run();
 }

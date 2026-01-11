@@ -74,3 +74,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Slug validation: lowercase alphanumeric with hyphens (^[a-z0-9]+(?:-[a-z0-9]+)*$)
 - Sections JSON validation: must be valid JSON array
 - Slug conflict returns 409 with code "slug_conflict"
+- Sections schema validation with type registry (Phase 1.3b)
+  - Registry-based validation for section types: hero, features, cta
+  - Each section must have `type` (string) and `data` (object)
+  - Hero requires `data.title`; optional: `subtitle`, `imageUrl`, `primaryCta`
+  - Features requires `data.title`, `data.items` (array, min 1); items require `title`
+  - CTA requires `data.title`, `data.buttonText`, `data.buttonUrl`
+  - Unknown section types return 400 with list of supported types
+  - Validation errors include detailed paths: `sections[0].data.title is required`
+  - Error format: `{ error: "ValidationFailed", details: [...] }`
