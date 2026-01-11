@@ -167,6 +167,14 @@ Build fix:
 - Nginx serves `/uploads/*` directly with cache headers
 - Fixed dev seed sections JSON to match section schemas (1.3b consistency)
 
+### Phase 1.4b — Program.cs bootstrap refactor
+- Refactored Program.cs into focused bootstrap modules:
+  - `Bootstrap/ApiLoggingBootstrap.cs` - Serilog configuration
+  - `Bootstrap/ApiServicesBootstrap.cs` - Service registrations
+  - `Bootstrap/ApiAppBootstrap.cs` - App pipeline wiring
+- Program.cs now a thin composition root (~30 lines)
+- No behavior change; SOLID-friendly structure
+
 Verification note:
 - If endpoints appear missing, check running version:
   - `GET /api/info` -> phase should match latest
@@ -178,7 +186,7 @@ Verification note:
 
 ## Current State (Verified)
 
-- `GET /api/info` returns phase: `1.4a`
+- `GET /api/info` returns phase: `1.4b`
 - `POST /api/dev/seed` works
 - `POST /api/dev/token` works (Development only)
 - `GET /api/admin/pages` works with dev token and Admin role

@@ -93,3 +93,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed dev seed sections JSON to match section schemas (1.3b consistency)
   - Hero: replaced `ctaText`/`ctaLink` with `primaryCta: { text, url }`
   - CTA: replaced `buttonLink` with `buttonUrl`
+- Refactored Program.cs into bootstrap modules (Phase 1.4b)
+  - `Bootstrap/ApiLoggingBootstrap.cs` - Serilog configuration
+  - `Bootstrap/ApiServicesBootstrap.cs` - Service registrations (DbContext, Auth, Uploads)
+  - `Bootstrap/ApiAppBootstrap.cs` - App pipeline (migrations, middleware, endpoints)
+  - Program.cs reduced to thin composition root (~30 lines)
+  - No behavior change; SOLID-friendly structure
