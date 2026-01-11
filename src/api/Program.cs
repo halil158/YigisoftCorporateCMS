@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -51,7 +52,8 @@ try
         }
     }
 
-    jwtSigningKey ??= throw new InvalidOperationException("Jwt:SigningKey must be configured");
+    if (string.IsNullOrWhiteSpace(jwtSigningKey))
+        throw new InvalidOperationException("Jwt:SigningKey must be configured");
 
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
@@ -103,7 +105,7 @@ try
     {
         name = "YigisoftCorporateCMS.Api",
         version = "0.0.0",
-        phase = "1.2a2"
+        phase = "1.3a"
     };
 
     // Root-level endpoints (direct container access)
@@ -446,7 +448,237 @@ try
         });
     }).RequireAuthorization();
 
-    Log.Information("API started - phase {Phase}", "1.2a2");
+    // Admin endpoints (require Admin role)
+    var admin = api.MapGroup("/admin").RequireAuthorization(policy => policy.RequireRole("Admin"));
+
+    // Slug validation regex: lowercase alphanumeric with hyphens
+    var slugRegex = new Regex(@"^[a-z0-9]+(?:-[a-z0-9]+)*$", RegexOptions.Compiled);
+
+    // Validation helper
+    static (bool isValid, string? error) ValidatePageRequest(PageUpsertRequest request, Regex slugRegex)
+    {
+        // Validate slug
+        if (string.IsNullOrWhiteSpace(request.Slug))
+            return (false, "Slug is required");
+
+        var slug = request.Slug.Trim().ToLowerInvariant();
+        if (!slugRegex.IsMatch(slug))
+            return (false, "Slug must be lowercase alphanumeric with hyphens (e.g., 'my-page-slug')");
+
+        // Validate title
+        if (string.IsNullOrWhiteSpace(request.Title))
+            return (false, "Title is required");
+
+        if (request.Title.Length > 200)
+            return (false, "Title must be 200 characters or less");
+
+        // Validate sections JSON
+        if (string.IsNullOrWhiteSpace(request.Sections))
+            return (false, "Sections is required");
+
+        try
+        {
+            using var doc = JsonDocument.Parse(request.Sections);
+            if (doc.RootElement.ValueKind != JsonValueKind.Array)
+                return (false, "Sections must be a JSON array");
+        }
+        catch (JsonException)
+        {
+            return (false, "Sections must be valid JSON");
+        }
+
+        return (true, null);
+    }
+
+    // GET /api/admin/pages - List all pages
+    admin.MapGet("/pages", async (AppDbContext db) =>
+    {
+        var pages = await db.Pages
+            .AsNoTracking()
+            .OrderByDescending(p => p.UpdatedAt)
+            .Select(p => new PageAdminListItemDto(
+                p.Id,
+                p.Slug,
+                p.Title,
+                p.IsPublished,
+                p.UpdatedAt
+            ))
+            .ToListAsync();
+
+        return Results.Ok(pages);
+    });
+
+    // GET /api/admin/pages/{id:guid} - Get page by ID
+    admin.MapGet("/pages/{id:guid}", async (Guid id, AppDbContext db) =>
+    {
+        var page = await db.Pages
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (page is null)
+            return Results.NotFound(new { error = "Page not found" });
+
+        var dto = new PageDto(
+            page.Id,
+            page.Slug,
+            page.Title,
+            page.MetaTitle,
+            page.MetaDescription,
+            page.Sections,
+            page.IsPublished,
+            page.CreatedAt,
+            page.UpdatedAt
+        );
+
+        return Results.Ok(dto);
+    });
+
+    // POST /api/admin/pages - Create page
+    admin.MapPost("/pages", async (PageUpsertRequest request, AppDbContext db) =>
+    {
+        var (isValid, error) = ValidatePageRequest(request, slugRegex);
+        if (!isValid)
+            return Results.BadRequest(new { error });
+
+        var slug = request.Slug.Trim().ToLowerInvariant();
+
+        // Check slug uniqueness
+        var slugExists = await db.Pages.AnyAsync(p => p.Slug == slug);
+        if (slugExists)
+        {
+            Log.Warning("Page creation failed: slug conflict for {Slug}", slug);
+            return Results.Conflict(new { error = "A page with this slug already exists", code = "slug_conflict" });
+        }
+
+        var page = new PageEntity
+        {
+            Slug = slug,
+            Title = request.Title.Trim(),
+            MetaTitle = request.MetaTitle?.Trim(),
+            MetaDescription = request.MetaDescription?.Trim(),
+            Sections = request.Sections,
+            IsPublished = request.IsPublished,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        db.Pages.Add(page);
+        await db.SaveChangesAsync();
+
+        Log.Information("Page created: {PageId} ({Slug})", page.Id, page.Slug);
+
+        var dto = new PageDto(
+            page.Id,
+            page.Slug,
+            page.Title,
+            page.MetaTitle,
+            page.MetaDescription,
+            page.Sections,
+            page.IsPublished,
+            page.CreatedAt,
+            page.UpdatedAt
+        );
+
+        return Results.Created($"/api/admin/pages/{page.Id}", dto);
+    });
+
+    // PUT /api/admin/pages/{id:guid} - Update page
+    admin.MapPut("/pages/{id:guid}", async (Guid id, PageUpsertRequest request, AppDbContext db) =>
+    {
+        var (isValid, error) = ValidatePageRequest(request, slugRegex);
+        if (!isValid)
+            return Results.BadRequest(new { error });
+
+        var page = await db.Pages.FirstOrDefaultAsync(p => p.Id == id);
+        if (page is null)
+            return Results.NotFound(new { error = "Page not found" });
+
+        var slug = request.Slug.Trim().ToLowerInvariant();
+
+        // Check slug uniqueness (excluding current page)
+        var slugExists = await db.Pages.AnyAsync(p => p.Slug == slug && p.Id != id);
+        if (slugExists)
+        {
+            Log.Warning("Page update failed: slug conflict for {Slug} (PageId: {PageId})", slug, id);
+            return Results.Conflict(new { error = "A page with this slug already exists", code = "slug_conflict" });
+        }
+
+        page.Slug = slug;
+        page.Title = request.Title.Trim();
+        page.MetaTitle = request.MetaTitle?.Trim();
+        page.MetaDescription = request.MetaDescription?.Trim();
+        page.Sections = request.Sections;
+        page.IsPublished = request.IsPublished;
+        page.UpdatedAt = DateTime.UtcNow;
+
+        await db.SaveChangesAsync();
+
+        Log.Information("Page updated: {PageId} ({Slug})", page.Id, page.Slug);
+
+        var dto = new PageDto(
+            page.Id,
+            page.Slug,
+            page.Title,
+            page.MetaTitle,
+            page.MetaDescription,
+            page.Sections,
+            page.IsPublished,
+            page.CreatedAt,
+            page.UpdatedAt
+        );
+
+        return Results.Ok(dto);
+    });
+
+    // DELETE /api/admin/pages/{id:guid} - Delete page
+    admin.MapDelete("/pages/{id:guid}", async (Guid id, AppDbContext db) =>
+    {
+        var page = await db.Pages.FirstOrDefaultAsync(p => p.Id == id);
+        if (page is null)
+            return Results.NotFound(new { error = "Page not found" });
+
+        var slug = page.Slug;
+        db.Pages.Remove(page);
+        await db.SaveChangesAsync();
+
+        Log.Information("Page deleted: {PageId} ({Slug})", id, slug);
+
+        return Results.NoContent();
+    });
+
+    // POST /api/admin/pages/{id:guid}/publish - Publish page
+    admin.MapPost("/pages/{id:guid}/publish", async (Guid id, AppDbContext db) =>
+    {
+        var page = await db.Pages.FirstOrDefaultAsync(p => p.Id == id);
+        if (page is null)
+            return Results.NotFound(new { error = "Page not found" });
+
+        page.IsPublished = true;
+        page.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+
+        Log.Information("Page published: {PageId} ({Slug})", page.Id, page.Slug);
+
+        return Results.Ok(new { id = page.Id, slug = page.Slug, isPublished = true });
+    });
+
+    // POST /api/admin/pages/{id:guid}/unpublish - Unpublish page
+    admin.MapPost("/pages/{id:guid}/unpublish", async (Guid id, AppDbContext db) =>
+    {
+        var page = await db.Pages.FirstOrDefaultAsync(p => p.Id == id);
+        if (page is null)
+            return Results.NotFound(new { error = "Page not found" });
+
+        page.IsPublished = false;
+        page.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+
+        Log.Information("Page unpublished: {PageId} ({Slug})", page.Id, page.Slug);
+
+        return Results.Ok(new { id = page.Id, slug = page.Slug, isPublished = false });
+    });
+
+    Log.Information("API started - phase {Phase}", "1.3a");
 
     app.Run();
 }

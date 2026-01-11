@@ -58,6 +58,18 @@ Nginx handles all inbound traffic and routes to appropriate services:
 | POST   | `/api/dev/seed`      | Seed sample data (Development only)  |
 | POST   | `/api/dev/token`     | Generate JWT token (Development only)|
 
+### Admin Endpoints (require Admin role)
+
+| Method | Endpoint                          | Description                     |
+|--------|-----------------------------------|---------------------------------|
+| GET    | `/api/admin/pages`                | List all pages                  |
+| GET    | `/api/admin/pages/{id}`           | Get page by ID                  |
+| POST   | `/api/admin/pages`                | Create page                     |
+| PUT    | `/api/admin/pages/{id}`           | Update page                     |
+| DELETE | `/api/admin/pages/{id}`           | Delete page                     |
+| POST   | `/api/admin/pages/{id}/publish`   | Publish page                    |
+| POST   | `/api/admin/pages/{id}/unpublish` | Unpublish page                  |
+
 ---
 
 ## Data Model Approach
@@ -199,6 +211,7 @@ Pages are stored with their content as structured JSONB, enabling flexible secti
 | 1.2a1.1 | Pin NuGet versions + lock file             | Done        |
 | 1.2a1.2 | Pin Docker images + locked NuGet restore   | Done        |
 | 1.2a2   | Normalized auth tables + login endpoint    | Done        |
+| 1.3a    | Admin Pages CRUD endpoints                 | Done        |
 | 1.x     | Backend core (auth, pages, sections, API)  | In Progress |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |

@@ -62,3 +62,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - POST `/api/auth/login` endpoint for real user authentication
 - Dev seed now creates admin user with Admin role claim (admin@yigisoft.local / Admin123!)
 - Production signing key enforcement (fail fast if dev placeholder or < 32 chars)
+- Admin Pages CRUD endpoints (Phase 1.3a)
+  - GET `/api/admin/pages` - list all pages (ordered by UpdatedAt desc)
+  - GET `/api/admin/pages/{id}` - get page by ID
+  - POST `/api/admin/pages` - create page with validation
+  - PUT `/api/admin/pages/{id}` - update page
+  - DELETE `/api/admin/pages/{id}` - hard delete page
+  - POST `/api/admin/pages/{id}/publish` - publish page
+  - POST `/api/admin/pages/{id}/unpublish` - unpublish page
+- PageUpsertRequest and PageAdminListItemDto DTOs
+- Slug validation: lowercase alphanumeric with hyphens (^[a-z0-9]+(?:-[a-z0-9]+)*$)
+- Sections JSON validation: must be valid JSON array
+- Slug conflict returns 409 with code "slug_conflict"

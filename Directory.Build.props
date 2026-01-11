@@ -6,7 +6,7 @@
     <!--
       Locked mode: enforces exact versions from lock file.
       Enable via environment variable for CI: set RestoreLockedMode=true
-      Or pass: dotnet restore --locked-mode
+      Or pass: dotnet restore with the locked-mode flag
     -->
     <RestoreLockedMode Condition="'$(RestoreLockedMode)' == ''">false</RestoreLockedMode>
   </PropertyGroup>
