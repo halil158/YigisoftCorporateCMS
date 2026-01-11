@@ -41,3 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GET `/api/pages/{slug}` endpoint to read published pages (Phase 1.1c)
 - POST `/api/dev/seed` endpoint to seed sample data (Development only)
 - PageDto for API responses (no direct entity exposure)
+- JWT Bearer authentication infrastructure (Phase 1.2a1)
+- JWT configuration in appsettings.json (Issuer, Audience, SigningKey)
+- POST `/api/dev/token` endpoint to generate dev JWT tokens (Development only)
+- GET `/api/auth/me` protected endpoint returning authenticated user info

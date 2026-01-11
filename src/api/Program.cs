@@ -1,4 +1,9 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using YigisoftCorporateCMS.Api.Data;
 using YigisoftCorporateCMS.Api.Dtos;
@@ -28,6 +33,29 @@ try
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseNpgsql(connectionString));
 
+    // Configure JWT Authentication
+    var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "YigisoftCorporateCMS";
+    var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "YigisoftCorporateCMS";
+    var jwtSigningKey = builder.Configuration["Jwt:SigningKey"]
+        ?? throw new InvalidOperationException("Jwt:SigningKey must be configured");
+
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtIssuer,
+                ValidAudience = jwtAudience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSigningKey))
+            };
+        });
+
+    builder.Services.AddAuthorization();
+
     var app = builder.Build();
 
     // Apply migrations in Development
@@ -53,11 +81,15 @@ try
         Log.Information("Skipping auto-migration (not in Development environment)");
     }
 
+    // Authentication & Authorization middleware
+    app.UseAuthentication();
+    app.UseAuthorization();
+
     var infoResponse = new
     {
         name = "YigisoftCorporateCMS.Api",
         version = "0.0.0",
-        phase = "1.1c"
+        phase = "1.2a1"
     };
 
     // Root-level endpoints (direct container access)
@@ -191,9 +223,62 @@ try
             Log.Information("Development data seeded successfully");
             return Results.Ok(new { ok = true, seeded = true });
         });
+
+        // POST /api/dev/token - Generate a dev JWT token
+        dev.MapPost("/token", (IConfiguration config) =>
+        {
+            Log.Information("Generating development token...");
+
+            var issuer = config["Jwt:Issuer"] ?? "YigisoftCorporateCMS";
+            var audience = config["Jwt:Audience"] ?? "YigisoftCorporateCMS";
+            var signingKey = config["Jwt:SigningKey"]
+                ?? throw new InvalidOperationException("Jwt:SigningKey must be configured");
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey));
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, "dev-admin"),
+                new Claim(JwtRegisteredClaimNames.Name, "Dev Admin"),
+                new Claim(ClaimTypes.Role, "Admin"),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: issuer,
+                audience: audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(60),
+                signingCredentials: credentials
+            );
+
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+            Log.Information("Development token generated for subject: dev-admin");
+            return Results.Ok(new { token = tokenString, expiresIn = 3600 });
+        });
     }
 
-    Log.Information("API started - phase {Phase}", "1.1c");
+    // GET /api/auth/me - Protected endpoint returning authenticated user info
+    api.MapGet("/auth/me", (ClaimsPrincipal user) =>
+    {
+        var subject = user.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+            ?? user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var name = user.FindFirst(JwtRegisteredClaimNames.Name)?.Value
+            ?? user.FindFirst(ClaimTypes.Name)?.Value;
+        var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value).ToArray();
+
+        return Results.Ok(new
+        {
+            isAuthenticated = true,
+            subject,
+            name,
+            roles
+        });
+    }).RequireAuthorization();
+
+    Log.Information("API started - phase {Phase}", "1.2a1");
 
     app.Run();
 }

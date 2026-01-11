@@ -53,7 +53,9 @@ Nginx handles all inbound traffic and routes to appropriate services:
 | GET    | `/api/info`          | API version and phase info           |
 | GET    | `/api/db-check`      | Database connectivity check          |
 | GET    | `/api/pages/{slug}`  | Get published page by slug           |
+| GET    | `/api/auth/me`       | Get authenticated user info (protected) |
 | POST   | `/api/dev/seed`      | Seed sample data (Development only)  |
+| POST   | `/api/dev/token`     | Generate JWT token (Development only)|
 
 ---
 
@@ -105,6 +107,24 @@ Pages are stored with their content as structured JSONB, enabling flexible secti
 
 ---
 
+## Authentication
+
+**JWT Bearer authentication:**
+
+| Setting         | Default Value            | Description                         |
+|-----------------|--------------------------|-------------------------------------|
+| `Jwt:Issuer`    | YigisoftCorporateCMS     | Token issuer claim                  |
+| `Jwt:Audience`  | YigisoftCorporateCMS     | Token audience claim                |
+| `Jwt:SigningKey`| (dev placeholder)        | HMAC-SHA256 signing key (min 32 chars) |
+
+**Configuration:** Settings can be overridden via environment variables (`Jwt__Issuer`, `Jwt__Audience`, `Jwt__SigningKey`).
+
+**Protected endpoints:** Use `RequireAuthorization()` in minimal API. Returns 401 Unauthorized without valid token.
+
+**Development token:** Use `POST /api/dev/token` to get a test JWT (dev-admin, Admin role, 60-min expiry).
+
+---
+
 ## Logging
 
 | Service | Destination | Notes |
@@ -130,7 +150,10 @@ Pages are stored with their content as structured JSONB, enabling flexible secti
 | 0.3a    | Uploads volume + nginx static serving      | Done        |
 | 0.3b    | Standardize uploads mount path             | Done        |
 | 1.1a    | EF Core + PostgreSQL, Pages table          | Done        |
-| 1.x     | Backend core (auth, pages, sections, API)  | Planned     |
+| 1.1b    | EF Core config refactor + Postgres port    | Done        |
+| 1.1c    | Pages read endpoint + dev seed             | Done        |
+| 1.2a1   | JWT auth infrastructure + protected endpoint| Done        |
+| 1.x     | Backend core (auth, pages, sections, API)  | In Progress |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |
 | 4.x     | Polish, testing, production readiness      | Planned     |
