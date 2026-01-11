@@ -53,3 +53,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Directory.Build.props for NuGet lock file settings
 - Dockerfile uses `--locked-mode` restore for reproducible builds
 - Docker build context changed to repo root for Central Package Management
+- Normalized auth tables with EF Core configuration (Phase 1.2a2)
+  - `users` table with email unique index
+  - `claims` table with (type, value) unique index
+  - `user_claims` junction table (many-to-many)
+  - Migration renamed from `AddAdminUsers` to `AddAuthTables` (no schema change)
+- PBKDF2-SHA256 password hashing (`src/api/Security/PasswordHasher.cs`)
+- POST `/api/auth/login` endpoint for real user authentication
+- Dev seed now creates admin user with Admin role claim (admin@yigisoft.local / Admin123!)
+- Production signing key enforcement (fail fast if dev placeholder or < 32 chars)

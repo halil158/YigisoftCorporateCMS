@@ -40,7 +40,42 @@ YigisoftCorporateCMS/
 
 ## Development
 
-> **TODO:** Development setup instructions will be added here.
+### Quick Start
+
+```bash
+# Start all services
+docker compose up -d --build
+
+# Check health
+curl http://localhost:8080/health
+```
+
+### Authentication (Dev)
+
+1. **Seed the dev admin user:**
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8080/api/dev/seed" -Method POST
+```
+
+2. **Login to get a JWT token:**
+```powershell
+$body = @{ email = "admin@yigisoft.local"; password = "Admin123!" } | ConvertTo-Json
+$response = Invoke-RestMethod -Uri "http://localhost:8080/api/auth/login" -Method POST -Body $body -ContentType "application/json"
+$token = $response.token
+```
+
+3. **Access protected endpoints:**
+```powershell
+$headers = @{ Authorization = "Bearer $token" }
+Invoke-RestMethod -Uri "http://localhost:8080/api/auth/me" -Headers $headers
+```
+
+### Local Ports
+
+| Service    | Port |
+|------------|------|
+| Nginx      | 8080 |
+| PostgreSQL | 5434 |
 
 ## License
 

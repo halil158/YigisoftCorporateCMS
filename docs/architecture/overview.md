@@ -53,6 +53,7 @@ Nginx handles all inbound traffic and routes to appropriate services:
 | GET    | `/api/info`          | API version and phase info           |
 | GET    | `/api/db-check`      | Database connectivity check          |
 | GET    | `/api/pages/{slug}`  | Get published page by slug           |
+| POST   | `/api/auth/login`    | Authenticate and get JWT token       |
 | GET    | `/api/auth/me`       | Get authenticated user info (protected) |
 | POST   | `/api/dev/seed`      | Seed sample data (Development only)  |
 | POST   | `/api/dev/token`     | Generate JWT token (Development only)|
@@ -109,7 +110,9 @@ Pages are stored with their content as structured JSONB, enabling flexible secti
 
 ## Authentication
 
-**JWT Bearer authentication:**
+**JWT Bearer authentication with normalized user/claims tables:**
+
+### JWT Settings
 
 | Setting         | Default Value            | Description                         |
 |-----------------|--------------------------|-------------------------------------|
@@ -119,9 +122,49 @@ Pages are stored with their content as structured JSONB, enabling flexible secti
 
 **Configuration:** Settings can be overridden via environment variables (`Jwt__Issuer`, `Jwt__Audience`, `Jwt__SigningKey`).
 
-**Protected endpoints:** Use `RequireAuthorization()` in minimal API. Returns 401 Unauthorized without valid token.
+**Production enforcement:** In non-Development environments, SigningKey must be at least 32 characters and NOT the dev placeholder.
 
-**Development token:** Use `POST /api/dev/token` to get a test JWT (dev-admin, Admin role, 60-min expiry).
+### Users Table Schema
+
+| Column           | Type          | Constraints                    |
+|------------------|---------------|--------------------------------|
+| id               | uuid          | PK, default gen_random_uuid() |
+| email            | text          | required                       |
+| email_normalized | text          | unique index, required         |
+| display_name     | text          | required                       |
+| password_hash    | text          | required (PBKDF2-SHA256)       |
+| is_active        | boolean       | default true                   |
+| created_at       | timestamptz   | default now()                  |
+| updated_at       | timestamptz   | default now()                  |
+
+### Claims Table Schema
+
+| Column           | Type          | Constraints                    |
+|------------------|---------------|--------------------------------|
+| id               | uuid          | PK, default gen_random_uuid() |
+| type             | text          | required                       |
+| value            | text          | required                       |
+| created_at       | timestamptz   | default now()                  |
+
+**Unique constraint:** (type, value) - ensures no duplicate claims.
+
+### User_Claims Table Schema (Junction)
+
+| Column           | Type          | Constraints                    |
+|------------------|---------------|--------------------------------|
+| user_id          | uuid          | PK (composite), FK -> users    |
+| claim_id         | uuid          | PK (composite), FK -> claims   |
+
+**Relationships:** Many-to-many between users and claims. Cascade delete on both FKs.
+
+### Auth Endpoints
+
+| Method | Endpoint          | Description                                |
+|--------|-------------------|--------------------------------------------|
+| POST   | `/api/auth/login` | Authenticate with email/password, get JWT  |
+| GET    | `/api/auth/me`    | Get authenticated user info (protected)    |
+
+**Development-only:** `POST /api/dev/token` generates a test JWT (dev-admin, Admin role, 60-min expiry).
 
 ---
 
@@ -155,6 +198,7 @@ Pages are stored with their content as structured JSONB, enabling flexible secti
 | 1.2a1   | JWT auth infrastructure + protected endpoint| Done        |
 | 1.2a1.1 | Pin NuGet versions + lock file             | Done        |
 | 1.2a1.2 | Pin Docker images + locked NuGet restore   | Done        |
+| 1.2a2   | Normalized auth tables + login endpoint    | Done        |
 | 1.x     | Backend core (auth, pages, sections, API)  | In Progress |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |
@@ -162,13 +206,12 @@ Pages are stored with their content as structured JSONB, enabling flexible secti
 
 ## Local Development Ports
 
-| Service    | Host Port | Container Port |
-|------------|-----------|----------------|
-| Nginx      | 8080      | 80             |
-| API        | 5000      | 5000           |
-| Public Web | 3000      | 3000           |
-| Admin      | 3001      | 3001           |
-| PostgreSQL | 5434      | 5432           |
+| Service    | Host Port | Notes                              |
+|------------|-----------|------------------------------------|
+| Nginx      | 8080      | Reverse proxy for all HTTP traffic |
+| PostgreSQL | 5434      | Direct DB access for dev tools     |
+
+**Note:** API, public-web, and admin are accessed through Nginx (no separate host ports).
 
 ---
 
@@ -183,3 +226,4 @@ Pages are stored with their content as structured JSONB, enabling flexible secti
 | Central Package Management        | Pinned versions in Directory.Packages.props + lock file |
 | Pinned Docker images              | Exact version tags for reproducible builds          |
 | NuGet locked-mode in Docker       | `--locked-mode` ensures CI/Docker matches lock file |
+| Normalized auth tables            | Users/claims/user_claims for flexible RBAC          |

@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -8,6 +9,7 @@ using Serilog;
 using YigisoftCorporateCMS.Api.Data;
 using YigisoftCorporateCMS.Api.Dtos;
 using YigisoftCorporateCMS.Api.Entities;
+using YigisoftCorporateCMS.Api.Security;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -34,10 +36,22 @@ try
         options.UseNpgsql(connectionString));
 
     // Configure JWT Authentication
+    const string DevPlaceholderKey = "DEVELOPMENT-ONLY-KEY-REPLACE-IN-PRODUCTION-MIN-32-CHARS";
     var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "YigisoftCorporateCMS";
     var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "YigisoftCorporateCMS";
-    var jwtSigningKey = builder.Configuration["Jwt:SigningKey"]
-        ?? throw new InvalidOperationException("Jwt:SigningKey must be configured");
+    var jwtSigningKey = builder.Configuration["Jwt:SigningKey"];
+
+    // Enforce secure signing key in non-Development environments
+    if (!builder.Environment.IsDevelopment())
+    {
+        if (string.IsNullOrEmpty(jwtSigningKey) || jwtSigningKey == DevPlaceholderKey || jwtSigningKey.Length < 32)
+        {
+            throw new InvalidOperationException(
+                "Production requires a secure Jwt:SigningKey (minimum 32 characters, not the dev placeholder)");
+        }
+    }
+
+    jwtSigningKey ??= throw new InvalidOperationException("Jwt:SigningKey must be configured");
 
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
@@ -89,7 +103,7 @@ try
     {
         name = "YigisoftCorporateCMS.Api",
         version = "0.0.0",
-        phase = "1.2a1"
+        phase = "1.2a2"
     };
 
     // Root-level endpoints (direct container access)
@@ -218,10 +232,68 @@ try
                 Log.Information("Updated existing home page");
             }
 
+            // Seed admin user
+            const string adminEmail = "admin@yigisoft.local";
+            var normalizedEmail = adminEmail.ToLowerInvariant().Trim();
+            var existingUser = await db.Users.FirstOrDefaultAsync(u => u.EmailNormalized == normalizedEmail);
+
+            if (existingUser is null)
+            {
+                existingUser = new UserEntity
+                {
+                    Email = adminEmail,
+                    EmailNormalized = normalizedEmail,
+                    DisplayName = "Dev Admin",
+                    PasswordHash = PasswordHasher.Hash("Admin123!"),
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                db.Users.Add(existingUser);
+                Log.Information("Created dev admin user: {Email}", adminEmail);
+            }
+            else
+            {
+                existingUser.DisplayName = "Dev Admin";
+                existingUser.PasswordHash = PasswordHasher.Hash("Admin123!");
+                existingUser.IsActive = true;
+                existingUser.UpdatedAt = DateTime.UtcNow;
+                Log.Information("Updated dev admin user: {Email}", adminEmail);
+            }
+
+            // Ensure Admin role claim exists
+            var adminRoleClaim = await db.Claims.FirstOrDefaultAsync(c => c.Type == "role" && c.Value == "Admin");
+            if (adminRoleClaim is null)
+            {
+                adminRoleClaim = new ClaimEntity
+                {
+                    Type = "role",
+                    Value = "Admin",
+                    CreatedAt = DateTime.UtcNow
+                };
+                db.Claims.Add(adminRoleClaim);
+                Log.Information("Created Admin role claim");
+            }
+
             await db.SaveChangesAsync();
 
+            // Link user to claim if not already linked
+            var userClaimExists = await db.UserClaims
+                .AnyAsync(uc => uc.UserId == existingUser.Id && uc.ClaimId == adminRoleClaim.Id);
+
+            if (!userClaimExists)
+            {
+                db.UserClaims.Add(new UserClaimEntity
+                {
+                    UserId = existingUser.Id,
+                    ClaimId = adminRoleClaim.Id
+                });
+                await db.SaveChangesAsync();
+                Log.Information("Linked user {Email} to Admin role", adminEmail);
+            }
+
             Log.Information("Development data seeded successfully");
-            return Results.Ok(new { ok = true, seeded = true });
+            return Results.Ok(new { ok = true, seeded = true, adminEmail });
         });
 
         // POST /api/dev/token - Generate a dev JWT token
@@ -260,6 +332,102 @@ try
         });
     }
 
+    // POST /api/auth/login - Authenticate user and issue JWT
+    api.MapPost("/auth/login", async (LoginRequest request, AppDbContext db, IConfiguration config) =>
+    {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+        {
+            return Results.BadRequest(new { error = "Email and password are required" });
+        }
+
+        var normalizedEmail = request.Email.ToLowerInvariant().Trim();
+        var user = await db.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.EmailNormalized == normalizedEmail);
+
+        if (user is null)
+        {
+            Log.Information("Login failed: user not found for {Email}", normalizedEmail);
+            return Results.Unauthorized();
+        }
+
+        if (!user.IsActive)
+        {
+            Log.Information("Login failed: user is inactive {Email}", normalizedEmail);
+            return Results.Unauthorized();
+        }
+
+        if (!PasswordHasher.Verify(request.Password, user.PasswordHash))
+        {
+            Log.Information("Login failed: invalid password for {Email}", normalizedEmail);
+            return Results.Unauthorized();
+        }
+
+        // Load user claims from junction table
+        var userClaims = await db.UserClaims
+            .AsNoTracking()
+            .Where(uc => uc.UserId == user.Id)
+            .Include(uc => uc.Claim)
+            .Select(uc => uc.Claim)
+            .ToListAsync();
+
+        // Build JWT claims
+        var jwtClaims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(JwtRegisteredClaimNames.Name, user.DisplayName),
+            new(ClaimTypes.Name, user.DisplayName),
+            new(JwtRegisteredClaimNames.Email, user.Email),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        // Add role claims and other claims
+        var roles = new List<string>();
+        foreach (var claim in userClaims)
+        {
+            if (claim.Type == "role")
+            {
+                jwtClaims.Add(new Claim(ClaimTypes.Role, claim.Value));
+                roles.Add(claim.Value);
+            }
+            else
+            {
+                jwtClaims.Add(new Claim(claim.Type, claim.Value));
+            }
+        }
+
+        var issuer = config["Jwt:Issuer"] ?? "YigisoftCorporateCMS";
+        var audience = config["Jwt:Audience"] ?? "YigisoftCorporateCMS";
+        var signingKey = config["Jwt:SigningKey"]!;
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: issuer,
+            audience: audience,
+            claims: jwtClaims,
+            expires: DateTime.UtcNow.AddMinutes(60),
+            signingCredentials: credentials
+        );
+
+        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+        Log.Information("Login successful for {Email}", user.Email);
+        return Results.Ok(new
+        {
+            token = tokenString,
+            expiresIn = 3600,
+            user = new
+            {
+                id = user.Id,
+                email = user.Email,
+                displayName = user.DisplayName,
+                roles = roles.ToArray()
+            }
+        });
+    });
+
     // GET /api/auth/me - Protected endpoint returning authenticated user info
     api.MapGet("/auth/me", (ClaimsPrincipal user) =>
     {
@@ -278,7 +446,7 @@ try
         });
     }).RequireAuthorization();
 
-    Log.Information("API started - phase {Phase}", "1.2a1");
+    Log.Information("API started - phase {Phase}", "1.2a2");
 
     app.Run();
 }

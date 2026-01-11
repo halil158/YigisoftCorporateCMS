@@ -10,6 +10,9 @@ public class AppDbContext : DbContext
     }
 
     public DbSet<PageEntity> Pages => Set<PageEntity>();
+    public DbSet<UserEntity> Users => Set<UserEntity>();
+    public DbSet<ClaimEntity> Claims => Set<ClaimEntity>();
+    public DbSet<UserClaimEntity> UserClaims => Set<UserClaimEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
