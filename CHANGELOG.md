@@ -156,3 +156,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Removed obsolete Bootstrap files (`ApiServicesBootstrap.cs`, `ApiAppBootstrap.cs`)
   - Kept `ApiLoggingBootstrap.cs` for Serilog configuration
   - No behavior changes; all endpoints and middleware function identically
+- Integration tests with Testcontainers (Phase 1.8b)
+  - New test project: `tests/api/YigisoftCorporateCMS.Api.Tests`
+  - Custom `ApiWebApplicationFactory` using PostgreSQL Testcontainer
+  - Tests for: health/info, auth (login, protected endpoints), admin pages CRUD, admin uploads
+  - GitHub Actions CI workflow (`.github/workflows/ci.yml`)
+  - Packages: xUnit, Microsoft.AspNetCore.Mvc.Testing, Testcontainers.PostgreSql

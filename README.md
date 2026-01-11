@@ -289,6 +289,24 @@ curl "http://localhost:8080/api/admin/contact-messages?processed=false&take=10" 
 | Nginx      | 8080 |
 | PostgreSQL | 5434 |
 
+## Testing
+
+Integration tests use [Testcontainers](https://testcontainers.com/) to spin up a PostgreSQL instance automatically.
+
+**Requirements:**
+- Docker must be running
+
+**Run tests:**
+```bash
+dotnet test
+```
+
+**Test coverage:**
+- Health and info endpoints
+- Authentication flow (seed, login, protected endpoints)
+- Admin pages CRUD with section validation
+- Admin uploads (upload, list, delete)
+
 ## License
 
 See [LICENSE](LICENSE) for details.

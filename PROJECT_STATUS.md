@@ -299,9 +299,18 @@ Verification note:
 
 ---
 
+### Phase 1.8b — Integration tests + CI
+- Test project: `tests/api/YigisoftCorporateCMS.Api.Tests`
+- Custom `ApiWebApplicationFactory` with PostgreSQL Testcontainer
+- Tests cover: health, info, auth, pages CRUD, uploads
+- GitHub Actions CI: `.github/workflows/ci.yml`
+- Packages added to Directory.Packages.props: xUnit, Testcontainers.PostgreSql, Microsoft.AspNetCore.Mvc.Testing
+
+---
+
 ## Current State (Verified)
 
-- `GET /api/info` returns phase: `1.8a`
+- `GET /api/info` returns phase: `1.8b`
 - `POST /api/dev/seed` works
 - `POST /api/dev/token` works (Development only)
 - `GET /api/admin/pages` works with dev token and Admin role
@@ -319,13 +328,6 @@ Verification note:
 ---
 
 ## Planned Phases (Roadmap)
-
-### Phase 1.6c — Integration tests
-Automated API testing with test containers.
-- xUnit test project with WebApplicationFactory
-- Testcontainers for PostgreSQL
-- Cover auth, pages CRUD, uploads, rate limiting
-- CI pipeline integration (GitHub Actions)
 
 ### Phase 2.0 — Admin UI scaffold (React)
 Bootstrap the admin panel with auth flow.
