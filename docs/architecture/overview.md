@@ -128,6 +128,9 @@ Section types are validated at the API layer using a registry pattern. Each sect
 | `hero` | `data.title` | `data.subtitle`, `data.imageUrl`, `data.primaryCta` (object with `text`, `url`) |
 | `features` | `data.title`, `data.items` (array, min 1) | Items: `description`, `icon` |
 | `cta` | `data.title`, `data.buttonText`, `data.buttonUrl` | — |
+| `testimonials` | `data.title`, `data.items` (array, min 1); Items: `quote`, `name` | Items: `role`, `company`, `avatarUrl` |
+| `gallery` | `data.title`, `data.items` (array, min 1); Items: `imageUrl` | Items: `alt`, `caption` |
+| `contact-form` | `data.title`, `data.recipientEmail`, `data.fields` (array, min 1); Fields: `name`, `label`, `type` | `data.description`, `data.submitText`; Fields: `required`, `placeholder` |
 
 **Validation behavior:**
 - Unknown section types return 400 with list of supported types
@@ -289,6 +292,7 @@ Built-in rate limiting using `Microsoft.AspNetCore.RateLimiting` to protect agai
 | 1.5a    | Swagger/OpenAPI (Development only)         | Done        |
 | 1.5b    | Uploads metadata persistence + management  | Done        |
 | 1.6a    | Rate limiting + real client IP behind nginx| Done        |
+| 1.6b    | Section registry expansion (testimonials, gallery, contact-form) | Done |
 | 1.x     | Backend core (auth, pages, sections, API)  | In Progress |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |

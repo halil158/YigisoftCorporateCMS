@@ -122,3 +122,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 429 response as JSON: `{ error: "RateLimited", message: "Too many requests", retryAfterSeconds: N }`
   - Forwarded headers middleware enabled to get real client IP from nginx
   - Uses built-in Microsoft.AspNetCore.RateLimiting (no external dependencies)
+- Section type registry expansion (Phase 1.6b)
+  - Added `testimonials` section: title + items with quote/name (optional: role, company, avatarUrl)
+  - Added `gallery` section: title + items with imageUrl (optional: alt, caption)
+  - Added `contact-form` section: title, recipientEmail, fields with name/label/type
+  - Contact form field types: text, email, textarea, phone
+  - Duplicate field name detection in contact-form
+  - Basic email validation (contains @ and no spaces)

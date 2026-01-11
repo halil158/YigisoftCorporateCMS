@@ -116,7 +116,10 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/pages/about-us"  # Returns 200
 
 ### Sections Validation
 
-Sections are validated against a type registry. Supported types: `hero`, `features`, `cta`.
+Sections are validated against a type registry. Supported types:
+- `hero`, `features`, `cta` — Basic page sections
+- `testimonials`, `gallery` — Content showcase sections
+- `contact-form` — Form with configurable fields (text, email, textarea, phone)
 
 ```powershell
 # Valid page with hero section

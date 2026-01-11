@@ -213,6 +213,30 @@ Real client IP behind nginx:
 
 Program.cs remains minimal (~30 lines, SOLID-friendly)
 
+### Phase 1.6b — Section registry expansion
+New section types added to the validation registry:
+
+**testimonials** section:
+- Required: `data.title`, `data.items` (array, min 1)
+- Each item requires: `quote`, `name`
+- Optional item fields: `role`, `company`, `avatarUrl`
+
+**gallery** section:
+- Required: `data.title`, `data.items` (array, min 1)
+- Each item requires: `imageUrl`
+- Optional item fields: `alt`, `caption`
+
+**contact-form** section:
+- Required: `data.title`, `data.recipientEmail`, `data.fields` (array, min 1)
+- Each field requires: `name`, `label`, `type`
+- Allowed field types: `text`, `email`, `textarea`, `phone`
+- Optional: `data.description`, `data.submitText`
+- Optional field properties: `required` (bool), `placeholder`
+- Validation: email must contain `@` and no spaces
+- Validation: field names must be unique within the form
+
+Supported section types: `hero`, `features`, `cta`, `testimonials`, `gallery`, `contact-form`
+
 Verification note:
 - If endpoints appear missing, check running version:
   - `GET /api/info` -> phase should match latest
@@ -224,7 +248,7 @@ Verification note:
 
 ## Current State (Verified)
 
-- `GET /api/info` returns phase: `1.6a`
+- `GET /api/info` returns phase: `1.6b`
 - `POST /api/dev/seed` works
 - `POST /api/dev/token` works (Development only)
 - `GET /api/admin/pages` works with dev token and Admin role
@@ -234,16 +258,11 @@ Verification note:
 - Swagger UI at `/api/swagger` works (Development only)
 - Rate limiting: spam login/uploads triggers 429 with JSON response
 - `/api/health` and `/api/info` unaffected by rate limits
+- Section validation: supports `hero`, `features`, `cta`, `testimonials`, `gallery`, `contact-form`
 
 ---
 
 ## Planned Phases (Roadmap)
-
-### Phase 1.6b — Section registry expansion
-Strengthen schema typing and add new section types.
-- Add `testimonials`, `gallery`, `contact-form` section validators
-- Typed C# models for section data (replace anonymous objects)
-- JSON Schema generation for frontend validation
 
 ### Phase 1.6c — Integration tests
 Automated API testing with test containers.
