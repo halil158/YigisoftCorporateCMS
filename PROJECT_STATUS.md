@@ -333,6 +333,15 @@ Verification note:
 - Multi-stage Docker build (node -> nginx)
 - SPA routing with nginx try_files fallback
 
+### Phase 2.1 — Admin Pages UI
+- Pages list at `/admin/pages` with table: slug, title, published, updatedAt, actions
+- Create page at `/admin/pages/new` with slug, title, sections JSON textarea
+- Edit page at `/admin/pages/:id` with metaTitle, metaDescription, slug edit warning
+- Publish/unpublish and delete actions from list and edit pages
+- AdminLayout component with sidebar navigation
+- Validation error display with detailed messages from API
+- API error handling: 401/403 redirects to login
+
 ---
 
 ## Current State (Verified)
@@ -340,6 +349,7 @@ Verification note:
 - `GET /api/info` returns phase: `1.8d`
 - Admin UI at `/admin/` redirects to `/admin/login` if not authenticated
 - Admin login with `admin@yigisoft.local` / `Admin123!` works after seeding
+- Admin pages UI at `/admin/pages` - list, create, edit, delete, publish/unpublish
 - `POST /api/dev/seed` works
 - `POST /api/dev/token` works (Development only)
 - `GET /api/admin/pages` works with dev token and Admin role
@@ -357,14 +367,6 @@ Verification note:
 ---
 
 ## Planned Phases (Roadmap)
-
-### Phase 2.1 — Admin Pages UI
-Full pages management interface.
-- Pages list with search/filter
-- Page editor with section builder
-- Drag-and-drop section reordering
-- Publish/unpublish toggle
-- Slug auto-generation from title
 
 ### Phase 2.2 — Admin Uploads UI
 Media library for file management.

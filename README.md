@@ -63,7 +63,13 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/dev/seed" -Method POST
    - Email: `admin@yigisoft.local`
    - Password: `Admin123!`
 
-**Note:** The admin app runs under the `/admin/` subpath. All routes (login, dashboard) are prefixed with `/admin/`.
+**Note:** The admin app runs under the `/admin/` subpath. All routes are prefixed with `/admin/`.
+
+**Available routes:**
+- `/admin/` - Dashboard
+- `/admin/pages` - Pages list (create, edit, delete, publish/unpublish)
+- `/admin/pages/new` - Create new page
+- `/admin/pages/:id` - Edit page
 
 ### Swagger / OpenAPI (Dev only)
 

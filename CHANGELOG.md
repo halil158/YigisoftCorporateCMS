@@ -182,3 +182,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Dashboard placeholder page with logout
   - Multi-stage Docker build (node build -> nginx serve)
   - SPA routing with nginx try_files fallback
+- Admin Pages UI (Phase 2.1)
+  - Pages list at `/admin/pages` with table: slug, title, published, updatedAt, actions
+  - Create page at `/admin/pages/new` with slug, title, sections JSON textarea
+  - Edit page at `/admin/pages/:id` with metaTitle, metaDescription, slug warning
+  - Publish/unpublish and delete actions from list and edit pages
+  - Validation error display with detailed messages
+  - AdminLayout component with sidebar navigation
+  - API error handling: 401/403 redirects to login

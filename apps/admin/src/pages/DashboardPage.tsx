@@ -1,30 +1,31 @@
-import { useAuth } from '../auth/AuthContext'
+import { Link } from 'react-router-dom'
+import { AdminLayout } from '../components/AdminLayout'
 
 export function DashboardPage() {
-  const { user, logout } = useAuth()
-
   return (
-    <div style={{ padding: 20 }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1>Admin Dashboard</h1>
-        <div>
-          <span style={{ marginRight: 16 }}>
-            {user?.displayName} ({user?.email})
-          </span>
-          <button onClick={logout} style={{ padding: '8px 16px' }}>
-            Logout
-          </button>
-        </div>
-      </header>
-      <main>
-        <p>Welcome to the YigisoftCorporateCMS Admin Panel.</p>
-        <p>This is a placeholder dashboard. Future phases will add:</p>
+    <AdminLayout>
+      <h1>Dashboard</h1>
+      <p>Welcome to the YigisoftCorporateCMS Admin Panel.</p>
+
+      <div style={{ marginTop: 24 }}>
+        <h2>Quick Actions</h2>
         <ul>
-          <li>Pages management (Phase 2.1)</li>
+          <li>
+            <Link to="/pages">Manage Pages</Link>
+          </li>
+          <li>
+            <Link to="/pages/new">Create New Page</Link>
+          </li>
+        </ul>
+      </div>
+
+      <div style={{ marginTop: 24 }}>
+        <h2>Coming Soon</h2>
+        <ul>
           <li>Media library (Phase 2.2)</li>
           <li>Contact messages (Phase 2.3)</li>
         </ul>
-      </main>
-    </div>
+      </div>
+    </AdminLayout>
   )
 }
