@@ -82,7 +82,7 @@ Nginx handles all inbound traffic and routes to appropriate services:
 | POST   | `/api/admin/uploads`                           | Upload file (multipart/form-data) |
 | GET    | `/api/admin/uploads`                           | List uploads                    |
 | DELETE | `/api/admin/uploads/{id}`                      | Delete upload                   |
-| GET    | `/api/admin/contact-messages`                  | List contact messages           |
+| GET    | `/api/admin/contact-messages`                  | List contact messages (filter: pageSlug, processed, skip, take) |
 | GET    | `/api/admin/contact-messages/{id}`             | Get contact message by ID       |
 | PATCH  | `/api/admin/contact-messages/{id}/mark-processed` | Mark message as processed    |
 
@@ -342,6 +342,7 @@ Built-in rate limiting using `Microsoft.AspNetCore.RateLimiting` to protect agai
 | 1.6a    | Rate limiting + real client IP behind nginx| Done        |
 | 1.6b    | Section registry expansion (testimonials, gallery, contact-form) | Done |
 | 1.7a    | Contact form submissions (store in DB)     | Done        |
+| 1.7b    | Contact messages admin filtering + pagination | Done     |
 | 1.x     | Backend core (auth, pages, sections, API)  | In Progress |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |

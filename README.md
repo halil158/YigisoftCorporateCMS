@@ -249,8 +249,16 @@ $submission = @{
 Invoke-RestMethod -Uri "http://localhost:8080/api/pages/contact/contact" -Method POST -Body $submission -ContentType "application/json"
 # Returns 202: { id: "guid", createdAt: "2026-01-12T10:30:00Z" }
 
-# 3. List contact messages (admin)
+# 3. List contact messages (admin) - with filtering & pagination
 Invoke-RestMethod -Uri "http://localhost:8080/api/admin/contact-messages" -Headers $headers
+# Filter by page slug
+Invoke-RestMethod -Uri "http://localhost:8080/api/admin/contact-messages?pageSlug=contact" -Headers $headers
+# Filter unprocessed messages
+Invoke-RestMethod -Uri "http://localhost:8080/api/admin/contact-messages?processed=false" -Headers $headers
+# Filter processed messages
+Invoke-RestMethod -Uri "http://localhost:8080/api/admin/contact-messages?processed=true" -Headers $headers
+# Pagination
+Invoke-RestMethod -Uri "http://localhost:8080/api/admin/contact-messages?skip=0&take=10" -Headers $headers
 
 # 4. Get message details (admin)
 Invoke-RestMethod -Uri "http://localhost:8080/api/admin/contact-messages/{id}" -Headers $headers
@@ -267,8 +275,8 @@ curl -X POST http://localhost:8080/api/pages/contact/contact \
   -H "Content-Type: application/json" \
   -d '{"fields":{"email":"visitor@example.com","message":"Hello!"}}'
 
-# List messages (admin)
-curl http://localhost:8080/api/admin/contact-messages \
+# List messages (admin) - with filtering
+curl "http://localhost:8080/api/admin/contact-messages?processed=false&take=10" \
   -H "Authorization: Bearer $TOKEN"
 ```
 

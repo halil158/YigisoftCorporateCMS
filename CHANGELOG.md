@@ -139,3 +139,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - GET `/api/admin/contact-messages` - list messages (ordered by created_at desc)
   - GET `/api/admin/contact-messages/{id}` - get message with full fields JSON
   - PATCH `/api/admin/contact-messages/{id}/mark-processed` - mark message as processed
+- Contact messages admin filtering (Phase 1.7b)
+  - GET `/api/admin/contact-messages` now supports filtering & pagination:
+    - `pageSlug` (string) - filter by page slug
+    - `processed` (bool) - filter by processed status (true = has processedAt, false = no processedAt)
+    - `skip` (int, default 0) - pagination offset
+    - `take` (int, default 50, max 200) - pagination limit
+  - Uses AsNoTracking for better performance

@@ -11,15 +11,36 @@ public static class AdminContactMessagesEndpoints
 {
     public static IEndpointRouteBuilder MapAdminContactMessagesEndpoints(this IEndpointRouteBuilder admin)
     {
-        // GET /api/admin/contact-messages - List contact messages
+        // GET /api/admin/contact-messages - List contact messages with filtering & pagination
         admin.MapGet("/contact-messages", async (
             AppDbContext db,
+            string? pageSlug,
+            bool? processed,
+            int? skip,
             int? take) =>
         {
+            var offset = Math.Max(skip ?? 0, 0);
             var limit = Math.Clamp(take ?? 50, 1, 200);
 
-            var messages = await db.ContactMessages
+            var query = db.ContactMessages.AsNoTracking().AsQueryable();
+
+            // Filter by pageSlug
+            if (!string.IsNullOrWhiteSpace(pageSlug))
+            {
+                query = query.Where(m => m.PageSlug == pageSlug);
+            }
+
+            // Filter by processed status
+            if (processed.HasValue)
+            {
+                query = processed.Value
+                    ? query.Where(m => m.ProcessedAt != null)
+                    : query.Where(m => m.ProcessedAt == null);
+            }
+
+            var messages = await query
                 .OrderByDescending(m => m.CreatedAt)
+                .Skip(offset)
                 .Take(limit)
                 .Select(m => new
                 {

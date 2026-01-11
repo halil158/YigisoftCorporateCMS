@@ -256,6 +256,17 @@ Public endpoint and database storage for contact form submissions.
 - `GET /api/admin/contact-messages/{id}` - get message with full fields JSON
 - `PATCH /api/admin/contact-messages/{id}/mark-processed` - mark message as processed
 
+### Phase 1.7b — Contact messages admin filtering
+Enhanced admin contact messages endpoint with filtering and pagination.
+
+**Query parameters for GET `/api/admin/contact-messages`:**
+- `pageSlug` (string) - filter by page slug
+- `processed` (bool) - filter by processed status (true = has processedAt, false = no processedAt)
+- `skip` (int, default 0, min 0) - pagination offset
+- `take` (int, default 50, clamp 1..200) - pagination limit
+
+Uses AsNoTracking for improved read performance.
+
 Verification note:
 - If endpoints appear missing, check running version:
   - `GET /api/info` -> phase should match latest
@@ -267,7 +278,7 @@ Verification note:
 
 ## Current State (Verified)
 
-- `GET /api/info` returns phase: `1.7a`
+- `GET /api/info` returns phase: `1.7b`
 - `POST /api/dev/seed` works
 - `POST /api/dev/token` works (Development only)
 - `GET /api/admin/pages` works with dev token and Admin role
@@ -279,7 +290,7 @@ Verification note:
 - `/api/health` and `/api/info` unaffected by rate limits
 - Section validation: supports `hero`, `features`, `cta`, `testimonials`, `gallery`, `contact-form`
 - `POST /api/pages/{slug}/contact` - public contact form submission
-- `GET /api/admin/contact-messages` - list contact messages
+- `GET /api/admin/contact-messages` - list with filtering (pageSlug, processed, skip, take)
 - `PATCH /api/admin/contact-messages/{id}/mark-processed` - mark as processed
 
 ---
