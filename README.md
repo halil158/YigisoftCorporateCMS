@@ -152,21 +152,35 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/admin/pages" -Method POST -Bod
 
 ### Uploads
 
-Upload files via the admin API (requires Admin role):
+Upload and manage files via the admin API (requires Admin role):
 
 ```powershell
 # Upload an image
 $headers = @{ Authorization = "Bearer $($response.token)" }
 $filePath = "C:\path\to\image.png"
-Invoke-RestMethod -Uri "http://localhost:8080/api/admin/uploads" -Method POST -Headers $headers -Form @{ file = Get-Item $filePath }
-# Returns 201: { url: "/uploads/2026/01/abc123.png", fileName: "abc123.png", contentType: "image/png", size: 12345 }
+$upload = Invoke-RestMethod -Uri "http://localhost:8080/api/admin/uploads" -Method POST -Headers $headers -Form @{ file = Get-Item $filePath }
+# Returns 201: { id: "guid", url: "/uploads/2026/01/abc123.png", fileName: "abc123.png", originalFileName: "image.png", contentType: "image/png", size: 12345 }
+
+# List uploads
+Invoke-RestMethod -Uri "http://localhost:8080/api/admin/uploads?take=10" -Headers $headers
+
+# Delete an upload
+Invoke-RestMethod -Uri "http://localhost:8080/api/admin/uploads/$($upload.id)" -Method DELETE -Headers $headers
 ```
 
 ```bash
-# Using curl
+# Using curl - upload
 curl -X POST http://localhost:8080/api/admin/uploads \
   -H "Authorization: Bearer $TOKEN" \
   -F "file=@./image.png"
+
+# Using curl - list uploads
+curl http://localhost:8080/api/admin/uploads \
+  -H "Authorization: Bearer $TOKEN"
+
+# Using curl - delete upload
+curl -X DELETE http://localhost:8080/api/admin/uploads/{id} \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 Allowed file types: `.png`, `.jpg`, `.jpeg`, `.webp`, `.svg`, `.pdf` (max 10 MB).

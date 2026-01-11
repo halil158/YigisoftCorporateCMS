@@ -182,6 +182,16 @@ Build fix:
 - Added Swashbuckle.AspNetCore 7.2.0
 - Not exposed in Production environment
 
+### Phase 1.5b — Uploads metadata and management
+Schema:
+- `uploads` table with FK to `users`
+- Columns: id, storage_path, url, file_name, original_file_name, content_type, size, created_at, uploaded_by_user_id
+
+Endpoints:
+- POST `/api/admin/uploads` - now returns `id` and persists to DB
+- GET `/api/admin/uploads?take=N` - list uploads (default 50, max 200)
+- DELETE `/api/admin/uploads/{id}` - delete DB record + file from disk
+
 Verification note:
 - If endpoints appear missing, check running version:
   - `GET /api/info` -> phase should match latest
@@ -193,11 +203,13 @@ Verification note:
 
 ## Current State (Verified)
 
-- `GET /api/info` returns phase: `1.5a`
+- `GET /api/info` returns phase: `1.5b`
 - `POST /api/dev/seed` works
 - `POST /api/dev/token` works (Development only)
 - `GET /api/admin/pages` works with dev token and Admin role
 - `POST /api/admin/uploads` works with dev token and Admin role
+- `GET /api/admin/uploads` works with dev token and Admin role
+- `DELETE /api/admin/uploads/{id}` works with dev token and Admin role
 - Swagger UI at `/api/swagger` works (Development only)
 
 ---

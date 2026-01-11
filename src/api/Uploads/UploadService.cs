@@ -57,13 +57,16 @@ public sealed class UploadService : IUploadService
             await using var stream = new FileStream(fullPath, FileMode.Create);
             await file.CopyToAsync(stream, cancellationToken);
 
-            var publicUrl = $"{_options.PublicBaseUrl}/{relativePath}/{fileName}";
+            var storagePath = $"{relativePath}/{fileName}";
+            var publicUrl = $"{_options.PublicBaseUrl}/{storagePath}";
 
             Log.Information("File uploaded: {FilePath} ({Size} bytes)", publicUrl, file.Length);
 
             return UploadOperationResult.Success(new UploadResult(
                 Url: publicUrl,
                 FileName: fileName,
+                OriginalFileName: file.FileName,
+                StoragePath: storagePath,
                 ContentType: file.ContentType,
                 Size: file.Length
             ));

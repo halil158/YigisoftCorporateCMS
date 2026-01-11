@@ -6,6 +6,8 @@ namespace YigisoftCorporateCMS.Api.Uploads;
 public sealed record UploadResult(
     string Url,
     string FileName,
+    string OriginalFileName,
+    string StoragePath,
     string ContentType,
     long Size
 );

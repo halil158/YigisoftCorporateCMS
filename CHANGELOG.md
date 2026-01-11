@@ -105,3 +105,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - JWT Bearer security scheme for "Authorize" button
   - API metadata: title, version, description
   - Added Swashbuckle.AspNetCore 7.2.0
+- Uploads metadata persistence and management (Phase 1.5b)
+  - `uploads` table: id, storage_path, url, file_name, original_file_name, content_type, size, created_at, uploaded_by_user_id
+  - POST `/api/admin/uploads` now returns `id` and saves metadata to DB
+  - GET `/api/admin/uploads` - list uploads (optional `take` param, default 50, max 200)
+  - DELETE `/api/admin/uploads/{id}` - delete upload (DB record + file from disk)

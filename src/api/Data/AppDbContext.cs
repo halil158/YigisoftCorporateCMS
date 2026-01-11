@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<UserEntity> Users => Set<UserEntity>();
     public DbSet<ClaimEntity> Claims => Set<ClaimEntity>();
     public DbSet<UserClaimEntity> UserClaims => Set<UserClaimEntity>();
+    public DbSet<UploadEntity> Uploads => Set<UploadEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
