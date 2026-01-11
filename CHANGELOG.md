@@ -45,3 +45,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - JWT configuration in appsettings.json (Issuer, Audience, SigningKey)
 - POST `/api/dev/token` endpoint to generate dev JWT tokens (Development only)
 - GET `/api/auth/me` protected endpoint returning authenticated user info
+- Central Package Management with pinned NuGet versions (Phase 1.2a1.1)
+- Directory.Packages.props at repo root for version centralization
+- NuGet lock file (packages.lock.json) for reproducible builds
