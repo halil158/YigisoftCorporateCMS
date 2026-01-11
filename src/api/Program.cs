@@ -106,7 +106,7 @@ try
     {
         name = "YigisoftCorporateCMS.Api",
         version = "0.0.0",
-        phase = "1.3b"
+        phase = "1.4a"
     };
 
     // Root-level endpoints (direct container access)
@@ -182,8 +182,7 @@ try
                 "data": {
                   "title": "Welcome to YigisoftCorporateCMS",
                   "subtitle": "A modern, section-based content management system",
-                  "ctaText": "Get Started",
-                  "ctaLink": "/admin"
+                  "primaryCta": { "text": "Get Started", "url": "/admin" }
                 }
               },
               {
@@ -202,7 +201,7 @@ try
                 "data": {
                   "title": "Ready to get started?",
                   "buttonText": "Contact Us",
-                  "buttonLink": "/contact"
+                  "buttonUrl": "/contact"
                 }
               }
             ]
@@ -693,7 +692,79 @@ try
         return Results.Ok(new { id = page.Id, slug = page.Slug, isPublished = false });
     });
 
-    Log.Information("API started - phase {Phase}", "1.3b");
+    // Upload configuration constants
+    const long MaxFileSizeBytes = 10 * 1024 * 1024; // 10 MB
+    var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ".png", ".jpg", ".jpeg", ".webp", ".svg", ".pdf"
+    };
+
+    // POST /api/admin/uploads - Upload a file
+    admin.MapPost("/uploads", async (IFormFile? file) =>
+    {
+        var errors = new List<string>();
+
+        // Validate file is provided
+        if (file is null || file.Length == 0)
+        {
+            errors.Add("File is required and must not be empty");
+            return Results.BadRequest(new { error = "ValidationFailed", details = errors });
+        }
+
+        // Validate file size
+        if (file.Length > MaxFileSizeBytes)
+        {
+            errors.Add($"File size exceeds maximum allowed size of {MaxFileSizeBytes / (1024 * 1024)} MB");
+            return Results.BadRequest(new { error = "ValidationFailed", details = errors });
+        }
+
+        // Validate file extension
+        var extension = Path.GetExtension(file.FileName)?.ToLowerInvariant() ?? string.Empty;
+        if (string.IsNullOrEmpty(extension) || !allowedExtensions.Contains(extension))
+        {
+            var allowed = string.Join(", ", allowedExtensions.Order());
+            errors.Add($"File type '{extension}' is not allowed. Allowed types: {allowed}");
+            return Results.BadRequest(new { error = "ValidationFailed", details = errors });
+        }
+
+        try
+        {
+            // Generate safe filename and path
+            var now = DateTime.UtcNow;
+            var directory = $"/uploads/{now:yyyy}/{now:MM}";
+            var fileName = $"{Guid.NewGuid()}{extension}";
+            var filePath = Path.Combine(directory, fileName);
+
+            // Ensure directory exists
+            Directory.CreateDirectory(directory);
+
+            // Save file
+            await using var stream = new FileStream(Path.Combine(directory, fileName), FileMode.Create);
+            await file.CopyToAsync(stream);
+
+            var publicUrl = $"/uploads/{now:yyyy}/{now:MM}/{fileName}";
+
+            Log.Information("File uploaded: {FilePath} ({Size} bytes)", publicUrl, file.Length);
+
+            return Results.Created(publicUrl, new
+            {
+                url = publicUrl,
+                fileName,
+                contentType = file.ContentType,
+                size = file.Length
+            });
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to upload file");
+            return Results.Problem(
+                detail: "An error occurred while uploading the file",
+                statusCode: 500
+            );
+        }
+    }).DisableAntiforgery();
+
+    Log.Information("API started - phase {Phase}", "1.4a");
 
     app.Run();
 }

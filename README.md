@@ -141,6 +141,27 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/admin/pages" -Method POST -Bod
 # Returns 400: { error: "ValidationFailed", details: ["sections[0].data.buttonText is required", "sections[0].data.buttonUrl is required"] }
 ```
 
+### Uploads
+
+Upload files via the admin API (requires Admin role):
+
+```powershell
+# Upload an image
+$headers = @{ Authorization = "Bearer $($response.token)" }
+$filePath = "C:\path\to\image.png"
+Invoke-RestMethod -Uri "http://localhost:8080/api/admin/uploads" -Method POST -Headers $headers -Form @{ file = Get-Item $filePath }
+# Returns 201: { url: "/uploads/2026/01/abc123.png", fileName: "abc123.png", contentType: "image/png", size: 12345 }
+```
+
+```bash
+# Using curl
+curl -X POST http://localhost:8080/api/admin/uploads \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "file=@./image.png"
+```
+
+Allowed file types: `.png`, `.jpg`, `.jpeg`, `.webp`, `.svg`, `.pdf` (max 10 MB).
+
 ### Local Ports
 
 | Service    | Port |

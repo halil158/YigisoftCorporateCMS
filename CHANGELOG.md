@@ -83,3 +83,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Unknown section types return 400 with list of supported types
   - Validation errors include detailed paths: `sections[0].data.title is required`
   - Error format: `{ error: "ValidationFailed", details: [...] }`
+- Admin uploads API endpoint (Phase 1.4a)
+  - POST `/api/admin/uploads` - upload files via multipart/form-data
+  - Saves files to `/uploads/{yyyy}/{MM}/{guid}.{ext}`
+  - Allowed extensions: .png, .jpg, .jpeg, .webp, .svg, .pdf
+  - Max file size: 10 MB
+  - Returns 201 with `{ url, fileName, contentType, size }`
+  - Nginx serves `/uploads/*` directly with cache headers
+- Fixed dev seed sections JSON to match section schemas (1.3b consistency)
+  - Hero: replaced `ctaText`/`ctaLink` with `primaryCta: { text, url }`
+  - CTA: replaced `buttonLink` with `buttonUrl`

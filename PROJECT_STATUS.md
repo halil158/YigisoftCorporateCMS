@@ -147,6 +147,26 @@ Build fix:
 - slug uniqueness returns 409 conflict
 - Serilog logs for create/update/delete/publish
 
+### Phase 1.3b — Sections schema validation (registry)
+- Registry-based validation for section types: hero, features, cta
+- Each section must have `type` (string) and `data` (object)
+- Hero requires `data.title`; optional: `subtitle`, `imageUrl`, `primaryCta`
+- Features requires `data.title`, `data.items` (array, min 1); items require `title`
+- CTA requires `data.title`, `data.buttonText`, `data.buttonUrl`
+- Unknown section types return 400 with list of supported types
+- Validation errors include detailed paths: `sections[0].data.title is required`
+- Error format: `{ error: "ValidationFailed", details: [...] }`
+
+### Phase 1.4a — Admin uploads API
+- `POST /api/admin/uploads` (Admin role required)
+- Accepts multipart/form-data with `file` field
+- Saves to `/uploads/{yyyy}/{MM}/{guid}.{ext}`
+- Allowed extensions: .png, .jpg, .jpeg, .webp, .svg, .pdf
+- Max file size: 10 MB
+- Returns 201 with `{ url, fileName, contentType, size }`
+- Nginx serves `/uploads/*` directly with cache headers
+- Fixed dev seed sections JSON to match section schemas (1.3b consistency)
+
 Verification note:
 - If endpoints appear missing, check running version:
   - `GET /api/info` -> phase should match latest
@@ -158,39 +178,17 @@ Verification note:
 
 ## Current State (Verified)
 
-- `GET /api/info` returns phase: `1.3a`
+- `GET /api/info` returns phase: `1.4a`
 - `POST /api/dev/seed` works
 - `POST /api/dev/token` works (Development only)
 - `GET /api/admin/pages` works with dev token and Admin role
-
----
-
-## Next Planned Phase
-
-### Phase 1.3b — Sections schema validation (registry)
-Goal:
-- Current validation only checks “sections is JSON array”.
-- Add registry-based validation per section type.
-
-Planned initial section types:
-- `hero` (requires `data.title`)
-- `features` (requires `data.items[]` and each item requires `title`)
-- `cta` (requires `data.text`)
-
-Rules:
-- Unknown section type => 400
-- Missing required fields => 400 with indexed detail messages
-- Apply validation on admin create/update endpoints
-
-Docs:
-- Update `docs/architecture/overview.md`, `README.md`, `CHANGELOG.md`
+- `POST /api/admin/uploads` works with dev token and Admin role
 
 ---
 
 ## Phase Backlog (Future Ideas)
 
-- Admin uploads API (multipart) -> save to `/uploads/...` (Admin-only)
-- Sections “type registry” expansion and stronger schema typing
+- Sections "type registry" expansion and stronger schema typing
 - Admin UI (React) consuming `/api/admin/*`
 - Audit logs (who changed what)
 - Rate limiting / basic security hardening

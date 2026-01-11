@@ -69,6 +69,7 @@ Nginx handles all inbound traffic and routes to appropriate services:
 | DELETE | `/api/admin/pages/{id}`           | Delete page                     |
 | POST   | `/api/admin/pages/{id}/publish`   | Publish page                    |
 | POST   | `/api/admin/pages/{id}/unpublish` | Unpublish page                  |
+| POST   | `/api/admin/uploads`              | Upload file (multipart/form-data) |
 
 ---
 
@@ -130,10 +131,25 @@ Section types are validated at the API layer using a registry pattern. Each sect
 
 ## Uploads Handling
 
-1. **Upload flow:** Admin panel → API → saves to shared volume
-2. **Storage:** `_data/uploads/` on host, mounted at `/uploads` in both API and Nginx containers
-3. **Serving:** Nginx directly serves `/uploads/*` for performance (with 7-day cache headers)
-4. **Path format:** `/uploads/{year}/{month}/{filename}`
+1. **Upload endpoint:** `POST /api/admin/uploads` (Admin role required)
+2. **Upload flow:** Admin panel → API → saves to shared volume → returns public URL
+3. **Storage:** `_data/uploads/` on host, mounted at `/uploads` in both API and Nginx containers
+4. **Serving:** Nginx directly serves `/uploads/*` for performance (with 7-day cache headers)
+5. **Path format:** `/uploads/{yyyy}/{MM}/{guid}.{ext}`
+
+**Upload constraints:**
+- Max file size: 10 MB
+- Allowed extensions: `.png`, `.jpg`, `.jpeg`, `.webp`, `.svg`, `.pdf`
+
+**Response (201 Created):**
+```json
+{
+  "url": "/uploads/2026/01/a1b2c3d4-5678-90ab-cdef-1234567890ab.png",
+  "fileName": "a1b2c3d4-5678-90ab-cdef-1234567890ab.png",
+  "contentType": "image/png",
+  "size": 12345
+}
+```
 
 **Note:** Create `_data/uploads/` manually before first run (folder is gitignored).
 
@@ -232,6 +248,7 @@ Section types are validated at the API layer using a registry pattern. Each sect
 | 1.2a2   | Normalized auth tables + login endpoint    | Done        |
 | 1.3a    | Admin Pages CRUD endpoints                 | Done        |
 | 1.3b    | Sections schema validation (type registry) | Done        |
+| 1.4a    | Admin uploads API (multipart)              | Done        |
 | 1.x     | Backend core (auth, pages, sections, API)  | In Progress |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |
