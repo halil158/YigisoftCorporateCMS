@@ -110,3 +110,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - POST `/api/admin/uploads` now returns `id` and saves metadata to DB
   - GET `/api/admin/uploads` - list uploads (optional `take` param, default 50, max 200)
   - DELETE `/api/admin/uploads/{id}` - delete upload (DB record + file from disk)
+- Documentation improvements for PowerShell 5.1 compatibility (Phase 1.6a)
+  - README Uploads section now includes PS7+ and PS5.1 compatible examples
+  - Added `curl.exe` examples for Windows PowerShell 5.1 (which lacks `-Form` parameter)
+  - Added inline test.png generation snippet (base64 1x1 PNG) for easy testing
+  - Bash/Linux examples reorganized for clarity
+  - Verified Program.cs remains minimal (~30 lines, SOLID-friendly)

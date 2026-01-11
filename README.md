@@ -152,14 +152,25 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/admin/pages" -Method POST -Bod
 
 ### Uploads
 
-Upload and manage files via the admin API (requires Admin role):
+Upload and manage files via the admin API (requires Admin role).
+
+#### Generate a test image (PowerShell)
+
+Create a minimal valid 1x1 red PNG for testing (works in PS 5.1 and PS 7+):
 
 ```powershell
-# Upload an image
+# Base64 of a 1x1 red PNG (67 bytes)
+$png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=="
+[IO.File]::WriteAllBytes("$PWD\test.png", [Convert]::FromBase64String($png))
+```
+
+#### PowerShell 7+ (using -Form)
+
+```powershell
+# Upload an image (PS7+ only - uses -Form)
 $headers = @{ Authorization = "Bearer $($response.token)" }
-$filePath = "C:\path\to\image.png"
-$upload = Invoke-RestMethod -Uri "http://localhost:8080/api/admin/uploads" -Method POST -Headers $headers -Form @{ file = Get-Item $filePath }
-# Returns 201: { id: "guid", url: "/uploads/2026/01/abc123.png", fileName: "abc123.png", originalFileName: "image.png", contentType: "image/png", size: 12345 }
+$upload = Invoke-RestMethod -Uri "http://localhost:8080/api/admin/uploads" -Method POST -Headers $headers -Form @{ file = Get-Item "test.png" }
+# Returns 201: { id: "guid", url: "/uploads/2026/01/abc123.png", ... }
 
 # List uploads
 Invoke-RestMethod -Uri "http://localhost:8080/api/admin/uploads?take=10" -Headers $headers
@@ -168,18 +179,44 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/admin/uploads?take=10" -Header
 Invoke-RestMethod -Uri "http://localhost:8080/api/admin/uploads/$($upload.id)" -Method DELETE -Headers $headers
 ```
 
+#### Windows PowerShell 5.1 (using curl.exe)
+
+```powershell
+# Upload an image (PS 5.1 compatible - uses curl.exe)
+$token = $response.token
+$upload = curl.exe -s -X POST "http://localhost:8080/api/admin/uploads" `
+  -H "Authorization: Bearer $token" `
+  -F "file=@test.png" | ConvertFrom-Json
+$upload
+# Returns: { id: "guid", url: "/uploads/2026/01/abc123.png", ... }
+
+# List uploads
+curl.exe -s "http://localhost:8080/api/admin/uploads?take=10" `
+  -H "Authorization: Bearer $token" | ConvertFrom-Json
+
+# Delete an upload
+curl.exe -s -X DELETE "http://localhost:8080/api/admin/uploads/$($upload.id)" `
+  -H "Authorization: Bearer $token"
+
+# Verify file is accessible via nginx
+curl.exe -s -o NUL -w "%{http_code}" "http://localhost:8080$($upload.url)"
+# Returns: 200
+```
+
+#### Bash / Linux
+
 ```bash
-# Using curl - upload
+# Upload
 curl -X POST http://localhost:8080/api/admin/uploads \
   -H "Authorization: Bearer $TOKEN" \
   -F "file=@./image.png"
 
-# Using curl - list uploads
+# List uploads
 curl http://localhost:8080/api/admin/uploads \
   -H "Authorization: Bearer $TOKEN"
 
-# Using curl - delete upload
-curl -X DELETE http://localhost:8080/api/admin/uploads/{id} \
+# Delete upload
+curl -X DELETE "http://localhost:8080/api/admin/uploads/{id}" \
   -H "Authorization: Bearer $TOKEN"
 ```
 

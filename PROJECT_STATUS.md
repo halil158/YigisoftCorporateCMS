@@ -192,6 +192,15 @@ Endpoints:
 - GET `/api/admin/uploads?take=N` - list uploads (default 50, max 200)
 - DELETE `/api/admin/uploads/{id}` - delete DB record + file from disk
 
+### Phase 1.6a — Documentation & SOLID verification
+- README Uploads section improved:
+  - PS7+ examples using `-Form` parameter
+  - PS5.1 examples using `curl.exe` (Windows PowerShell 5.1 lacks `-Form`)
+  - Inline test.png generation (base64 1x1 PNG)
+  - Bash/Linux examples reorganized
+- Verified Program.cs remains minimal (~30 lines, SOLID-friendly)
+- No code changes to API behavior
+
 Verification note:
 - If endpoints appear missing, check running version:
   - `GET /api/info` -> phase should match latest
@@ -203,11 +212,11 @@ Verification note:
 
 ## Current State (Verified)
 
-- `GET /api/info` returns phase: `1.5b`
+- `GET /api/info` returns phase: `1.6a`
 - `POST /api/dev/seed` works
 - `POST /api/dev/token` works (Development only)
 - `GET /api/admin/pages` works with dev token and Admin role
-- `POST /api/admin/uploads` works with dev token and Admin role
+- `POST /api/admin/uploads` works with dev token and Admin role (PS5.1 via curl.exe, PS7+ via -Form)
 - `GET /api/admin/uploads` works with dev token and Admin role
 - `DELETE /api/admin/uploads/{id}` works with dev token and Admin role
 - Swagger UI at `/api/swagger` works (Development only)
