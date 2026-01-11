@@ -1,20 +1,18 @@
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using YigisoftCorporateCMS.Api.Data;
-using YigisoftCorporateCMS.Api.Extensions;
 
-namespace YigisoftCorporateCMS.Api.Bootstrap;
+namespace YigisoftCorporateCMS.Api.Extensions;
 
 /// <summary>
-/// Configures the application pipeline (middleware, endpoints).
+/// Extension methods for WebApplication to configure the pipeline.
 /// </summary>
-public static class ApiAppBootstrap
+public static class WebApplicationExtensions
 {
     /// <summary>
-    /// Configures the application pipeline.
+    /// Configures the application middleware pipeline.
     /// </summary>
-    public static WebApplication ConfigurePipeline(this WebApplication app)
+    public static WebApplication UseApiPipeline(this WebApplication app)
     {
         // Apply migrations in Development
         ApplyMigrationsIfDevelopment(app);
@@ -45,9 +43,6 @@ public static class ApiAppBootstrap
         // Authentication & Authorization
         app.UseAuthentication();
         app.UseAuthorization();
-
-        // Map all endpoints
-        app.MapApiEndpoints();
 
         return app;
     }

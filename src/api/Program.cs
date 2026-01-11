@@ -1,5 +1,6 @@
 using Serilog;
 using YigisoftCorporateCMS.Api.Bootstrap;
+using YigisoftCorporateCMS.Api.Extensions;
 
 // Configure Serilog
 ApiLoggingBootstrap.ConfigureSerilog();
@@ -9,13 +10,16 @@ try
     var builder = WebApplication.CreateBuilder(args);
     builder.Host.UseSerilog();
 
-    // Register services
-    builder.AddApiServices();
+    // Register all services
+    builder.Services.AddApiServices(builder.Configuration, builder.Environment);
 
     var app = builder.Build();
 
-    // Configure pipeline
-    app.ConfigurePipeline();
+    // Configure middleware pipeline
+    app.UseApiPipeline();
+
+    // Map all endpoints
+    app.MapApiEndpoints();
 
     app.Run();
 }

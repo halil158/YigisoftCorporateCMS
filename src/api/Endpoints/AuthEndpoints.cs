@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
-using YigisoftCorporateCMS.Api.Bootstrap;
+using YigisoftCorporateCMS.Api.Extensions;
 using YigisoftCorporateCMS.Api.Data;
 using YigisoftCorporateCMS.Api.Dtos;
 using YigisoftCorporateCMS.Api.Security;
@@ -113,7 +113,7 @@ public static class AuthEndpoints
                     roles = roles.ToArray()
                 }
             });
-        }).RequireRateLimiting(ApiServicesBootstrap.LoginRateLimitPolicy);
+        }).RequireRateLimiting(ServiceCollectionExtensions.LoginRateLimitPolicy);
 
         // GET /api/auth/me - Protected endpoint returning authenticated user info
         api.MapGet("/auth/me", (ClaimsPrincipal user) =>

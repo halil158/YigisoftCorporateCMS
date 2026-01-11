@@ -12,7 +12,7 @@ public static class InfoEndpoints
     {
         name = "YigisoftCorporateCMS.Api",
         version = "0.0.0",
-        phase = "1.7b"
+        phase = "1.8a"
     };
 
     public static IEndpointRouteBuilder MapInfoEndpoints(this IEndpointRouteBuilder app)

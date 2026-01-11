@@ -2,7 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using YigisoftCorporateCMS.Api.Bootstrap;
+using YigisoftCorporateCMS.Api.Extensions;
 using YigisoftCorporateCMS.Api.Data;
 using YigisoftCorporateCMS.Api.Dtos;
 using YigisoftCorporateCMS.Api.Entities;
@@ -108,7 +108,7 @@ public static class PublicPagesEndpoints
             Log.Information("Contact message saved: {Id} for page {Slug}", entity.Id, slug);
 
             return Results.Accepted(value: new { id = entity.Id, createdAt = entity.CreatedAt });
-        }).RequireRateLimiting(ApiServicesBootstrap.ContactSubmitRateLimitPolicy);
+        }).RequireRateLimiting(ServiceCollectionExtensions.ContactSubmitRateLimitPolicy);
 
         return api;
     }

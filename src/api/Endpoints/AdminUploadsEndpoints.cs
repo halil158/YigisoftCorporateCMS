@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Serilog;
-using YigisoftCorporateCMS.Api.Bootstrap;
+using YigisoftCorporateCMS.Api.Extensions;
 using YigisoftCorporateCMS.Api.Data;
 using YigisoftCorporateCMS.Api.Entities;
 using YigisoftCorporateCMS.Api.Uploads;
@@ -69,7 +69,7 @@ public static class AdminUploadsEndpoints
 
             return Results.BadRequest(new { error = "ValidationFailed", details = result.Errors });
         }).DisableAntiforgery()
-          .RequireRateLimiting(ApiServicesBootstrap.UploadRateLimitPolicy);
+          .RequireRateLimiting(ServiceCollectionExtensions.UploadRateLimitPolicy);
 
         // GET /api/admin/uploads - List uploads
         admin.MapGet("/uploads", async (

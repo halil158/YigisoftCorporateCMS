@@ -343,6 +343,7 @@ Built-in rate limiting using `Microsoft.AspNetCore.RateLimiting` to protect agai
 | 1.6b    | Section registry expansion (testimonials, gallery, contact-form) | Done |
 | 1.7a    | Contact form submissions (store in DB)     | Done        |
 | 1.7b    | Contact messages admin filtering + pagination | Done     |
+| 1.8a    | Composition root refactor (SOLID)          | Done        |
 | 1.x     | Backend core (auth, pages, sections, API)  | In Progress |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |

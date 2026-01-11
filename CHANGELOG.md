@@ -146,3 +146,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `skip` (int, default 0) - pagination offset
     - `take` (int, default 50, max 200) - pagination limit
   - Uses AsNoTracking for better performance
+- Composition root refactor (Phase 1.8a)
+  - Program.cs reduced to thin composition root (~33 lines)
+  - Service registrations moved to `ServiceCollectionExtensions.cs`:
+    - `AddApiServices()` orchestrator with smaller focused methods
+    - `AddDatabase()`, `AddApiAuthentication()`, `AddApiRateLimiting()`, `AddUploads()`, `AddSwaggerDocumentation()`
+  - Pipeline configuration moved to `WebApplicationExtensions.cs`:
+    - `UseApiPipeline()` handles migrations, forwarded headers, swagger, rate limiter, auth
+  - Removed obsolete Bootstrap files (`ApiServicesBootstrap.cs`, `ApiAppBootstrap.cs`)
+  - Kept `ApiLoggingBootstrap.cs` for Serilog configuration
+  - No behavior changes; all endpoints and middleware function identically

@@ -267,6 +267,29 @@ Enhanced admin contact messages endpoint with filtering and pagination.
 
 Uses AsNoTracking for improved read performance.
 
+### Phase 1.8a — Composition root refactor (SOLID)
+Program.cs reduced to thin composition root (~33 lines).
+
+**Service registrations refactored to `ServiceCollectionExtensions.cs`:**
+- `AddApiServices()` - orchestrator method
+- `AddDatabase()` - EF Core with PostgreSQL
+- `AddApiAuthentication()` - JWT Bearer auth
+- `AddApiRateLimiting()` - Rate limiting policies
+- `AddUploads()` - Upload service configuration
+- `AddSwaggerDocumentation()` - Swagger/OpenAPI (dev only)
+
+**Pipeline configuration refactored to `WebApplicationExtensions.cs`:**
+- `UseApiPipeline()` - Migrations, forwarded headers, swagger, rate limiter, auth
+
+**Removed obsolete files:**
+- `Bootstrap/ApiServicesBootstrap.cs`
+- `Bootstrap/ApiAppBootstrap.cs`
+
+**Kept:**
+- `Bootstrap/ApiLoggingBootstrap.cs` - Serilog configuration
+
+No behavior changes; all endpoints and middleware function identically.
+
 Verification note:
 - If endpoints appear missing, check running version:
   - `GET /api/info` -> phase should match latest
@@ -278,7 +301,7 @@ Verification note:
 
 ## Current State (Verified)
 
-- `GET /api/info` returns phase: `1.7b`
+- `GET /api/info` returns phase: `1.8a`
 - `POST /api/dev/seed` works
 - `POST /api/dev/token` works (Development only)
 - `GET /api/admin/pages` works with dev token and Admin role
