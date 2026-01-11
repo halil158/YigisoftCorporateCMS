@@ -14,6 +14,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { path: '/', label: 'Dashboard' },
     { path: '/pages', label: 'Pages' },
     { path: '/media', label: 'Media Library' },
+    { path: '/contact-messages', label: 'Contact Messages' },
   ]
 
   return (

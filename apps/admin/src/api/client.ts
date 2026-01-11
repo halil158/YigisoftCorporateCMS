@@ -187,3 +187,50 @@ export const uploadsApi = {
       method: 'DELETE',
     }),
 }
+
+// Contact Messages API types
+export interface ContactMessageListItem {
+  id: string
+  pageSlug: string
+  recipientEmail: string
+  createdAt: string
+  processedAt: string | null
+}
+
+export interface ContactMessageDetail {
+  id: string
+  pageSlug: string
+  recipientEmail: string
+  fields: Record<string, unknown>
+  createdAt: string
+  ip: string | null
+  userAgent: string | null
+  processedAt: string | null
+}
+
+export interface ContactMessagesListParams {
+  pageSlug?: string
+  processed?: boolean
+  skip?: number
+  take?: number
+}
+
+export const contactMessagesApi = {
+  list: (params: ContactMessagesListParams = {}) => {
+    const searchParams = new URLSearchParams()
+    if (params.pageSlug) searchParams.set('pageSlug', params.pageSlug)
+    if (params.processed !== undefined) searchParams.set('processed', String(params.processed))
+    if (params.skip !== undefined) searchParams.set('skip', String(params.skip))
+    if (params.take !== undefined) searchParams.set('take', String(params.take))
+    const query = searchParams.toString()
+    return apiRequest<ContactMessageListItem[]>(`/admin/contact-messages${query ? `?${query}` : ''}`)
+  },
+
+  get: (id: string) =>
+    apiRequest<ContactMessageDetail>(`/admin/contact-messages/${id}`),
+
+  markProcessed: (id: string) =>
+    apiRequest<ContactMessageDetail>(`/admin/contact-messages/${id}/mark-processed`, {
+      method: 'PATCH',
+    }),
+}

@@ -6,6 +6,8 @@ import { PagesListPage } from './pages/PagesListPage'
 import { PageCreatePage } from './pages/PageCreatePage'
 import { PageEditPage } from './pages/PageEditPage'
 import { MediaLibraryPage } from './pages/MediaLibraryPage'
+import { ContactMessagesListPage } from './pages/ContactMessagesListPage'
+import { ContactMessageDetailPage } from './pages/ContactMessageDetailPage'
 
 function App() {
   return (
@@ -48,6 +50,22 @@ function App() {
         element={
           <ProtectedRoute>
             <MediaLibraryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/contact-messages"
+        element={
+          <ProtectedRoute>
+            <ContactMessagesListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/contact-messages/:id"
+        element={
+          <ProtectedRoute>
+            <ContactMessageDetailPage />
           </ProtectedRoute>
         }
       />

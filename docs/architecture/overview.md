@@ -350,7 +350,7 @@ Built-in rate limiting using `Microsoft.AspNetCore.RateLimiting` to protect agai
 | 2.0     | Admin UI scaffold (React + Vite + TS)      | Done        |
 | 2.1     | Admin Pages UI (list, create, edit)        | Done        |
 | 2.2     | Admin Media Library (uploads UI)           | Done        |
-| 2.x     | Admin panel (contact messages)             | In Progress |
+| 2.3     | Admin Contact Messages UI                  | Done        |
 | 3.x     | Public web (rendering, SEO)                | Planned     |
 | 4.x     | Polish, testing, production readiness      | Planned     |
 

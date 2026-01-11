@@ -71,6 +71,7 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/dev/seed" -Method POST
 - `/admin/pages/new` - Create new page
 - `/admin/pages/:id` - Edit page
 - `/admin/media` - Media library (upload, list, copy URL, delete)
+- `/admin/contact-messages` - Contact messages (list, view, mark processed)
 
 **Uploads:**
 - Uploaded files are served at `/uploads/*` via nginx

@@ -352,6 +352,15 @@ Verification note:
 - Uploads served at `/uploads/*` via nginx
 - Fix: nginx `client_max_body_size 12m` for `/api/` (was 1 MB default, caused 413 errors)
 
+### Phase 2.3 — Admin Contact Messages UI
+- Contact messages list at `/admin/contact-messages` with filtering and pagination
+- Filter by status (All, Unprocessed, Processed) and page slug
+- Pagination with configurable page size (20/50/100), Prev/Next navigation
+- Contact message detail view at `/admin/contact-messages/:id`
+- View submitted fields as pretty-printed JSON
+- Mark as processed action updates processedAt
+- Error handling: API errors displayed, 401/403 redirects to login
+
 ---
 
 ## Current State (Verified)
@@ -361,6 +370,7 @@ Verification note:
 - Admin login with `admin@yigisoft.local` / `Admin123!` works after seeding
 - Admin pages UI at `/admin/pages` - list, create, edit, delete, publish/unpublish
 - Admin media library at `/admin/media` - upload, list, copy URL, delete
+- Admin contact messages at `/admin/contact-messages` - list, filter, view, mark processed
 - `POST /api/dev/seed` works
 - `POST /api/dev/token` works (Development only)
 - `GET /api/admin/pages` works with dev token and Admin role
@@ -378,12 +388,6 @@ Verification note:
 ---
 
 ## Planned Phases (Roadmap)
-
-### Phase 2.3 — Admin Contact Messages UI
-Contact message management.
-- List contact messages with filtering
-- Mark as processed
-- View message details
 
 ### Phase 3.0 — Public Web scaffold
 Visitor-facing website foundation.

@@ -19,13 +19,9 @@ export function DashboardPage() {
           <li>
             <Link to="/media">Media Library</Link>
           </li>
-        </ul>
-      </div>
-
-      <div style={{ marginTop: 24 }}>
-        <h2>Coming Soon</h2>
-        <ul>
-          <li>Contact messages (Phase 2.3)</li>
+          <li>
+            <Link to="/contact-messages">Contact Messages</Link>
+          </li>
         </ul>
       </div>
     </AdminLayout>

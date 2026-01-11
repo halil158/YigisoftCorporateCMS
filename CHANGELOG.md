@@ -199,5 +199,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Delete with confirmation removes file and database record
   - Allowed files: PNG, JPG, JPEG, WebP, SVG, PDF (max 10 MB)
 
+- Admin Contact Messages UI (Phase 2.3)
+  - Contact messages list at `/admin/contact-messages` with filtering and pagination
+  - Filter by status (All, Unprocessed, Processed) and page slug
+  - Pagination with configurable page size (20/50/100)
+  - Contact message detail view at `/admin/contact-messages/:id`
+  - View submitted fields as pretty-printed JSON
+  - Mark as processed action updates processedAt
+  - Sidebar navigation updated with Contact Messages link
+
 ### Fixed
 - nginx `client_max_body_size` set to 12m for `/api/` to allow uploads up to 10 MB (was defaulting to 1 MB, causing 413 errors)
