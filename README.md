@@ -301,11 +301,30 @@ Integration tests use [Testcontainers](https://testcontainers.com/) to spin up a
 dotnet test
 ```
 
-**Test coverage:**
+**Run tests with code coverage:**
+```bash
+# Collect coverage
+dotnet test --collect:"XPlat Code Coverage" --results-directory ./TestResults
+
+# Generate HTML report (requires ReportGenerator)
+dotnet tool install --global dotnet-reportgenerator-globaltool
+reportgenerator -reports:"TestResults/**/coverage.cobertura.xml" -targetdir:"coverage-report" -reporttypes:"Html"
+
+# Open coverage-report/index.html in browser
+```
+
+**Test coverage areas:**
 - Health and info endpoints
 - Authentication flow (seed, login, protected endpoints)
 - Admin pages CRUD with section validation
 - Admin uploads (upload, list, delete)
+
+## CI
+
+GitHub Actions runs on push and pull request to `main`:
+- NuGet package caching for faster builds
+- Build and test with code coverage collection
+- Coverage report uploaded as workflow artifact (downloadable from Actions tab)
 
 ## License
 

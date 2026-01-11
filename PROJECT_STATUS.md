@@ -306,11 +306,19 @@ Verification note:
 - GitHub Actions CI: `.github/workflows/ci.yml`
 - Packages added to Directory.Packages.props: xUnit, Testcontainers.PostgreSql, Microsoft.AspNetCore.Mvc.Testing
 
+### Phase 1.8c — CI Quality Gate
+- NuGet package caching with `actions/cache@v4` for faster CI builds
+- Cache key includes OS, Directory.Packages.props, packages.lock.json, *.csproj
+- Code coverage collection using XPlat Code Coverage (coverlet)
+- ReportGenerator for HTML/Cobertura/TextSummary coverage reports
+- Coverage report uploaded as CI artifact (30-day retention)
+- Coverage summary displayed in CI logs
+
 ---
 
 ## Current State (Verified)
 
-- `GET /api/info` returns phase: `1.8b`
+- `GET /api/info` returns phase: `1.8c`
 - `POST /api/dev/seed` works
 - `POST /api/dev/token` works (Development only)
 - `GET /api/admin/pages` works with dev token and Admin role

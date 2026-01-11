@@ -162,3 +162,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Tests for: health/info, auth (login, protected endpoints), admin pages CRUD, admin uploads
   - GitHub Actions CI workflow (`.github/workflows/ci.yml`)
   - Packages: xUnit, Microsoft.AspNetCore.Mvc.Testing, Testcontainers.PostgreSql
+- CI quality gate improvements (Phase 1.8c)
+  - NuGet package caching with `actions/cache@v4` for faster CI builds
+  - Cache key includes OS, Directory.Packages.props, packages.lock.json, and *.csproj files
+  - Code coverage collection using XPlat Code Coverage (coverlet)
+  - ReportGenerator for HTML coverage reports
+  - Coverage report uploaded as CI artifact (30-day retention)
+  - Coverage summary displayed in CI logs
