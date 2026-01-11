@@ -237,9 +237,66 @@ Verification note:
 
 ---
 
+## Planned Phases (Roadmap)
+
+### Phase 1.6b — Section registry expansion
+Strengthen schema typing and add new section types.
+- Add `testimonials`, `gallery`, `contact-form` section validators
+- Typed C# models for section data (replace anonymous objects)
+- JSON Schema generation for frontend validation
+
+### Phase 1.6c — Integration tests
+Automated API testing with test containers.
+- xUnit test project with WebApplicationFactory
+- Testcontainers for PostgreSQL
+- Cover auth, pages CRUD, uploads, rate limiting
+- CI pipeline integration (GitHub Actions)
+
+### Phase 2.0 — Admin UI scaffold (React)
+Bootstrap the admin panel with auth flow.
+- Vite + React + TypeScript setup
+- React Router for navigation
+- Login page + JWT token storage
+- Protected route wrapper
+- Basic layout (sidebar, header, content area)
+
+### Phase 2.1 — Admin Pages UI
+Full pages management interface.
+- Pages list with search/filter
+- Page editor with section builder
+- Drag-and-drop section reordering
+- Publish/unpublish toggle
+- Slug auto-generation from title
+
+### Phase 2.2 — Admin Uploads UI
+Media library for file management.
+- Upload dropzone with progress
+- Grid/list view of uploads
+- Delete with confirmation
+- Copy URL to clipboard
+- Image preview modal
+
+### Phase 3.0 — Public Web scaffold
+Visitor-facing website foundation.
+- Vite + React + TypeScript setup
+- Fetch pages from API by slug
+- Section renderer component registry
+- 404 page handling
+
+### Phase 3.1 — SEO + routing + caching
+Production-ready public site.
+- React Helmet for meta tags
+- Server-side rendering or static generation
+- nginx cache headers for pages
+- Sitemap.xml generation
+- robots.txt configuration
+
+---
+
 ## Phase Backlog (Future Ideas)
 
-- Sections "type registry" expansion and stronger schema typing
-- Admin UI (React) consuming `/api/admin/*`
 - Audit logs (who changed what)
 - Additional security hardening (CORS, CSRF, etc.)
+- Multi-language support (i18n)
+- Page versioning / revision history
+- Scheduled publishing
