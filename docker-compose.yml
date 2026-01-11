@@ -1,6 +1,6 @@
 services:
   nginx:
-    image: nginx:alpine
+    image: nginx:1.28.1-alpine
     container_name: yigisoft-nginx
     ports:
       - "8080:80"
@@ -14,7 +14,9 @@ services:
     restart: unless-stopped
 
   api:
-    build: ./src/api
+    build:
+      context: .
+      dockerfile: src/api/Dockerfile
     container_name: yigisoft-api
     environment:
       ASPNETCORE_ENVIRONMENT: Development
@@ -29,21 +31,21 @@ services:
     restart: unless-stopped
 
   public-web:
-    image: nginx:alpine
+    image: nginx:1.28.1-alpine
     container_name: yigisoft-public-web
     volumes:
       - ./apps/public-web/_placeholder:/usr/share/nginx/html:ro
     restart: unless-stopped
 
   admin:
-    image: nginx:alpine
+    image: nginx:1.28.1-alpine
     container_name: yigisoft-admin
     volumes:
       - ./apps/admin/_placeholder:/usr/share/nginx/html:ro
     restart: unless-stopped
 
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16.11-alpine
     container_name: yigisoft-postgres
     ports:
       - "${POSTGRES_HOST_PORT:-5434}:5432"

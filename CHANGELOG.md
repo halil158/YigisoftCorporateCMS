@@ -48,3 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Central Package Management with pinned NuGet versions (Phase 1.2a1.1)
 - Directory.Packages.props at repo root for version centralization
 - NuGet lock file (packages.lock.json) for reproducible builds
+- Pinned Docker images to exact versions (Phase 1.2a1.2)
+  - nginx:1.28.1-alpine, postgres:16.11-alpine, .NET 10.0-alpine
+- Directory.Build.props for NuGet lock file settings
+- Dockerfile uses `--locked-mode` restore for reproducible builds
+- Docker build context changed to repo root for Central Package Management

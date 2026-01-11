@@ -154,6 +154,7 @@ Pages are stored with their content as structured JSONB, enabling flexible secti
 | 1.1c    | Pages read endpoint + dev seed             | Done        |
 | 1.2a1   | JWT auth infrastructure + protected endpoint| Done        |
 | 1.2a1.1 | Pin NuGet versions + lock file             | Done        |
+| 1.2a1.2 | Pin Docker images + locked NuGet restore   | Done        |
 | 1.x     | Backend core (auth, pages, sections, API)  | In Progress |
 | 2.x     | Admin panel (section builder, media)       | Planned     |
 | 3.x     | Public web (rendering, SEO)                | Planned     |
@@ -180,3 +181,5 @@ Pages are stored with their content as structured JSONB, enabling flexible secti
 | Customer-per-stack                | Data isolation, simple scaling model                |
 | Nginx for uploads                 | Offloads static serving from API                    |
 | Central Package Management        | Pinned versions in Directory.Packages.props + lock file |
+| Pinned Docker images              | Exact version tags for reproducible builds          |
+| NuGet locked-mode in Docker       | `--locked-mode` ensures CI/Docker matches lock file |

@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <!-- Always generate/use packages.lock.json -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+
+    <!--
+      Locked mode: enforces exact versions from lock file.
+      Enable via environment variable for CI: set RestoreLockedMode=true
+      Or pass: dotnet restore --locked-mode
+    -->
+    <RestoreLockedMode Condition="'$(RestoreLockedMode)' == ''">false</RestoreLockedMode>
+  </PropertyGroup>
+</Project>

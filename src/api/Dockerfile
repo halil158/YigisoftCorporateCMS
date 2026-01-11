@@ -1,15 +1,19 @@
 # Build stage
-FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
 WORKDIR /src
 
-COPY ["YigisoftCorporateCMS.Api.csproj", "./"]
-RUN dotnet restore
+# Copy Central Package Management and project files for layer caching
+COPY ["Directory.Packages.props", "./"]
+COPY ["src/api/YigisoftCorporateCMS.Api.csproj", "./src/api/"]
+COPY ["src/api/packages.lock.json", "./src/api/"]
+RUN dotnet restore src/api/YigisoftCorporateCMS.Api.csproj --locked-mode
 
-COPY . .
-RUN dotnet publish -c Release -o /app/publish
+# Copy source and publish
+COPY ["src/api/", "./src/api/"]
+RUN dotnet publish src/api/YigisoftCorporateCMS.Api.csproj -c Release -o /app/publish --no-restore
 
 # Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
 WORKDIR /app
 
 EXPOSE 5000
