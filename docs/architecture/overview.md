@@ -45,6 +45,16 @@ Nginx handles all inbound traffic and routes to appropriate services:
 | `/api/*`       | api:5000                | Backend API endpoints                |
 | `/uploads/*`   | Static volume           | User-uploaded media files            |
 
+### API Endpoints
+
+| Method | Endpoint             | Description                          |
+|--------|----------------------|--------------------------------------|
+| GET    | `/api/health`        | Health check                         |
+| GET    | `/api/info`          | API version and phase info           |
+| GET    | `/api/db-check`      | Database connectivity check          |
+| GET    | `/api/pages/{slug}`  | Get published page by slug           |
+| POST   | `/api/dev/seed`      | Seed sample data (Development only)  |
+
 ---
 
 ## Data Model Approach

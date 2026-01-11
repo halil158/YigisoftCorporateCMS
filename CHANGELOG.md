@@ -38,3 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed migrations execution in Docker with ASPNETCORE_ENVIRONMENT=Development (Phase 1.1b3)
 - pgcrypto extension now created in InitialCreate migration before pages table
 - Improved migration logging with environment name and error handling
+- GET `/api/pages/{slug}` endpoint to read published pages (Phase 1.1c)
+- POST `/api/dev/seed` endpoint to seed sample data (Development only)
+- PageDto for API responses (no direct entity exposure)

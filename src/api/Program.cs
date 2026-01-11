@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using YigisoftCorporateCMS.Api.Data;
+using YigisoftCorporateCMS.Api.Dtos;
+using YigisoftCorporateCMS.Api.Entities;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -55,7 +57,7 @@ try
     {
         name = "YigisoftCorporateCMS.Api",
         version = "0.0.0",
-        phase = "1.1b3"
+        phase = "1.1c"
     };
 
     // Root-level endpoints (direct container access)
@@ -81,7 +83,117 @@ try
         }
     });
 
-    Log.Information("API started - phase {Phase}", "1.1b3");
+    // GET /api/pages/{slug} - Read published page by slug
+    api.MapGet("/pages/{slug}", async (string slug, AppDbContext db) =>
+    {
+        Log.Information("Fetching page by slug: {Slug}", slug);
+
+        var page = await db.Pages
+            .AsNoTracking()
+            .Where(p => p.Slug == slug && p.IsPublished)
+            .FirstOrDefaultAsync();
+
+        if (page is null)
+        {
+            Log.Information("Page not found or not published: {Slug}", slug);
+            return Results.NotFound(new { error = "Page not found" });
+        }
+
+        var dto = new PageDto(
+            page.Id,
+            page.Slug,
+            page.Title,
+            page.MetaTitle,
+            page.MetaDescription,
+            page.Sections,
+            page.IsPublished,
+            page.CreatedAt,
+            page.UpdatedAt
+        );
+
+        return Results.Ok(dto);
+    });
+
+    // Development-only endpoints
+    if (app.Environment.IsDevelopment())
+    {
+        var dev = api.MapGroup("/dev");
+
+        // POST /api/dev/seed - Seed sample data
+        dev.MapPost("/seed", async (AppDbContext db) =>
+        {
+            Log.Information("Seeding development data...");
+
+            var existingPage = await db.Pages.FirstOrDefaultAsync(p => p.Slug == "home");
+
+            var sectionsJson = """
+            [
+              {
+                "type": "hero",
+                "data": {
+                  "title": "Welcome to YigisoftCorporateCMS",
+                  "subtitle": "A modern, section-based content management system",
+                  "ctaText": "Get Started",
+                  "ctaLink": "/admin"
+                }
+              },
+              {
+                "type": "features",
+                "data": {
+                  "title": "Features",
+                  "items": [
+                    { "icon": "blocks", "title": "Section Builder", "description": "Compose pages from reusable blocks" },
+                    { "icon": "zap", "title": "Fast Performance", "description": "Optimized for speed with JSONB storage" },
+                    { "icon": "shield", "title": "Secure", "description": "Built with security best practices" }
+                  ]
+                }
+              },
+              {
+                "type": "cta",
+                "data": {
+                  "title": "Ready to get started?",
+                  "buttonText": "Contact Us",
+                  "buttonLink": "/contact"
+                }
+              }
+            ]
+            """;
+
+            if (existingPage is null)
+            {
+                var page = new PageEntity
+                {
+                    Slug = "home",
+                    Title = "Home",
+                    MetaTitle = "Home | YigisoftCorporateCMS",
+                    MetaDescription = "Welcome to our corporate website powered by YigisoftCorporateCMS",
+                    Sections = sectionsJson,
+                    IsPublished = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                db.Pages.Add(page);
+                Log.Information("Created new home page");
+            }
+            else
+            {
+                existingPage.Title = "Home";
+                existingPage.MetaTitle = "Home | YigisoftCorporateCMS";
+                existingPage.MetaDescription = "Welcome to our corporate website powered by YigisoftCorporateCMS";
+                existingPage.Sections = sectionsJson;
+                existingPage.IsPublished = true;
+                existingPage.UpdatedAt = DateTime.UtcNow;
+                Log.Information("Updated existing home page");
+            }
+
+            await db.SaveChangesAsync();
+
+            Log.Information("Development data seeded successfully");
+            return Results.Ok(new { ok = true, seeded = true });
+        });
+    }
+
+    Log.Information("API started - phase {Phase}", "1.1c");
 
     app.Run();
 }
