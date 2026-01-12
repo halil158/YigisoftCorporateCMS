@@ -54,6 +54,11 @@ curl http://localhost:8080/health
 
 The admin panel is accessible at http://localhost:8080/admin/
 
+**Features:**
+- Built with React + Vite + TypeScript + Tailwind CSS
+- Dark mode with toggle in topbar (persists to localStorage, respects system preference)
+- Modern layout: fixed sidebar navigation, responsive design
+
 1. **Seed the dev admin user** (if not already done):
 ```powershell
 Invoke-RestMethod -Uri "http://localhost:8080/api/dev/seed" -Method POST

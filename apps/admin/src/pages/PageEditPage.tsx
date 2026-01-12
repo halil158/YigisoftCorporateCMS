@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { pagesApi, PageDetail } from '../api/client'
 import { AdminLayout } from '../components/AdminLayout'
 import { ApiErrorDisplay } from '../components/ApiErrorDisplay'
+import { Button, Input, TextArea, Card } from '../components/ui'
 
 export function PageEditPage() {
   const { id } = useParams<{ id: string }>()
@@ -97,159 +98,129 @@ export function PageEditPage() {
 
   if (isLoading) {
     return (
-      <AdminLayout>
-        <p>Loading...</p>
+      <AdminLayout title="Edit Page">
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+          Loading...
+        </div>
       </AdminLayout>
     )
   }
 
   if (!page && !isLoading) {
     return (
-      <AdminLayout>
+      <AdminLayout title="Edit Page">
         <ApiErrorDisplay error={error} />
-        <p>Page not found.</p>
-        <Link to="/pages">Back to Pages</Link>
+        <Card>
+          <p className="text-gray-600 dark:text-gray-400">Page not found.</p>
+          <Link
+            to="/pages"
+            className="text-primary-600 hover:text-primary-800 dark:text-primary-400 mt-4 inline-block"
+          >
+            Back to Pages
+          </Link>
+        </Card>
       </AdminLayout>
     )
   }
 
   return (
-    <AdminLayout>
-      <div style={{ marginBottom: 20 }}>
-        <Link to="/pages">&larr; Back to Pages</Link>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h1 style={{ margin: 0 }}>Edit Page</h1>
-        <button
-          onClick={handleTogglePublish}
-          style={{
-            padding: '8px 16px',
-            background: page?.isPublished ? '#cc6600' : '#00cc66',
-            color: 'white',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          {page?.isPublished ? 'Unpublish' : 'Publish'}
-        </button>
-      </div>
-
-      <ApiErrorDisplay error={error} />
-
-      <form onSubmit={handleSubmit} style={{ maxWidth: 600 }}>
-        <div style={{ marginBottom: 16 }}>
-          <label htmlFor="slug" style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
-            Slug *
-          </label>
-          <input
-            id="slug"
-            type="text"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            required
-            placeholder="my-page-slug"
-            style={{ width: '100%', padding: 8, boxSizing: 'border-box' }}
-          />
-          <small style={{ color: '#666' }}>
-            Warning: Changing the slug will break existing links to this page
-          </small>
+    <AdminLayout title="Edit Page">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <Link
+            to="/pages"
+            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Pages
+          </Link>
+          <Button
+            variant={page?.isPublished ? 'secondary' : 'success'}
+            onClick={handleTogglePublish}
+          >
+            {page?.isPublished ? 'Unpublish' : 'Publish'}
+          </Button>
         </div>
 
-        <div style={{ marginBottom: 16 }}>
-          <label htmlFor="title" style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
-            Title *
-          </label>
-          <input
-            id="title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            placeholder="My Page Title"
-            style={{ width: '100%', padding: 8, boxSizing: 'border-box' }}
-          />
-        </div>
+        <ApiErrorDisplay error={error} />
 
-        <div style={{ marginBottom: 16 }}>
-          <label htmlFor="metaTitle" style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
-            Meta Title
-          </label>
-          <input
-            id="metaTitle"
-            type="text"
-            value={metaTitle}
-            onChange={(e) => setMetaTitle(e.target.value)}
-            placeholder="SEO title (optional)"
-            style={{ width: '100%', padding: 8, boxSizing: 'border-box' }}
-          />
-        </div>
-
-        <div style={{ marginBottom: 16 }}>
-          <label htmlFor="metaDescription" style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
-            Meta Description
-          </label>
-          <textarea
-            id="metaDescription"
-            value={metaDescription}
-            onChange={(e) => setMetaDescription(e.target.value)}
-            placeholder="SEO description (optional)"
-            rows={3}
-            style={{ width: '100%', padding: 8, boxSizing: 'border-box' }}
-          />
-        </div>
-
-        <div style={{ marginBottom: 16 }}>
-          <label htmlFor="sections" style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
-            Sections JSON *
-          </label>
-          <textarea
-            id="sections"
-            value={sections}
-            onChange={(e) => setSections(e.target.value)}
-            required
-            rows={16}
-            style={{ width: '100%', padding: 8, boxSizing: 'border-box', fontFamily: 'monospace' }}
-          />
-          <small style={{ color: '#666' }}>
-            Supported types: hero, features, cta, testimonials, gallery, contact-form
-          </small>
-        </div>
-
-        <div style={{ marginBottom: 24 }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
-              type="checkbox"
-              checked={isPublished}
-              onChange={(e) => setIsPublished(e.target.checked)}
+        <Card>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <Input
+              id="slug"
+              label="Slug *"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              required
+              placeholder="my-page-slug"
+              hint="Warning: Changing the slug will break existing links to this page"
             />
-            Published
-          </label>
-        </div>
 
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            style={{
-              padding: '8px 16px',
-              background: '#0066cc',
-              color: 'white',
-              border: 'none',
-              cursor: isSubmitting ? 'wait' : 'pointer',
-            }}
-          >
-            {isSubmitting ? 'Saving...' : 'Save Changes'}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/pages')}
-            style={{ padding: '8px 16px', cursor: 'pointer' }}
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
+            <Input
+              id="title"
+              label="Title *"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              placeholder="My Page Title"
+            />
+
+            <Input
+              id="metaTitle"
+              label="Meta Title"
+              value={metaTitle}
+              onChange={(e) => setMetaTitle(e.target.value)}
+              placeholder="SEO title (optional)"
+            />
+
+            <TextArea
+              id="metaDescription"
+              label="Meta Description"
+              value={metaDescription}
+              onChange={(e) => setMetaDescription(e.target.value)}
+              placeholder="SEO description (optional)"
+              rows={3}
+            />
+
+            <TextArea
+              id="sections"
+              label="Sections JSON *"
+              value={sections}
+              onChange={(e) => setSections(e.target.value)}
+              required
+              rows={16}
+              className="font-mono text-sm"
+              hint="Supported types: hero, features, cta, testimonials, gallery, contact-form"
+            />
+
+            <div>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isPublished}
+                  onChange={(e) => setIsPublished(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-slate-600 dark:bg-slate-800"
+                />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Published
+                </span>
+              </label>
+            </div>
+
+            <div className="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-slate-700">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => navigate('/pages')}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </Card>
+      </div>
     </AdminLayout>
   )
 }

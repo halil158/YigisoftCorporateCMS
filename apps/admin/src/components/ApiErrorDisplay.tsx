@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
+import { Alert } from './ui'
 
 interface ApiErrorDisplayProps {
   error: unknown
@@ -28,22 +29,22 @@ export function ApiErrorDisplay({ error }: ApiErrorDisplayProps) {
   // Handle validation errors with details
   if (apiError?.error === 'ValidationFailed' && apiError?.details) {
     return (
-      <div style={{ background: '#fee', border: '1px solid #c00', padding: 12, marginBottom: 16 }}>
-        <strong>Validation Error:</strong>
-        <ul style={{ margin: '8px 0 0 0', paddingLeft: 20 }}>
+      <Alert variant="error" className="mb-4">
+        <strong className="font-semibold">Validation Error:</strong>
+        <ul className="mt-2 ml-4 list-disc space-y-1">
           {apiError.details.map((detail, i) => (
             <li key={i}>{detail}</li>
           ))}
         </ul>
-      </div>
+      </Alert>
     )
   }
 
   // Handle other errors
   const message = apiError?.message || apiError?.error || 'An error occurred'
   return (
-    <div style={{ background: '#fee', border: '1px solid #c00', padding: 12, marginBottom: 16 }}>
+    <Alert variant="error" className="mb-4">
       {message}
-    </div>
+    </Alert>
   )
 }

@@ -3,11 +3,14 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { contactMessagesApi, ContactMessageDetail } from '../api/client'
 import { AdminLayout } from '../components/AdminLayout'
 import { ApiErrorDisplay } from '../components/ApiErrorDisplay'
+import { Card, Button, Alert } from '../components/ui'
 
-function formatDate(dateStr: string | null): string {
+function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '—'
   try {
-    return new Date(dateStr).toLocaleString()
+    const date = new Date(dateStr)
+    if (isNaN(date.getTime())) return '—'
+    return date.toLocaleString()
   } catch {
     return '—'
   }
@@ -72,124 +75,123 @@ export function ContactMessageDetailPage() {
 
   if (isLoading) {
     return (
-      <AdminLayout>
-        <p>Loading...</p>
+      <AdminLayout title="Contact Message">
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+          Loading...
+        </div>
       </AdminLayout>
     )
   }
 
   if (!message && !isLoading) {
     return (
-      <AdminLayout>
+      <AdminLayout title="Contact Message">
         <ApiErrorDisplay error={error} />
-        <p>Message not found.</p>
-        <Link to="/contact-messages">Back to Contact Messages</Link>
+        <Card>
+          <p className="text-gray-600 dark:text-gray-400">Message not found.</p>
+          <Link
+            to="/contact-messages"
+            className="text-primary-600 hover:text-primary-800 dark:text-primary-400 mt-4 inline-block"
+          >
+            Back to Contact Messages
+          </Link>
+        </Card>
       </AdminLayout>
     )
   }
 
   return (
-    <AdminLayout>
-      <div style={{ marginBottom: 20 }}>
-        <Link to="/contact-messages">&larr; Back to Contact Messages</Link>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h1 style={{ margin: 0 }}>Contact Message</h1>
-        {message && !message.processedAt && (
-          <button
-            onClick={handleMarkProcessed}
-            disabled={isMarking}
-            style={{
-              padding: '8px 16px',
-              background: '#28a745',
-              color: 'white',
-              border: 'none',
-              cursor: isMarking ? 'wait' : 'pointer',
-            }}
+    <AdminLayout title="Contact Message">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <Link
+            to="/contact-messages"
+            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
           >
-            {isMarking ? 'Marking...' : 'Mark as Processed'}
-          </button>
+            <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Contact Messages
+          </Link>
+          {message && !message.processedAt && (
+            <Button
+              variant="success"
+              onClick={handleMarkProcessed}
+              disabled={isMarking}
+            >
+              {isMarking ? 'Marking...' : 'Mark as Processed'}
+            </Button>
+          )}
+        </div>
+
+        <ApiErrorDisplay error={error} />
+
+        {successMessage && (
+          <Alert variant="success">{successMessage}</Alert>
+        )}
+
+        {message && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Summary */}
+            <Card>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Summary</h2>
+              <dl className="space-y-3">
+                <div className="flex">
+                  <dt className="w-32 flex-shrink-0 text-sm font-medium text-gray-500 dark:text-gray-400">ID:</dt>
+                  <dd className="text-sm text-gray-900 dark:text-white">
+                    <code className="text-xs bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded">{message.id}</code>
+                  </dd>
+                </div>
+                <div className="flex">
+                  <dt className="w-32 flex-shrink-0 text-sm font-medium text-gray-500 dark:text-gray-400">Created:</dt>
+                  <dd className="text-sm text-gray-900 dark:text-white">{formatDate(message.createdAt)}</dd>
+                </div>
+                <div className="flex">
+                  <dt className="w-32 flex-shrink-0 text-sm font-medium text-gray-500 dark:text-gray-400">Page Slug:</dt>
+                  <dd className="text-sm text-gray-900 dark:text-white">
+                    <code className="text-xs bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded">{message.pageSlug}</code>
+                  </dd>
+                </div>
+                <div className="flex">
+                  <dt className="w-32 flex-shrink-0 text-sm font-medium text-gray-500 dark:text-gray-400">Recipient:</dt>
+                  <dd className="text-sm text-gray-900 dark:text-white">{message.recipientEmail}</dd>
+                </div>
+                <div className="flex">
+                  <dt className="w-32 flex-shrink-0 text-sm font-medium text-gray-500 dark:text-gray-400">IP:</dt>
+                  <dd className="text-sm text-gray-900 dark:text-white">{message.ip || '—'}</dd>
+                </div>
+                <div className="flex">
+                  <dt className="w-32 flex-shrink-0 text-sm font-medium text-gray-500 dark:text-gray-400">User Agent:</dt>
+                  <dd className="text-sm text-gray-900 dark:text-white break-all">{message.userAgent || '—'}</dd>
+                </div>
+                <div className="flex">
+                  <dt className="w-32 flex-shrink-0 text-sm font-medium text-gray-500 dark:text-gray-400">Processed:</dt>
+                  <dd className="text-sm">
+                    {message.processedAt ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                        {formatDate(message.processedAt)}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                        Pending
+                      </span>
+                    )}
+                  </dd>
+                </div>
+              </dl>
+            </Card>
+
+            {/* Fields */}
+            <Card>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Submitted Fields</h2>
+              <pre className="bg-gray-100 dark:bg-slate-700 p-4 rounded-lg overflow-auto text-sm font-mono text-gray-800 dark:text-gray-200">
+                {JSON.stringify(message.fields, null, 2)}
+              </pre>
+            </Card>
+          </div>
         )}
       </div>
-
-      <ApiErrorDisplay error={error} />
-
-      {successMessage && (
-        <div style={{ background: '#d4edda', border: '1px solid #28a745', padding: 12, marginBottom: 16, color: '#155724' }}>
-          {successMessage}
-        </div>
-      )}
-
-      {message && (
-        <>
-          {/* Summary */}
-          <div style={{ marginBottom: 24 }}>
-            <h2 style={{ fontSize: 18, marginBottom: 12 }}>Summary</h2>
-            <table style={{ borderCollapse: 'collapse' }}>
-              <tbody>
-                <tr>
-                  <td style={{ padding: '4px 16px 4px 0', fontWeight: 'bold' }}>ID:</td>
-                  <td style={{ padding: 4 }}>
-                    <code style={{ fontSize: 12 }}>{message.id}</code>
-                  </td>
-                </tr>
-                <tr>
-                  <td style={{ padding: '4px 16px 4px 0', fontWeight: 'bold' }}>Created:</td>
-                  <td style={{ padding: 4 }}>{formatDate(message.createdAt)}</td>
-                </tr>
-                <tr>
-                  <td style={{ padding: '4px 16px 4px 0', fontWeight: 'bold' }}>Page Slug:</td>
-                  <td style={{ padding: 4 }}>
-                    <code>{message.pageSlug}</code>
-                  </td>
-                </tr>
-                <tr>
-                  <td style={{ padding: '4px 16px 4px 0', fontWeight: 'bold' }}>Recipient Email:</td>
-                  <td style={{ padding: 4 }}>{message.recipientEmail}</td>
-                </tr>
-                <tr>
-                  <td style={{ padding: '4px 16px 4px 0', fontWeight: 'bold' }}>IP:</td>
-                  <td style={{ padding: 4 }}>{message.ip || '—'}</td>
-                </tr>
-                <tr>
-                  <td style={{ padding: '4px 16px 4px 0', fontWeight: 'bold' }}>User Agent:</td>
-                  <td style={{ padding: 4, maxWidth: 400, wordBreak: 'break-all' }}>
-                    {message.userAgent || '—'}
-                  </td>
-                </tr>
-                <tr>
-                  <td style={{ padding: '4px 16px 4px 0', fontWeight: 'bold' }}>Processed:</td>
-                  <td style={{ padding: 4 }}>
-                    {message.processedAt ? (
-                      <span style={{ color: 'green' }}>{formatDate(message.processedAt)}</span>
-                    ) : (
-                      <span style={{ color: '#cc6600' }}>Not processed</span>
-                    )}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          {/* Fields */}
-          <div>
-            <h2 style={{ fontSize: 18, marginBottom: 12 }}>Submitted Fields</h2>
-            <pre
-              style={{
-                background: '#f5f5f5',
-                padding: 16,
-                borderRadius: 4,
-                overflow: 'auto',
-                fontFamily: 'monospace',
-                fontSize: 13,
-              }}
-            >
-              {JSON.stringify(message.fields, null, 2)}
-            </pre>
-          </div>
-        </>
-      )}
     </AdminLayout>
   )
 }

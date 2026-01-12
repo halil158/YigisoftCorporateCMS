@@ -361,11 +361,45 @@ Verification note:
 - Mark as processed action updates processedAt
 - Error handling: API errors displayed, 401/403 redirects to login
 
+### Phase 2.4 — Admin UI Theme (Tailwind) + Dark Mode
+Modern UI overhaul with consistent design system.
+
+**Tailwind CSS integration:**
+- Tailwind CSS 3.4 with PostCSS/Autoprefixer
+- Custom color palette with primary/success/danger colors
+- CSS custom component classes using `@layer components`
+
+**Reusable UI components (`src/components/ui/`):**
+- Button (variants: primary, secondary, success, danger; sizes: sm, md, lg)
+- Input, Select, TextArea (with label, hint, error support)
+- Card (with padding options: default, none, sm)
+- Table, TableHead, TableBody, TableRow, TableHeader, TableCell
+- Alert (variants: success, error, info, warning)
+- ThemeToggle (sun/moon icons)
+
+**Dark mode system:**
+- `darkMode: 'class'` configuration
+- ThemeContext with React Context API
+- localStorage persistence with system preference fallback
+- Theme toggle button in topbar
+
+**Layout redesign:**
+- Fixed sidebar (240px) with navigation icons
+- Topbar with page title and action buttons
+- Light gray background with white cards
+- Consistent spacing, subtle borders, rounded corners
+
+**All admin pages restyled:**
+- LoginPage, DashboardPage, PagesListPage, PageCreatePage, PageEditPage
+- MediaLibraryPage, ContactMessagesListPage, ContactMessageDetailPage
+- Invalid dates display as "—" instead of "Invalid Date"
+
 ---
 
 ## Current State (Verified)
 
 - `GET /api/info` returns phase: `1.8d`
+- Admin UI uses Tailwind CSS with dark mode support (toggle in topbar)
 - Admin UI at `/admin/` redirects to `/admin/login` if not authenticated
 - Admin login with `admin@yigisoft.local` / `Admin123!` works after seeding
 - Admin pages UI at `/admin/pages` - list, create, edit, delete, publish/unpublish

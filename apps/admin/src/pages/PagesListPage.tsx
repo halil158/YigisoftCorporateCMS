@@ -3,6 +3,18 @@ import { Link, useNavigate } from 'react-router-dom'
 import { pagesApi, PageListItem } from '../api/client'
 import { AdminLayout } from '../components/AdminLayout'
 import { ApiErrorDisplay } from '../components/ApiErrorDisplay'
+import { Button, Card, Table, TableHead, TableBody, TableRow, TableHeader, TableCell } from '../components/ui'
+
+function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '—'
+  try {
+    const date = new Date(dateStr)
+    if (isNaN(date.getTime())) return '—'
+    return date.toLocaleString()
+  } catch {
+    return '—'
+  }
+}
 
 export function PagesListPage() {
   const [pages, setPages] = useState<PageListItem[]>([])
@@ -50,74 +62,94 @@ export function PagesListPage() {
     }
   }
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleString()
-  }
-
   return (
-    <AdminLayout>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h1 style={{ margin: 0 }}>Pages</h1>
-        <button
-          onClick={() => navigate('/pages/new')}
-          style={{ padding: '8px 16px', background: '#0066cc', color: 'white', border: 'none', cursor: 'pointer' }}
-        >
-          + New Page
-        </button>
+    <AdminLayout title="Pages">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <p className="text-gray-600 dark:text-gray-400">
+            Manage your website pages
+          </p>
+          <Button onClick={() => navigate('/pages/new')}>
+            + New Page
+          </Button>
+        </div>
+
+        <ApiErrorDisplay error={error} />
+
+        {/* Content */}
+        <Card padding="none">
+          {isLoading ? (
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+              Loading...
+            </div>
+          ) : pages.length === 0 ? (
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+              No pages yet. Create your first page!
+            </div>
+          ) : (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeader>Slug</TableHeader>
+                  <TableHeader>Title</TableHeader>
+                  <TableHeader>Published</TableHeader>
+                  <TableHeader>Updated</TableHeader>
+                  <TableHeader>Actions</TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {pages.map((page) => (
+                  <TableRow key={page.id}>
+                    <TableCell>
+                      <code className="text-sm bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded">
+                        {page.slug}
+                      </code>
+                    </TableCell>
+                    <TableCell className="font-medium text-gray-900 dark:text-white">
+                      {page.title}
+                    </TableCell>
+                    <TableCell>
+                      {page.isPublished ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                          Published
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-gray-400">
+                          Draft
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell>{formatDate(page.updatedAt)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to={`/pages/${page.id}`}
+                          className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium"
+                        >
+                          Edit
+                        </Link>
+                        <button
+                          onClick={() => handleTogglePublish(page)}
+                          className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
+                        >
+                          {page.isPublished ? 'Unpublish' : 'Publish'}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(page.id, page.slug)}
+                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </Card>
       </div>
-
-      <ApiErrorDisplay error={error} />
-
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : pages.length === 0 ? (
-        <p>No pages yet. Create your first page!</p>
-      ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #ddd', textAlign: 'left' }}>
-              <th style={{ padding: 8 }}>Slug</th>
-              <th style={{ padding: 8 }}>Title</th>
-              <th style={{ padding: 8 }}>Published</th>
-              <th style={{ padding: 8 }}>Updated</th>
-              <th style={{ padding: 8 }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pages.map((page) => (
-              <tr key={page.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: 8 }}>
-                  <code>{page.slug}</code>
-                </td>
-                <td style={{ padding: 8 }}>{page.title}</td>
-                <td style={{ padding: 8 }}>
-                  <span style={{ color: page.isPublished ? 'green' : '#999' }}>
-                    {page.isPublished ? 'Yes' : 'No'}
-                  </span>
-                </td>
-                <td style={{ padding: 8 }}>{formatDate(page.updatedAt)}</td>
-                <td style={{ padding: 8 }}>
-                  <Link to={`/pages/${page.id}`} style={{ marginRight: 8 }}>
-                    Edit
-                  </Link>
-                  <button
-                    onClick={() => handleTogglePublish(page)}
-                    style={{ marginRight: 8, padding: '4px 8px', cursor: 'pointer' }}
-                  >
-                    {page.isPublished ? 'Unpublish' : 'Publish'}
-                  </button>
-                  <button
-                    onClick={() => handleDelete(page.id, page.slug)}
-                    style={{ padding: '4px 8px', cursor: 'pointer', color: 'red' }}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
     </AdminLayout>
   )
 }

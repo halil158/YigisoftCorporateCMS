@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { uploadsApi, UploadItem } from '../api/client'
 import { AdminLayout } from '../components/AdminLayout'
 import { ApiErrorDisplay } from '../components/ApiErrorDisplay'
+import { Button, Card, Table, TableHead, TableBody, TableRow, TableHeader, TableCell } from '../components/ui'
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -10,8 +11,15 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleString()
+function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '—'
+  try {
+    const date = new Date(dateStr)
+    if (isNaN(date.getTime())) return '—'
+    return date.toLocaleString()
+  } catch {
+    return '—'
+  }
 }
 
 function getPublicUrl(url: string): string {
@@ -113,153 +121,131 @@ export function MediaLibraryPage() {
         <img
           src={url}
           alt={item.originalFileName}
-          style={{ maxWidth: 120, maxHeight: 80, objectFit: 'contain' }}
+          className="max-w-[120px] max-h-[80px] object-contain rounded"
         />
       )
     }
 
     if (item.contentType === 'application/pdf') {
       return (
-        <span
-          style={{
-            display: 'inline-block',
-            padding: '4px 8px',
-            background: '#dc3545',
-            color: 'white',
-            borderRadius: 4,
-            fontSize: 12,
-            fontWeight: 'bold',
-          }}
-        >
+        <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
           PDF
         </span>
       )
     }
 
     return (
-      <span
-        style={{
-          display: 'inline-block',
-          padding: '4px 8px',
-          background: '#6c757d',
-          color: 'white',
-          borderRadius: 4,
-          fontSize: 12,
-        }}
-      >
+      <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-gray-400">
         FILE
       </span>
     )
   }
 
   return (
-    <AdminLayout>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 20,
-        }}
-      >
-        <h1 style={{ margin: 0 }}>Media Library</h1>
-        <div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            onChange={handleFileSelect}
-            disabled={isUploading}
-            accept=".png,.jpg,.jpeg,.webp,.svg,.pdf"
-            style={{ display: 'none' }}
-            id="file-upload"
-          />
-          <label
-            htmlFor="file-upload"
-            style={{
-              padding: '8px 16px',
-              background: isUploading ? '#ccc' : '#0066cc',
-              color: 'white',
-              border: 'none',
-              cursor: isUploading ? 'wait' : 'pointer',
-              display: 'inline-block',
-            }}
-          >
-            {isUploading ? 'Uploading...' : '+ Upload File'}
-          </label>
+    <AdminLayout title="Media Library">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <p className="text-gray-600 dark:text-gray-400">
+            Allowed: PNG, JPG, JPEG, WebP, SVG, PDF (max 10 MB)
+          </p>
+          <div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              onChange={handleFileSelect}
+              disabled={isUploading}
+              accept=".png,.jpg,.jpeg,.webp,.svg,.pdf"
+              className="hidden"
+              id="file-upload"
+            />
+            <label htmlFor="file-upload">
+              <Button
+                as="span"
+                disabled={isUploading}
+                className={isUploading ? 'cursor-wait' : 'cursor-pointer'}
+              >
+                {isUploading ? 'Uploading...' : '+ Upload File'}
+              </Button>
+            </label>
+          </div>
         </div>
+
+        <ApiErrorDisplay error={error} />
+
+        {/* Content */}
+        <Card padding="none">
+          {isLoading ? (
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+              Loading...
+            </div>
+          ) : uploads.length === 0 ? (
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+              No uploads yet. Upload your first file!
+            </div>
+          ) : (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeader>Preview</TableHeader>
+                  <TableHeader>File Name</TableHeader>
+                  <TableHeader>Type</TableHeader>
+                  <TableHeader>Size</TableHeader>
+                  <TableHeader>Uploaded</TableHeader>
+                  <TableHeader>Actions</TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {uploads.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{renderPreview(item)}</TableCell>
+                    <TableCell>
+                      <span title={item.originalFileName} className="block max-w-[200px] truncate">
+                        {item.originalFileName}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <code className="text-xs bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded">
+                        {item.contentType}
+                      </code>
+                    </TableCell>
+                    <TableCell>{formatFileSize(item.size)}</TableCell>
+                    <TableCell>{formatDate(item.createdAt)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleCopyUrl(item)}
+                          className={`text-sm font-medium ${
+                            copySuccess === item.id
+                              ? 'text-green-600 dark:text-green-400'
+                              : 'text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300'
+                          }`}
+                        >
+                          {copySuccess === item.id ? 'Copied!' : 'Copy URL'}
+                        </button>
+                        <a
+                          href={getPublicUrl(item.url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
+                        >
+                          Open
+                        </a>
+                        <button
+                          onClick={() => handleDelete(item)}
+                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </Card>
       </div>
-
-      <p style={{ color: '#666', marginBottom: 16 }}>
-        Allowed: PNG, JPG, JPEG, WebP, SVG, PDF (max 10 MB)
-      </p>
-
-      <ApiErrorDisplay error={error} />
-
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : uploads.length === 0 ? (
-        <p>No uploads yet. Upload your first file!</p>
-      ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #ddd', textAlign: 'left' }}>
-              <th style={{ padding: 8 }}>Preview</th>
-              <th style={{ padding: 8 }}>File Name</th>
-              <th style={{ padding: 8 }}>Type</th>
-              <th style={{ padding: 8 }}>Size</th>
-              <th style={{ padding: 8 }}>Uploaded</th>
-              <th style={{ padding: 8 }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {uploads.map((item) => (
-              <tr key={item.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: 8 }}>{renderPreview(item)}</td>
-                <td style={{ padding: 8 }}>
-                  <span title={item.originalFileName}>
-                    {item.originalFileName.length > 30
-                      ? item.originalFileName.substring(0, 27) + '...'
-                      : item.originalFileName}
-                  </span>
-                </td>
-                <td style={{ padding: 8 }}>
-                  <code style={{ fontSize: 12 }}>{item.contentType}</code>
-                </td>
-                <td style={{ padding: 8 }}>{formatFileSize(item.size)}</td>
-                <td style={{ padding: 8 }}>{formatDate(item.createdAt)}</td>
-                <td style={{ padding: 8 }}>
-                  <button
-                    onClick={() => handleCopyUrl(item)}
-                    style={{
-                      marginRight: 8,
-                      padding: '4px 8px',
-                      cursor: 'pointer',
-                      background: copySuccess === item.id ? '#28a745' : undefined,
-                      color: copySuccess === item.id ? 'white' : undefined,
-                    }}
-                  >
-                    {copySuccess === item.id ? 'Copied!' : 'Copy URL'}
-                  </button>
-                  <a
-                    href={getPublicUrl(item.url)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ marginRight: 8 }}
-                  >
-                    Open
-                  </a>
-                  <button
-                    onClick={() => handleDelete(item)}
-                    style={{ padding: '4px 8px', cursor: 'pointer', color: 'red' }}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
     </AdminLayout>
   )
 }

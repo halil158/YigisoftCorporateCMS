@@ -3,13 +3,16 @@ import { Link, useNavigate } from 'react-router-dom'
 import { contactMessagesApi, ContactMessageListItem } from '../api/client'
 import { AdminLayout } from '../components/AdminLayout'
 import { ApiErrorDisplay } from '../components/ApiErrorDisplay'
+import { Card, Select, Input, Button, Table, TableHead, TableBody, TableRow, TableHeader, TableCell } from '../components/ui'
 
 type ProcessedFilter = 'all' | 'unprocessed' | 'processed'
 
-function formatDate(dateStr: string | null): string {
+function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '—'
   try {
-    return new Date(dateStr).toLocaleString()
+    const date = new Date(dateStr)
+    if (isNaN(date.getTime())) return '—'
+    return date.toLocaleString()
   } catch {
     return '—'
   }
@@ -90,121 +93,141 @@ export function ContactMessagesListPage() {
   }
 
   return (
-    <AdminLayout>
-      <h1 style={{ marginBottom: 20 }}>Contact Messages</h1>
+    <AdminLayout title="Contact Messages">
+      <div className="space-y-6">
+        <ApiErrorDisplay error={error} />
 
-      <ApiErrorDisplay error={error} />
+        {/* Filters */}
+        <Card>
+          <div className="flex flex-wrap gap-4 items-end">
+            <div className="w-40">
+              <Select
+                label="Status"
+                value={processedFilter}
+                onChange={(e) => {
+                  setProcessedFilter(e.target.value as ProcessedFilter)
+                  handleFilterChange()
+                }}
+              >
+                <option value="all">All</option>
+                <option value="unprocessed">Unprocessed</option>
+                <option value="processed">Processed</option>
+              </Select>
+            </div>
 
-      {/* Filters */}
-      <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <div>
-          <label style={{ display: 'block', marginBottom: 4, fontSize: 14 }}>Status</label>
-          <select
-            value={processedFilter}
-            onChange={(e) => {
-              setProcessedFilter(e.target.value as ProcessedFilter)
-              handleFilterChange()
-            }}
-            style={{ padding: '6px 12px' }}
-          >
-            <option value="all">All</option>
-            <option value="unprocessed">Unprocessed</option>
-            <option value="processed">Processed</option>
-          </select>
-        </div>
+            <div className="w-48">
+              <Input
+                label="Page Slug"
+                value={pageSlugFilter}
+                onChange={(e) => {
+                  setPageSlugFilter(e.target.value)
+                  handleFilterChange()
+                }}
+                placeholder="Filter by slug..."
+              />
+            </div>
 
-        <div>
-          <label style={{ display: 'block', marginBottom: 4, fontSize: 14 }}>Page Slug</label>
-          <input
-            type="text"
-            value={pageSlugFilter}
-            onChange={(e) => {
-              setPageSlugFilter(e.target.value)
-              handleFilterChange()
-            }}
-            placeholder="Filter by slug..."
-            style={{ padding: '6px 12px', width: 180 }}
-          />
-        </div>
-
-        <div>
-          <label style={{ display: 'block', marginBottom: 4, fontSize: 14 }}>Per Page</label>
-          <select
-            value={take}
-            onChange={(e) => {
-              setTake(Number(e.target.value))
-              setSkip(0)
-            }}
-            style={{ padding: '6px 12px' }}
-          >
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-          </select>
-        </div>
-      </div>
-
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : messages.length === 0 ? (
-        <p style={{ color: '#666' }}>No contact messages yet.</p>
-      ) : (
-        <>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #ddd', textAlign: 'left' }}>
-                <th style={{ padding: 8 }}>Created</th>
-                <th style={{ padding: 8 }}>Page Slug</th>
-                <th style={{ padding: 8 }}>Recipient Email</th>
-                <th style={{ padding: 8 }}>Processed</th>
-                <th style={{ padding: 8 }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {messages.map((msg) => (
-                <tr key={msg.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: 8 }}>{formatDate(msg.createdAt)}</td>
-                  <td style={{ padding: 8 }}>
-                    <code>{msg.pageSlug}</code>
-                  </td>
-                  <td style={{ padding: 8 }}>{msg.recipientEmail}</td>
-                  <td style={{ padding: 8 }}>
-                    {msg.processedAt ? (
-                      <span style={{ color: 'green' }}>{formatDate(msg.processedAt)}</span>
-                    ) : (
-                      <span style={{ color: '#999' }}>—</span>
-                    )}
-                  </td>
-                  <td style={{ padding: 8 }}>
-                    <Link to={`/contact-messages/${msg.id}`}>View</Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {/* Pagination */}
-          <div style={{ marginTop: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button
-              onClick={handlePrev}
-              disabled={skip === 0}
-              style={{ padding: '6px 12px', cursor: skip === 0 ? 'not-allowed' : 'pointer' }}
-            >
-              &larr; Prev
-            </button>
-            <span style={{ color: '#666' }}>
-              Showing {skip + 1} - {skip + messages.length}
-            </span>
-            <button
-              onClick={handleNext}
-              disabled={messages.length < take}
-              style={{ padding: '6px 12px', cursor: messages.length < take ? 'not-allowed' : 'pointer' }}
-            >
-              Next &rarr;
-            </button>
+            <div className="w-32">
+              <Select
+                label="Per Page"
+                value={take}
+                onChange={(e) => {
+                  setTake(Number(e.target.value))
+                  setSkip(0)
+                }}
+              >
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </Select>
+            </div>
           </div>
-        </>
-      )}
+        </Card>
+
+        {/* Content */}
+        <Card padding="none">
+          {isLoading ? (
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+              Loading...
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+              No contact messages yet.
+            </div>
+          ) : (
+            <>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableHeader>Created</TableHeader>
+                    <TableHeader>Page Slug</TableHeader>
+                    <TableHeader>Recipient Email</TableHeader>
+                    <TableHeader>Processed</TableHeader>
+                    <TableHeader>Actions</TableHeader>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {messages.map((msg) => (
+                    <TableRow key={msg.id}>
+                      <TableCell>{formatDate(msg.createdAt)}</TableCell>
+                      <TableCell>
+                        <code className="text-sm bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded">
+                          {msg.pageSlug}
+                        </code>
+                      </TableCell>
+                      <TableCell>{msg.recipientEmail}</TableCell>
+                      <TableCell>
+                        {msg.processedAt ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                            {formatDate(msg.processedAt)}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                            Pending
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Link
+                          to={`/contact-messages/${msg.id}`}
+                          className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium"
+                        >
+                          View
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              {/* Pagination */}
+              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-slate-700">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Showing {skip + 1} - {skip + messages.length}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handlePrev}
+                    disabled={skip === 0}
+                  >
+                    &larr; Prev
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleNext}
+                    disabled={messages.length < take}
+                  >
+                    Next &rarr;
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </Card>
+      </div>
     </AdminLayout>
   )
 }

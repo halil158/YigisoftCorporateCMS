@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { pagesApi } from '../api/client'
 import { AdminLayout } from '../components/AdminLayout'
 import { ApiErrorDisplay } from '../components/ApiErrorDisplay'
+import { Button, Input, TextArea, Card } from '../components/ui'
 
 const DEFAULT_SECTIONS = `[
   {
@@ -53,98 +54,78 @@ export function PageCreatePage() {
   }
 
   return (
-    <AdminLayout>
-      <div style={{ marginBottom: 20 }}>
-        <Link to="/pages">&larr; Back to Pages</Link>
-      </div>
+    <AdminLayout title="Create New Page">
+      <div className="space-y-6">
+        {/* Back link */}
+        <Link
+          to="/pages"
+          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+        >
+          <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Pages
+        </Link>
 
-      <h1>Create New Page</h1>
+        <ApiErrorDisplay error={error} />
 
-      <ApiErrorDisplay error={error} />
-
-      <form onSubmit={handleSubmit} style={{ maxWidth: 600 }}>
-        <div style={{ marginBottom: 16 }}>
-          <label htmlFor="slug" style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
-            Slug *
-          </label>
-          <input
-            id="slug"
-            type="text"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            required
-            placeholder="my-page-slug"
-            style={{ width: '100%', padding: 8, boxSizing: 'border-box' }}
-          />
-          <small style={{ color: '#666' }}>Lowercase letters, numbers, and hyphens only</small>
-        </div>
-
-        <div style={{ marginBottom: 16 }}>
-          <label htmlFor="title" style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
-            Title *
-          </label>
-          <input
-            id="title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            placeholder="My Page Title"
-            style={{ width: '100%', padding: 8, boxSizing: 'border-box' }}
-          />
-        </div>
-
-        <div style={{ marginBottom: 16 }}>
-          <label htmlFor="sections" style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>
-            Sections JSON *
-          </label>
-          <textarea
-            id="sections"
-            value={sections}
-            onChange={(e) => setSections(e.target.value)}
-            required
-            rows={12}
-            style={{ width: '100%', padding: 8, boxSizing: 'border-box', fontFamily: 'monospace' }}
-          />
-          <small style={{ color: '#666' }}>
-            Supported types: hero, features, cta, testimonials, gallery, contact-form
-          </small>
-        </div>
-
-        <div style={{ marginBottom: 24 }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
-              type="checkbox"
-              checked={isPublished}
-              onChange={(e) => setIsPublished(e.target.checked)}
+        <Card>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <Input
+              id="slug"
+              label="Slug *"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              required
+              placeholder="my-page-slug"
+              hint="Lowercase letters, numbers, and hyphens only"
             />
-            Publish immediately
-          </label>
-        </div>
 
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            style={{
-              padding: '8px 16px',
-              background: '#0066cc',
-              color: 'white',
-              border: 'none',
-              cursor: isSubmitting ? 'wait' : 'pointer',
-            }}
-          >
-            {isSubmitting ? 'Creating...' : 'Create Page'}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/pages')}
-            style={{ padding: '8px 16px', cursor: 'pointer' }}
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
+            <Input
+              id="title"
+              label="Title *"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              placeholder="My Page Title"
+            />
+
+            <TextArea
+              id="sections"
+              label="Sections JSON *"
+              value={sections}
+              onChange={(e) => setSections(e.target.value)}
+              required
+              rows={12}
+              className="font-mono text-sm"
+              hint="Supported types: hero, features, cta, testimonials, gallery, contact-form"
+            />
+
+            <div>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isPublished}
+                  onChange={(e) => setIsPublished(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-slate-600 dark:bg-slate-800"
+                />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Publish immediately
+                </span>
+              </label>
+            </div>
+
+            <div className="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-slate-700">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Creating...' : 'Create Page'}
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => navigate('/pages')}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </Card>
+      </div>
     </AdminLayout>
   )
 }

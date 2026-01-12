@@ -208,6 +208,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Mark as processed action updates processedAt
   - Sidebar navigation updated with Contact Messages link
 
+- Admin UI Theme + Dark Mode (Phase 2.4)
+  - Tailwind CSS integration with custom color palette
+  - Dark mode with system preference detection and localStorage persistence
+  - Theme toggle button in topbar (sun/moon icons)
+  - Reusable UI components: Button, Input, Select, TextArea, Card, Table, Alert
+  - Modern layout: fixed sidebar (240px) with navigation icons, topbar with title and actions
+  - Visual style: light gray background, white cards, subtle borders, rounded corners
+  - Responsive design with consistent spacing
+  - Invalid dates display as "—" instead of "Invalid Date"
+
 ### Fixed
 - nginx `client_max_body_size` set to 12m for `/api/` to allow uploads up to 10 MB (was defaulting to 1 MB, causing 413 errors)
 - Added favicon and icon assets to both public-web and admin apps (fixes 404 on /favicon.ico)
