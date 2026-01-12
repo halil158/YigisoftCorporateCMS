@@ -1,0 +1,7 @@
+export { HeroSection } from './HeroSection'
+export { FeaturesSection } from './FeaturesSection'
+export { CtaSection } from './CtaSection'
+export { GallerySection } from './GallerySection'
+export { ContactFormSection } from './ContactFormSection'
+export { TestimonialsSection } from './TestimonialsSection'
+export { UnknownSection } from './UnknownSection'
