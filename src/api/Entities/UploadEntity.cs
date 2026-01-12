@@ -12,5 +12,25 @@ public class UploadEntity
     public DateTime CreatedAt { get; set; }
     public Guid? UploadedByUserId { get; set; }
 
+    /// <summary>
+    /// Thumbnail storage path (relative), e.g., "thumbs/{id}.webp". Null for non-images.
+    /// </summary>
+    public string? ThumbnailStoragePath { get; set; }
+
+    /// <summary>
+    /// Public URL for the thumbnail. Null for non-images.
+    /// </summary>
+    public string? ThumbnailUrl { get; set; }
+
+    /// <summary>
+    /// Image width in pixels. Null for non-images.
+    /// </summary>
+    public int? Width { get; set; }
+
+    /// <summary>
+    /// Image height in pixels. Null for non-images.
+    /// </summary>
+    public int? Height { get; set; }
+
     public UserEntity? UploadedByUser { get; set; }
 }

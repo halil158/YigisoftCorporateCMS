@@ -145,10 +145,13 @@ export const pagesApi = {
 export interface UploadItem {
   id: string
   url: string
+  thumbnailUrl: string | null
   fileName: string
   originalFileName: string
   contentType: string
   size: number
+  width: number | null
+  height: number | null
   createdAt: string
   uploadedByUserId: string
 }

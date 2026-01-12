@@ -47,6 +47,18 @@ public class UploadEntityConfiguration : IEntityTypeConfiguration<UploadEntity>
         entity.Property(e => e.UploadedByUserId)
             .HasColumnName("uploaded_by_user_id");
 
+        entity.Property(e => e.ThumbnailStoragePath)
+            .HasColumnName("thumbnail_storage_path");
+
+        entity.Property(e => e.ThumbnailUrl)
+            .HasColumnName("thumbnail_url");
+
+        entity.Property(e => e.Width)
+            .HasColumnName("width");
+
+        entity.Property(e => e.Height)
+            .HasColumnName("height");
+
         entity.HasOne(e => e.UploadedByUser)
             .WithMany()
             .HasForeignKey(e => e.UploadedByUserId)

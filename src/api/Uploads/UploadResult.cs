@@ -9,7 +9,11 @@ public sealed record UploadResult(
     string OriginalFileName,
     string StoragePath,
     string ContentType,
-    long Size
+    long Size,
+    string? ThumbnailStoragePath = null,
+    string? ThumbnailUrl = null,
+    int? Width = null,
+    int? Height = null
 );
 
 /// <summary>

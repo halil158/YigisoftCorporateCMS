@@ -236,6 +236,7 @@ public static class ServiceCollectionExtensions
             }
         });
 
+        services.AddScoped<IImageProcessingService, ImageProcessingService>();
         services.AddScoped<IUploadService, UploadService>();
 
         return services;

@@ -10,13 +10,15 @@ namespace YigisoftCorporateCMS.Api.Uploads;
 public sealed class UploadService : IUploadService
 {
     private readonly UploadOptions _options;
+    private readonly IImageProcessingService _imageProcessing;
 
-    public UploadService(IOptions<UploadOptions> options)
+    public UploadService(IOptions<UploadOptions> options, IImageProcessingService imageProcessing)
     {
         _options = options.Value;
+        _imageProcessing = imageProcessing;
     }
 
-    public async Task<UploadOperationResult> UploadAsync(IFormFile? file, CancellationToken cancellationToken = default)
+    public async Task<UploadOperationResult> UploadAsync(Guid uploadId, IFormFile? file, CancellationToken cancellationToken = default)
     {
         // Validate file is provided
         if (file is null || file.Length == 0)
@@ -54,13 +56,35 @@ public sealed class UploadService : IUploadService
             Directory.CreateDirectory(directory);
 
             // Save file
-            await using var stream = new FileStream(fullPath, FileMode.Create);
-            await file.CopyToAsync(stream, cancellationToken);
+            await using (var stream = new FileStream(fullPath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream, cancellationToken);
+            }
 
             var storagePath = $"{relativePath}/{fileName}";
             var publicUrl = $"{_options.PublicBaseUrl}/{storagePath}";
 
             Log.Information("File uploaded: {FilePath} ({Size} bytes)", publicUrl, file.Length);
+
+            // Process image (resize + thumbnail) if applicable
+            string? thumbnailStoragePath = null;
+            string? thumbnailUrl = null;
+            int? width = null;
+            int? height = null;
+
+            if (_imageProcessing.IsProcessableImage(file.ContentType))
+            {
+                var imageResult = await _imageProcessing.ProcessAsync(
+                    uploadId, fullPath, file.ContentType, cancellationToken);
+
+                if (imageResult is not null)
+                {
+                    thumbnailStoragePath = imageResult.ThumbnailStoragePath;
+                    thumbnailUrl = imageResult.ThumbnailUrl;
+                    width = imageResult.Width;
+                    height = imageResult.Height;
+                }
+            }
 
             return UploadOperationResult.Success(new UploadResult(
                 Url: publicUrl,
@@ -68,7 +92,11 @@ public sealed class UploadService : IUploadService
                 OriginalFileName: file.FileName,
                 StoragePath: storagePath,
                 ContentType: file.ContentType,
-                Size: file.Length
+                Size: file.Length,
+                ThumbnailStoragePath: thumbnailStoragePath,
+                ThumbnailUrl: thumbnailUrl,
+                Width: width,
+                Height: height
             ));
         }
         catch (Exception ex)

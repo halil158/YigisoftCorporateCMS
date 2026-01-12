@@ -137,12 +137,15 @@ export function MediaLibraryPage() {
   }
 
   const renderPreview = (item: UploadItem) => {
-    const url = getPublicUrl(item.url)
+    // Use thumbnail for faster list rendering, fallback to main URL
+    const previewUrl = item.thumbnailUrl
+      ? getPublicUrl(item.thumbnailUrl)
+      : getPublicUrl(item.url)
 
     if (item.contentType.startsWith('image/')) {
       return (
         <img
-          src={url}
+          src={previewUrl}
           alt={item.originalFileName}
           className="max-w-[120px] max-h-[80px] object-contain rounded"
         />

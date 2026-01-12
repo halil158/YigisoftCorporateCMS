@@ -24,7 +24,10 @@ public static class AdminUploadsEndpoints
             AppDbContext db,
             ClaimsPrincipal user) =>
         {
-            var result = await uploadService.UploadAsync(file);
+            // Generate ID upfront for deterministic thumbnail naming
+            var uploadId = Guid.NewGuid();
+
+            var result = await uploadService.UploadAsync(uploadId, file);
 
             if (result.IsSuccess && result.Data is not null)
             {
@@ -36,13 +39,18 @@ public static class AdminUploadsEndpoints
                 // Create and save upload entity
                 var entity = new UploadEntity
                 {
+                    Id = uploadId,
                     StoragePath = result.Data.StoragePath,
                     Url = result.Data.Url,
                     FileName = result.Data.FileName,
                     OriginalFileName = result.Data.OriginalFileName,
                     ContentType = result.Data.ContentType,
                     Size = result.Data.Size,
-                    UploadedByUserId = uploadedByUserId
+                    UploadedByUserId = uploadedByUserId,
+                    ThumbnailStoragePath = result.Data.ThumbnailStoragePath,
+                    ThumbnailUrl = result.Data.ThumbnailUrl,
+                    Width = result.Data.Width,
+                    Height = result.Data.Height
                 };
 
                 db.Uploads.Add(entity);
@@ -52,10 +60,13 @@ public static class AdminUploadsEndpoints
                 {
                     id = entity.Id,
                     url = result.Data.Url,
+                    thumbnailUrl = result.Data.ThumbnailUrl,
                     fileName = result.Data.FileName,
                     originalFileName = result.Data.OriginalFileName,
                     contentType = result.Data.ContentType,
-                    size = result.Data.Size
+                    size = result.Data.Size,
+                    width = result.Data.Width,
+                    height = result.Data.Height
                 });
             }
 
@@ -85,10 +96,13 @@ public static class AdminUploadsEndpoints
                 {
                     id = u.Id,
                     url = u.Url,
+                    thumbnailUrl = u.ThumbnailUrl,
                     fileName = u.FileName,
                     originalFileName = u.OriginalFileName,
                     contentType = u.ContentType,
                     size = u.Size,
+                    width = u.Width,
+                    height = u.Height,
                     createdAt = u.CreatedAt,
                     uploadedByUserId = u.UploadedByUserId
                 })
@@ -110,7 +124,7 @@ public static class AdminUploadsEndpoints
                 return Results.NotFound(new { error = "NotFound", message = "Upload not found" });
             }
 
-            // Try to delete file from disk
+            // Try to delete main file from disk
             var filePath = Path.Combine(options.Value.BaseUploadPath, upload.StoragePath);
             try
             {
@@ -124,6 +138,24 @@ public static class AdminUploadsEndpoints
             {
                 Log.Warning(ex, "Failed to delete file: {FilePath}", filePath);
                 // Continue to delete DB record even if file deletion fails
+            }
+
+            // Try to delete thumbnail if exists
+            if (!string.IsNullOrEmpty(upload.ThumbnailStoragePath))
+            {
+                var thumbPath = Path.Combine(options.Value.BaseUploadPath, upload.ThumbnailStoragePath);
+                try
+                {
+                    if (File.Exists(thumbPath))
+                    {
+                        File.Delete(thumbPath);
+                        Log.Information("Deleted thumbnail: {ThumbPath}", thumbPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "Failed to delete thumbnail: {ThumbPath}", thumbPath);
+                }
             }
 
             // Delete DB record

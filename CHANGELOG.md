@@ -281,6 +281,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - ContactMessagesListPage: Badge for processed status, enhanced TableEmpty
     - ContactMessageDetailPage: Badge for processed status
 
+- Upload Image Resize + Thumbnails (Phase 2.5)
+  - Image processing with SixLabors.ImageSharp 3.1.6
+  - Auto-resize raster images (JPEG, PNG, WebP):
+    - Main image capped at 2000px max dimension
+    - Thumbnail generated at 320px max dimension (WebP format)
+    - EXIF auto-orient applied before resizing
+  - New database columns: `thumbnail_storage_path`, `thumbnail_url`, `width`, `height`
+  - Upload response includes: `thumbnailUrl`, `width`, `height`
+  - GET `/api/admin/uploads` returns thumbnail info for all uploads
+  - DELETE `/api/admin/uploads/{id}` removes both main file and thumbnail
+  - Thumbnails stored in `/uploads/thumbs/{uploadId}.webp`
+  - Nginx serves `/uploads/thumbs/` with 30-day cache (immutable thumbnails)
+  - Admin Media Library uses thumbnail for preview (faster list rendering)
+  - Non-image files (PDF, SVG) remain unchanged
+
 ### Fixed
 - Tuned brand green accent for dark mode readability
   - Added softer accent variants (accent-soft, accent-muted) for dark mode
