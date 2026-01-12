@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { contactMessagesApi, ContactMessageListItem } from '../api/client'
 import { AdminLayout } from '../components/AdminLayout'
 import { ApiErrorDisplay } from '../components/ApiErrorDisplay'
-import { Card, Select, Input, Button, Table, TableHead, TableBody, TableRow, TableHeader, TableCell } from '../components/ui'
+import { Card, Select, Input, Button, Table, TableHead, TableBody, TableRow, TableHeader, TableCell, RowActionsMenu, RowAction } from '../components/ui'
 
 type ProcessedFilter = 'all' | 'unprocessed' | 'processed'
 
@@ -163,7 +163,7 @@ export function ContactMessagesListPage() {
                     <TableHeader>Page Slug</TableHeader>
                     <TableHeader>Recipient Email</TableHeader>
                     <TableHeader>Processed</TableHeader>
-                    <TableHeader>Actions</TableHeader>
+                    <TableHeader className="text-right">Actions</TableHeader>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -187,13 +187,12 @@ export function ContactMessagesListPage() {
                           </span>
                         )}
                       </TableCell>
-                      <TableCell>
-                        <Link
-                          to={`/contact-messages/${msg.id}`}
-                          className="text-primary-600 hover:text-primary-800 dark:text-accent-muted dark:hover:text-accent-soft text-sm font-medium"
-                        >
-                          View
-                        </Link>
+                      <TableCell className="text-right">
+                        <RowActionsMenu
+                          actions={[
+                            { label: 'View', to: `/contact-messages/${msg.id}` },
+                          ] as RowAction[]}
+                        />
                       </TableCell>
                     </TableRow>
                   ))}

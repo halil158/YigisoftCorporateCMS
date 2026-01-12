@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { uploadsApi, UploadItem } from '../api/client'
 import { AdminLayout } from '../components/AdminLayout'
 import { ApiErrorDisplay } from '../components/ApiErrorDisplay'
-import { Button, Card, Table, TableHead, TableBody, TableRow, TableHeader, TableCell } from '../components/ui'
+import { Button, Card, Table, TableHead, TableBody, TableRow, TableHeader, TableCell, RowActionsMenu, RowAction } from '../components/ui'
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -192,7 +192,7 @@ export function MediaLibraryPage() {
                   <TableHeader>Type</TableHeader>
                   <TableHeader>Size</TableHeader>
                   <TableHeader>Uploaded</TableHeader>
-                  <TableHeader>Actions</TableHeader>
+                  <TableHeader className="text-right">Actions</TableHeader>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -211,33 +211,14 @@ export function MediaLibraryPage() {
                     </TableCell>
                     <TableCell>{formatFileSize(item.size)}</TableCell>
                     <TableCell>{formatDate(item.createdAt)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleCopyUrl(item)}
-                          className={`text-sm font-medium ${
-                            copySuccess === item.id
-                              ? 'text-green-600 dark:text-green-400'
-                              : 'text-primary-600 hover:text-primary-800 dark:text-accent-muted dark:hover:text-accent-soft'
-                          }`}
-                        >
-                          {copySuccess === item.id ? 'Copied!' : 'Copy URL'}
-                        </button>
-                        <a
-                          href={getPublicUrl(item.url)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
-                        >
-                          Open
-                        </a>
-                        <button
-                          onClick={() => handleDelete(item)}
-                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm"
-                        >
-                          Delete
-                        </button>
-                      </div>
+                    <TableCell className="text-right">
+                      <RowActionsMenu
+                        actions={[
+                          { label: copySuccess === item.id ? 'Copied!' : 'Copy URL', onClick: () => handleCopyUrl(item) },
+                          { label: 'Open', onClick: () => window.open(getPublicUrl(item.url), '_blank') },
+                          { label: 'Delete', onClick: () => handleDelete(item), destructive: true },
+                        ] as RowAction[]}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

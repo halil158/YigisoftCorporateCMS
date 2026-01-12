@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { pagesApi, PageListItem } from '../api/client'
 import { AdminLayout } from '../components/AdminLayout'
 import { ApiErrorDisplay } from '../components/ApiErrorDisplay'
-import { Button, Card, Table, TableHead, TableBody, TableRow, TableHeader, TableCell } from '../components/ui'
+import { Button, Card, Table, TableHead, TableBody, TableRow, TableHeader, TableCell, RowActionsMenu, RowAction } from '../components/ui'
 
 function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '—'
@@ -95,7 +95,7 @@ export function PagesListPage() {
                   <TableHeader>Title</TableHeader>
                   <TableHeader>Published</TableHeader>
                   <TableHeader>Updated</TableHeader>
-                  <TableHeader>Actions</TableHeader>
+                  <TableHeader className="text-right">Actions</TableHeader>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -121,27 +121,14 @@ export function PagesListPage() {
                       )}
                     </TableCell>
                     <TableCell>{formatDate(page.updatedAt)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Link
-                          to={`/pages/${page.id}`}
-                          className="text-primary-600 hover:text-primary-800 dark:text-accent-muted dark:hover:text-accent-soft text-sm font-medium"
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          onClick={() => handleTogglePublish(page)}
-                          className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
-                        >
-                          {page.isPublished ? 'Unpublish' : 'Publish'}
-                        </button>
-                        <button
-                          onClick={() => handleDelete(page.id, page.slug)}
-                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm"
-                        >
-                          Delete
-                        </button>
-                      </div>
+                    <TableCell className="text-right">
+                      <RowActionsMenu
+                        actions={[
+                          { label: 'Edit', to: `/pages/${page.id}` },
+                          { label: page.isPublished ? 'Unpublish' : 'Publish', onClick: () => handleTogglePublish(page) },
+                          { label: 'Delete', onClick: () => handleDelete(page.id, page.slug), destructive: true },
+                        ] as RowAction[]}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

@@ -23,17 +23,19 @@ export default {
           900: '#1B660E',
         },
         // Accent colors optimized for theme-aware usage
-        // These provide softer alternatives for dark mode
         accent: {
           // Light mode: vibrant brand green
           DEFAULT: '#30B41A',
           light: '#36CC1D',
-          // Softer variants for dark mode (reduced saturation)
-          soft: '#5DBF4D',      // Lighter, less saturated for dark mode buttons
-          muted: '#7AC96D',     // Even softer for dark mode text
+          // Softer variants for dark mode text/links
+          soft: '#5DBF4D',
+          muted: '#7AC96D',
+          // Dark mode button colors (darker, more muted green)
+          dark: '#2D8A22',           // Darker green for filled buttons in dark mode
+          'dark-hover': '#359929',   // Slightly lighter on hover
           // Background tints
-          tint: '#EFFBED',          // Light mode bg tint
-          'tint-dark': 'rgba(91, 191, 77, 0.12)', // Dark mode bg tint (soft green at 12% opacity)
+          tint: '#EFFBED',
+          'tint-dark': 'rgba(91, 191, 77, 0.12)',
         },
       },
     },

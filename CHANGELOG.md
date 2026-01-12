@@ -225,6 +225,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Success states now use emerald (teal-green) to remain distinct from brand
   - Published/Processed badges updated to emerald for visual distinction
 
+- Admin UI Polish (Phase 2.4c)
+  - Fixed dark mode button colors: now use darker muted green (accent-dark) instead of neon
+  - Added RowActionsMenu component: reusable 3-dots kebab menu for table actions
+  - Replaced inline action links/buttons with kebab menu on:
+    - Pages list: Edit, Publish/Unpublish, Delete
+    - Media Library: Copy URL, Open, Delete
+    - Contact Messages list: View
+  - Actions column now right-aligned for cleaner table layout
+
 ### Fixed
 - Tuned brand green accent for dark mode readability
   - Added softer accent variants (accent-soft, accent-muted) for dark mode
