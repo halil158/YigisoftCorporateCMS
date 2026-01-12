@@ -2,8 +2,24 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { uploadsApi, UploadItem } from '../api/client'
 import { AdminLayout } from '../components/AdminLayout'
-import { ApiErrorDisplay } from '../components/ApiErrorDisplay'
-import { Button, Card, Table, TableHead, TableBody, TableRow, TableHeader, TableCell, RowActionsMenu, RowAction } from '../components/ui'
+import {
+  Button,
+  Card,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeader,
+  TableCell,
+  RowActionsMenu,
+  RowAction,
+  ConfirmDialog,
+  useToast,
+  extractErrorMessage,
+  TableLoading,
+  TableEmpty,
+  TableError,
+} from '../components/ui'
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -29,33 +45,32 @@ function getPublicUrl(url: string): string {
 export function MediaLibraryPage() {
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const toast = useToast()
 
   const [uploads, setUploads] = useState<UploadItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<unknown>(null)
-  const [copySuccess, setCopySuccess] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<UploadItem | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const loadUploads = async () => {
     try {
       setError(null)
+      setIsLoading(true)
       const data = await uploadsApi.list(50)
       setUploads(data)
     } catch (err) {
-      handleApiError(err)
+      const apiError = err as { status?: number }
+      if (apiError?.status === 401 || apiError?.status === 403) {
+        localStorage.removeItem('token')
+        navigate('/login', { replace: true })
+        return
+      }
+      setError(err)
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const handleApiError = (err: unknown) => {
-    const apiError = err as { status?: number }
-    if (apiError?.status === 401 || apiError?.status === 403) {
-      localStorage.removeItem('token')
-      navigate('/login', { replace: true })
-      return
-    }
-    setError(err)
   }
 
   useEffect(() => {
@@ -66,14 +81,14 @@ export function MediaLibraryPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    setError(null)
     setIsUploading(true)
 
     try {
       const newUpload = await uploadsApi.upload(file)
       setUploads([newUpload, ...uploads])
+      toast.success(`"${file.name}" uploaded successfully.`)
     } catch (err) {
-      handleApiError(err)
+      toast.error(extractErrorMessage(err))
     } finally {
       setIsUploading(false)
       // Reset file input
@@ -83,14 +98,20 @@ export function MediaLibraryPage() {
     }
   }
 
-  const handleDelete = async (item: UploadItem) => {
-    if (!confirm(`Delete "${item.originalFileName}"?`)) return
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+
+    setIsDeleting(true)
 
     try {
-      await uploadsApi.delete(item.id)
-      setUploads(uploads.filter((u) => u.id !== item.id))
+      await uploadsApi.delete(deleteTarget.id)
+      setUploads(uploads.filter((u) => u.id !== deleteTarget.id))
+      toast.success(`"${deleteTarget.originalFileName}" deleted successfully.`)
+      setDeleteTarget(null)
     } catch (err) {
-      handleApiError(err)
+      toast.error(extractErrorMessage(err))
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -98,8 +119,7 @@ export function MediaLibraryPage() {
     const url = getPublicUrl(item.url)
     try {
       await navigator.clipboard.writeText(url)
-      setCopySuccess(item.id)
-      setTimeout(() => setCopySuccess(null), 2000)
+      toast.success('URL copied to clipboard.')
     } catch {
       // Fallback for older browsers
       const textArea = document.createElement('textarea')
@@ -108,8 +128,7 @@ export function MediaLibraryPage() {
       textArea.select()
       document.execCommand('copy')
       document.body.removeChild(textArea)
-      setCopySuccess(item.id)
-      setTimeout(() => setCopySuccess(null), 2000)
+      toast.success('URL copied to clipboard.')
     }
   }
 
@@ -141,6 +160,8 @@ export function MediaLibraryPage() {
     )
   }
 
+  const columnCount = 6
+
   return (
     <AdminLayout title="Media Library">
       <div className="space-y-6">
@@ -171,32 +192,36 @@ export function MediaLibraryPage() {
           </div>
         </div>
 
-        <ApiErrorDisplay error={error} />
-
         {/* Content */}
         <Card padding="none">
-          {isLoading ? (
-            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-              Loading...
-            </div>
-          ) : uploads.length === 0 ? (
-            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-              No uploads yet. Upload your first file!
-            </div>
-          ) : (
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableHeader>Preview</TableHeader>
-                  <TableHeader>File Name</TableHeader>
-                  <TableHeader>Type</TableHeader>
-                  <TableHeader>Size</TableHeader>
-                  <TableHeader>Uploaded</TableHeader>
-                  <TableHeader className="text-right">Actions</TableHeader>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {uploads.map((item) => (
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeader>Preview</TableHeader>
+                <TableHeader>File Name</TableHeader>
+                <TableHeader>Type</TableHeader>
+                <TableHeader>Size</TableHeader>
+                <TableHeader>Uploaded</TableHeader>
+                <TableHeader className="text-right">Actions</TableHeader>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {isLoading ? (
+                <TableLoading columns={columnCount} />
+              ) : error ? (
+                <TableError
+                  columns={columnCount}
+                  message={extractErrorMessage(error)}
+                  onRetry={loadUploads}
+                />
+              ) : uploads.length === 0 ? (
+                <TableEmpty
+                  columns={columnCount}
+                  message="No uploads yet. Upload your first file!"
+                  icon="image"
+                />
+              ) : (
+                uploads.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell>{renderPreview(item)}</TableCell>
                     <TableCell>
@@ -214,19 +239,31 @@ export function MediaLibraryPage() {
                     <TableCell className="text-right">
                       <RowActionsMenu
                         actions={[
-                          { label: copySuccess === item.id ? 'Copied!' : 'Copy URL', onClick: () => handleCopyUrl(item) },
+                          { label: 'Copy URL', onClick: () => handleCopyUrl(item) },
                           { label: 'Open', onClick: () => window.open(getPublicUrl(item.url), '_blank') },
-                          { label: 'Delete', onClick: () => handleDelete(item), destructive: true },
+                          { label: 'Delete', onClick: () => setDeleteTarget(item), destructive: true },
                         ] as RowAction[]}
                       />
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+                ))
+              )}
+            </TableBody>
+          </Table>
         </Card>
       </div>
+
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete File"
+        message={`Are you sure you want to delete "${deleteTarget?.originalFileName}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </AdminLayout>
   )
 }

@@ -2,8 +2,24 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { contactMessagesApi, ContactMessageListItem } from '../api/client'
 import { AdminLayout } from '../components/AdminLayout'
-import { ApiErrorDisplay } from '../components/ApiErrorDisplay'
-import { Card, Select, Input, Button, Table, TableHead, TableBody, TableRow, TableHeader, TableCell, RowActionsMenu, RowAction } from '../components/ui'
+import {
+  Card,
+  Select,
+  Input,
+  Button,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeader,
+  TableCell,
+  RowActionsMenu,
+  RowAction,
+  extractErrorMessage,
+  TableLoading,
+  TableEmpty,
+  TableError,
+} from '../components/ui'
 
 type ProcessedFilter = 'all' | 'unprocessed' | 'processed'
 
@@ -33,16 +49,6 @@ export function ContactMessagesListPage() {
   const [skip, setSkip] = useState(0)
   const [take, setTake] = useState(20)
 
-  const handleApiError = (err: unknown) => {
-    const apiError = err as { status?: number }
-    if (apiError?.status === 401 || apiError?.status === 403) {
-      localStorage.removeItem('token')
-      navigate('/login', { replace: true })
-      return
-    }
-    setError(err)
-  }
-
   const loadMessages = async () => {
     try {
       setError(null)
@@ -66,7 +72,13 @@ export function ContactMessagesListPage() {
       const data = await contactMessagesApi.list(params)
       setMessages(data)
     } catch (err) {
-      handleApiError(err)
+      const apiError = err as { status?: number }
+      if (apiError?.status === 401 || apiError?.status === 403) {
+        localStorage.removeItem('token')
+        navigate('/login', { replace: true })
+        return
+      }
+      setError(err)
     } finally {
       setIsLoading(false)
     }
@@ -92,11 +104,11 @@ export function ContactMessagesListPage() {
     setSkip(0) // Reset to first page when filters change
   }
 
+  const columnCount = 5
+
   return (
     <AdminLayout title="Contact Messages">
       <div className="space-y-6">
-        <ApiErrorDisplay error={error} />
-
         {/* Filters */}
         <Card>
           <div className="flex flex-wrap gap-4 items-end">
@@ -146,84 +158,90 @@ export function ContactMessagesListPage() {
 
         {/* Content */}
         <Card padding="none">
-          {isLoading ? (
-            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-              Loading...
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-              No contact messages yet.
-            </div>
-          ) : (
-            <>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableHeader>Created</TableHeader>
-                    <TableHeader>Page Slug</TableHeader>
-                    <TableHeader>Recipient Email</TableHeader>
-                    <TableHeader>Processed</TableHeader>
-                    <TableHeader className="text-right">Actions</TableHeader>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeader>Created</TableHeader>
+                <TableHeader>Page Slug</TableHeader>
+                <TableHeader>Recipient Email</TableHeader>
+                <TableHeader>Processed</TableHeader>
+                <TableHeader className="text-right">Actions</TableHeader>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {isLoading ? (
+                <TableLoading columns={columnCount} />
+              ) : error ? (
+                <TableError
+                  columns={columnCount}
+                  message={extractErrorMessage(error)}
+                  onRetry={loadMessages}
+                />
+              ) : messages.length === 0 ? (
+                <TableEmpty
+                  columns={columnCount}
+                  message="No contact messages yet."
+                  icon="message"
+                />
+              ) : (
+                messages.map((msg) => (
+                  <TableRow key={msg.id}>
+                    <TableCell>{formatDate(msg.createdAt)}</TableCell>
+                    <TableCell>
+                      <code className="text-sm bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded">
+                        {msg.pageSlug}
+                      </code>
+                    </TableCell>
+                    <TableCell>{msg.recipientEmail}</TableCell>
+                    <TableCell>
+                      {msg.processedAt ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
+                          {formatDate(msg.processedAt)}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                          Pending
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <RowActionsMenu
+                        actions={[
+                          { label: 'View', to: `/contact-messages/${msg.id}` },
+                        ] as RowAction[]}
+                      />
+                    </TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {messages.map((msg) => (
-                    <TableRow key={msg.id}>
-                      <TableCell>{formatDate(msg.createdAt)}</TableCell>
-                      <TableCell>
-                        <code className="text-sm bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded">
-                          {msg.pageSlug}
-                        </code>
-                      </TableCell>
-                      <TableCell>{msg.recipientEmail}</TableCell>
-                      <TableCell>
-                        {msg.processedAt ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
-                            {formatDate(msg.processedAt)}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-                            Pending
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <RowActionsMenu
-                          actions={[
-                            { label: 'View', to: `/contact-messages/${msg.id}` },
-                          ] as RowAction[]}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                ))
+              )}
+            </TableBody>
+          </Table>
 
-              {/* Pagination */}
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-slate-700">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Showing {skip + 1} - {skip + messages.length}
-                </span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handlePrev}
-                    disabled={skip === 0}
-                  >
-                    &larr; Prev
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleNext}
-                    disabled={messages.length < take}
-                  >
-                    Next &rarr;
-                  </Button>
-                </div>
+          {/* Pagination - only show when we have data */}
+          {!isLoading && !error && messages.length > 0 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-slate-700">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Showing {skip + 1} - {skip + messages.length}
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handlePrev}
+                  disabled={skip === 0}
+                >
+                  &larr; Prev
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleNext}
+                  disabled={messages.length < take}
+                >
+                  Next &rarr;
+                </Button>
               </div>
-            </>
+            </div>
           )}
         </Card>
       </div>

@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { contactMessagesApi, ContactMessageDetail } from '../api/client'
 import { AdminLayout } from '../components/AdminLayout'
 import { ApiErrorDisplay } from '../components/ApiErrorDisplay'
-import { Card, Button, Alert } from '../components/ui'
+import { Card, Button, useToast, extractErrorMessage } from '../components/ui'
 
 function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '—'
@@ -19,12 +19,12 @@ function formatDate(dateStr: string | null | undefined): string {
 export function ContactMessageDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const toast = useToast()
 
   const [message, setMessage] = useState<ContactMessageDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<unknown>(null)
   const [isMarking, setIsMarking] = useState(false)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const handleApiError = (err: unknown) => {
     const apiError = err as { status?: number }
@@ -59,14 +59,13 @@ export function ContactMessageDetailPage() {
 
     setIsMarking(true)
     setError(null)
-    setSuccessMessage(null)
 
     try {
       const updated = await contactMessagesApi.markProcessed(id)
       setMessage(updated)
-      setSuccessMessage('Message marked as processed.')
-      setTimeout(() => setSuccessMessage(null), 3000)
+      toast.success('Message marked as processed.')
     } catch (err) {
+      toast.error(extractErrorMessage(err))
       handleApiError(err)
     } finally {
       setIsMarking(false)
@@ -126,10 +125,6 @@ export function ContactMessageDetailPage() {
         </div>
 
         <ApiErrorDisplay error={error} />
-
-        {successMessage && (
-          <Alert variant="success">{successMessage}</Alert>
-        )}
 
         {message && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -3,11 +3,12 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { pagesApi, PageDetail } from '../api/client'
 import { AdminLayout } from '../components/AdminLayout'
 import { ApiErrorDisplay } from '../components/ApiErrorDisplay'
-import { Button, Input, TextArea, Card } from '../components/ui'
+import { Button, Input, TextArea, Card, useToast, extractErrorMessage, ConfirmDialog } from '../components/ui'
 
 export function PageEditPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const toast = useToast()
 
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -20,6 +21,10 @@ export function PageEditPage() {
   const [metaDescription, setMetaDescription] = useState('')
   const [sections, setSections] = useState('')
   const [isPublished, setIsPublished] = useState(false)
+
+  // Confirm dialog for unpublish
+  const [showUnpublishConfirm, setShowUnpublishConfirm] = useState(false)
+  const [isUnpublishing, setIsUnpublishing] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -69,30 +74,45 @@ export function PageEditPage() {
         sections,
         isPublished,
       })
+      toast.success('Page saved successfully.')
       navigate('/pages')
     } catch (err) {
+      toast.error(extractErrorMessage(err))
       setError(err)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleTogglePublish = async () => {
+  const handlePublish = async () => {
     if (!id || !page) return
 
     try {
       setError(null)
-      if (page.isPublished) {
-        const updated = await pagesApi.unpublish(id)
-        setPage(updated)
-        setIsPublished(updated.isPublished)
-      } else {
-        const updated = await pagesApi.publish(id)
-        setPage(updated)
-        setIsPublished(updated.isPublished)
-      }
+      const updated = await pagesApi.publish(id)
+      setPage(updated)
+      setIsPublished(updated.isPublished)
+      toast.success(`Page "${slug}" published.`)
     } catch (err) {
-      setError(err)
+      toast.error(extractErrorMessage(err))
+    }
+  }
+
+  const handleUnpublish = async () => {
+    if (!id || !page) return
+
+    setIsUnpublishing(true)
+    try {
+      setError(null)
+      const updated = await pagesApi.unpublish(id)
+      setPage(updated)
+      setIsPublished(updated.isPublished)
+      toast.success(`Page "${slug}" unpublished.`)
+      setShowUnpublishConfirm(false)
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    } finally {
+      setIsUnpublishing(false)
     }
   }
 
@@ -137,12 +157,21 @@ export function PageEditPage() {
             </svg>
             Back to Pages
           </Link>
-          <Button
-            variant={page?.isPublished ? 'secondary' : 'success'}
-            onClick={handleTogglePublish}
-          >
-            {page?.isPublished ? 'Unpublish' : 'Publish'}
-          </Button>
+          {page?.isPublished ? (
+            <Button
+              variant="secondary"
+              onClick={() => setShowUnpublishConfirm(true)}
+            >
+              Unpublish
+            </Button>
+          ) : (
+            <Button
+              variant="success"
+              onClick={handlePublish}
+            >
+              Publish
+            </Button>
+          )}
         </div>
 
         <ApiErrorDisplay error={error} />
@@ -221,6 +250,18 @@ export function PageEditPage() {
           </form>
         </Card>
       </div>
+
+      {/* Unpublish Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={showUnpublishConfirm}
+        onClose={() => setShowUnpublishConfirm(false)}
+        onConfirm={handleUnpublish}
+        title="Unpublish Page"
+        message={`Are you sure you want to unpublish "${slug}"? It will no longer be visible to visitors.`}
+        confirmLabel="Unpublish"
+        variant="warning"
+        isLoading={isUnpublishing}
+      />
     </AdminLayout>
   )
 }

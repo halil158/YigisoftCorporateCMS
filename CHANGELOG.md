@@ -234,6 +234,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Contact Messages list: View
   - Actions column now right-aligned for cleaner table layout
 
+- Admin UX Polish (Phase 2.4.3)
+  - ConfirmDialog component for destructive actions:
+    - Focus trap, ESC to close, click outside to close
+    - Red "danger" variant for delete, yellow "warning" variant for unpublish
+    - Loading state with spinner during async operations
+    - Works in light/dark theme
+  - Toast notification system:
+    - `toast.success()`, `toast.error()`, `toast.info()` methods
+    - Auto-dismiss after 4 seconds, manual dismiss via X button
+    - Slide-in animation from right, stacked at bottom-right
+    - Standardized error message extraction with `extractErrorMessage()`
+  - Table states for consistent loading/empty/error UX:
+    - `TableLoading`: skeleton rows with animated pulse
+    - `TableEmpty`: centered icon and message (document/image/message icons)
+    - `TableError`: error message with "Try Again" retry button
+  - Applied to all list pages: Pages, Media Library, Contact Messages
+  - Toast notifications on: create, update, delete, publish, unpublish, upload, copy URL, mark processed
+
 ### Fixed
 - Tuned brand green accent for dark mode readability
   - Added softer accent variants (accent-soft, accent-muted) for dark mode

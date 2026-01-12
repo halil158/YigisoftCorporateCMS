@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { pagesApi } from '../api/client'
 import { AdminLayout } from '../components/AdminLayout'
 import { ApiErrorDisplay } from '../components/ApiErrorDisplay'
-import { Button, Input, TextArea, Card } from '../components/ui'
+import { Button, Input, TextArea, Card, useToast, extractErrorMessage } from '../components/ui'
 
 const DEFAULT_SECTIONS = `[
   {
@@ -16,6 +16,7 @@ const DEFAULT_SECTIONS = `[
 
 export function PageCreatePage() {
   const navigate = useNavigate()
+  const toast = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<unknown>(null)
 
@@ -45,8 +46,10 @@ export function PageCreatePage() {
         sections,
         isPublished,
       })
+      toast.success(`Page "${slug}" created successfully.`)
       navigate('/pages')
     } catch (err) {
+      toast.error(extractErrorMessage(err))
       setError(err)
     } finally {
       setIsSubmitting(false)
