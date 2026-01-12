@@ -86,6 +86,7 @@ public static class AdminContactMessagesEndpoints
         });
 
         // PATCH /api/admin/contact-messages/{id}/mark-processed - Mark message as processed
+        // Returns full detail DTO (same shape as GET /contact-messages/{id}) for UI state update
         admin.MapMethods("/contact-messages/{id:guid}/mark-processed", new[] { "PATCH" }, async (
             Guid id,
             AppDbContext db) =>
@@ -97,14 +98,24 @@ public static class AdminContactMessagesEndpoints
                 return Results.NotFound(new { error = "NotFound", message = "Contact message not found" });
             }
 
-            message.ProcessedAt = DateTime.UtcNow;
-            await db.SaveChangesAsync();
+            // Only update if not already processed (idempotent - still returns full DTO)
+            if (message.ProcessedAt is null)
+            {
+                message.ProcessedAt = DateTime.UtcNow;
+                await db.SaveChangesAsync();
+                Log.Information("Marked contact message as processed: {Id}", id);
+            }
 
-            Log.Information("Marked contact message as processed: {Id}", id);
-
+            // Return full detail DTO
             return Results.Ok(new
             {
                 id = message.Id,
+                pageSlug = message.PageSlug,
+                recipientEmail = message.RecipientEmail,
+                fields = message.Fields,
+                createdAt = message.CreatedAt,
+                ip = message.Ip,
+                userAgent = message.UserAgent,
                 processedAt = message.ProcessedAt
             });
         });

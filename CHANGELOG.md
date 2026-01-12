@@ -215,3 +215,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - apple-touch-icon.png for iOS devices
   - og-image.png for social media sharing
   - Theme color meta tag (#2980b9)
+- PATCH `/api/admin/contact-messages/{id}/mark-processed` now returns full detail DTO (Phase 2.3.1)
+  - Previously returned only `{ id, processedAt }`, causing admin UI to lose other fields after marking processed
+  - Now returns same shape as GET endpoint: id, pageSlug, recipientEmail, fields, createdAt, ip, userAgent, processedAt
+  - Endpoint is now idempotent: calling on already-processed message returns full DTO without error
