@@ -47,9 +47,17 @@ export function PageEditPage() {
         setMetaTitle(data.metaTitle || '')
         setMetaDescription(data.metaDescription || '')
 
-        // Parse sections
-        const parsedSections = Array.isArray(data.sections) ? data.sections : []
-        setSections(parsedSections as Section[])
+        // Parse sections from JSON string
+        let parsedSections: Section[] = []
+        try {
+          const parsed = JSON.parse(data.sections)
+          if (Array.isArray(parsed)) {
+            parsedSections = parsed
+          }
+        } catch {
+          console.warn('Failed to parse sections JSON, using empty array')
+        }
+        setSections(parsedSections)
         setSectionsJson(JSON.stringify(parsedSections, null, 2))
 
         setIsPublished(data.isPublished)

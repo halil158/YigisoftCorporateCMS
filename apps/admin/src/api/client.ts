@@ -84,7 +84,7 @@ export interface PageDetail {
   title: string
   metaTitle: string | null
   metaDescription: string | null
-  sections: unknown[]
+  sections: string // JSON string from API, must be parsed
   isPublished: boolean
   createdAt: string
   updatedAt: string

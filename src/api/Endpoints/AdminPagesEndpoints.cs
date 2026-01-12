@@ -140,6 +140,16 @@ public static class AdminPagesEndpoints
                 return Results.Conflict(new { error = "A page with this slug already exists", code = "slug_conflict" });
             }
 
+            // Safety check: warn if sections are being cleared
+            var existingSectionsEmpty = page.Sections == "[]" || string.IsNullOrWhiteSpace(page.Sections);
+            var newSectionsEmpty = request.Sections == "[]";
+            if (!existingSectionsEmpty && newSectionsEmpty)
+            {
+                Log.Warning(
+                    "Page sections being cleared: {PageId} ({Slug}). Previous sections length: {Length}",
+                    id, page.Slug, page.Sections.Length);
+            }
+
             page.Slug = slug;
             page.Title = request.Title.Trim();
             page.MetaTitle = request.MetaTitle?.Trim();
