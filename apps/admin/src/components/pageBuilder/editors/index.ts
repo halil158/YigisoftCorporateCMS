@@ -1,0 +1,6 @@
+export { HeroEditor } from './HeroEditor'
+export { FeaturesEditor } from './FeaturesEditor'
+export { CtaEditor } from './CtaEditor'
+export { TestimonialsEditor } from './TestimonialsEditor'
+export { GalleryEditor } from './GalleryEditor'
+export { ContactFormEditor } from './ContactFormEditor'

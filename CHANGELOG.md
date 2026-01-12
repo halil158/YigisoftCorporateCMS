@@ -296,6 +296,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Admin Media Library uses thumbnail for preview (faster list rendering)
   - Non-image files (PDF, SVG) remain unchanged
 
+- Admin Page Builder (Phase 2.6)
+  - Visual section builder replaces raw JSON editing for page sections
+  - `SectionBuilder` component with drag-free reorder controls (move up/down)
+  - `SectionCard` collapsible cards per section with type badge and actions
+  - Six section type editors:
+    - `HeroEditor`: title, subtitle, imageUrl, primary CTA (text + URL)
+    - `FeaturesEditor`: title + items array (title, description, icon per item)
+    - `CtaEditor`: title, button text, button URL
+    - `TestimonialsEditor`: title + items array (quote, name, role, company, avatarUrl)
+    - `GalleryEditor`: title + items array (imageUrl, alt, caption)
+    - `ContactFormEditor`: title, recipient email, description, submit text, fields array
+  - `MediaPickerModal` for browsing and selecting images from uploads library
+  - `ImageInput` component combines text input with media picker button and preview
+  - "Switch to Advanced (JSON)" toggle preserves raw JSON editing for power users
+  - Bidirectional sync between visual builder and JSON textarea
+  - Server validation errors mapped to specific section fields
+  - Applied to both PageCreatePage and PageEditPage
+
 ### Fixed
 - Tuned brand green accent for dark mode readability
   - Added softer accent variants (accent-soft, accent-muted) for dark mode
