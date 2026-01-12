@@ -107,7 +107,7 @@ export function PageCreatePage() {
                   type="checkbox"
                   checked={isPublished}
                   onChange={(e) => setIsPublished(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-slate-600 dark:bg-slate-800"
+                  className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-slate-600 dark:bg-slate-800 dark:text-accent-soft dark:focus:ring-accent-soft"
                 />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Publish immediately

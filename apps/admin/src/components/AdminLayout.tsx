@@ -65,7 +65,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
         {/* Logo/Brand */}
         <div className="h-16 flex items-center px-6 border-b border-gray-200 dark:border-slate-700">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-primary-600 dark:bg-accent-soft rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">Y</span>
             </div>
             <span className="font-semibold text-gray-900 dark:text-white">Admin</span>
@@ -85,7 +85,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                     className={`
                       flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
                       ${active
-                        ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                        ? 'bg-primary-50 text-primary-700 dark:bg-accent-tint-dark dark:text-accent-muted'
                         : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700'
                       }
                     `}

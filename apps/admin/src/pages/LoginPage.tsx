@@ -43,7 +43,7 @@ export function LoginPage() {
         <div className="w-full max-w-md">
           {/* Logo/Brand */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-xl mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 dark:bg-accent-soft rounded-xl mb-4">
               <span className="text-white font-bold text-2xl">Y</span>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Login</h1>

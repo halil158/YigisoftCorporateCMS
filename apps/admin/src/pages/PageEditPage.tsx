@@ -114,7 +114,7 @@ export function PageEditPage() {
           <p className="text-gray-600 dark:text-gray-400">Page not found.</p>
           <Link
             to="/pages"
-            className="text-primary-600 hover:text-primary-800 dark:text-primary-400 mt-4 inline-block"
+            className="text-primary-600 hover:text-primary-800 dark:text-accent-muted dark:hover:text-accent-soft mt-4 inline-block"
           >
             Back to Pages
           </Link>
@@ -202,7 +202,7 @@ export function PageEditPage() {
                   type="checkbox"
                   checked={isPublished}
                   onChange={(e) => setIsPublished(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-slate-600 dark:bg-slate-800"
+                  className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-slate-600 dark:bg-slate-800 dark:text-accent-soft dark:focus:ring-accent-soft"
                 />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Published

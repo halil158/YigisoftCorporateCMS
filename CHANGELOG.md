@@ -218,7 +218,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Responsive design with consistent spacing
   - Invalid dates display as "—" instead of "Invalid Date"
 
+- Yigisoft Brand Green Accent (Phase 2.4b)
+  - Replaced blue primary color with Yigisoft brand green palette
+  - Brand colors: 50 #EFFBED → 500 #36CC1D → 900 #1B660E
+  - Updated all primary UI elements: buttons, links, focus rings, sidebar active state
+  - Success states now use emerald (teal-green) to remain distinct from brand
+  - Published/Processed badges updated to emerald for visual distinction
+
 ### Fixed
+- Tuned brand green accent for dark mode readability
+  - Added softer accent variants (accent-soft, accent-muted) for dark mode
+  - Primary buttons, focus rings, and links now use reduced-saturation green in dark mode
+  - Sidebar active state uses subtle green tint background in dark mode
+  - Logo icons use softer green in dark mode to reduce eye strain
 - nginx `client_max_body_size` set to 12m for `/api/` to allow uploads up to 10 MB (was defaulting to 1 MB, causing 413 errors)
 - Added favicon and icon assets to both public-web and admin apps (fixes 404 on /favicon.ico)
   - favicon.ico, favicon.svg, favicon-16x16.png, favicon-32x32.png

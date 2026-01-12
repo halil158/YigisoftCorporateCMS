@@ -111,7 +111,7 @@ export function PagesListPage() {
                     </TableCell>
                     <TableCell>
                       {page.isPublished ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
                           Published
                         </span>
                       ) : (
@@ -125,7 +125,7 @@ export function PagesListPage() {
                       <div className="flex items-center gap-2">
                         <Link
                           to={`/pages/${page.id}`}
-                          className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium"
+                          className="text-primary-600 hover:text-primary-800 dark:text-accent-muted dark:hover:text-accent-soft text-sm font-medium"
                         >
                           Edit
                         </Link>

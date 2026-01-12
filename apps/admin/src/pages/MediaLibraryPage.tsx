@@ -218,7 +218,7 @@ export function MediaLibraryPage() {
                           className={`text-sm font-medium ${
                             copySuccess === item.id
                               ? 'text-green-600 dark:text-green-400'
-                              : 'text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300'
+                              : 'text-primary-600 hover:text-primary-800 dark:text-accent-muted dark:hover:text-accent-soft'
                           }`}
                         >
                           {copySuccess === item.id ? 'Copied!' : 'Copy URL'}

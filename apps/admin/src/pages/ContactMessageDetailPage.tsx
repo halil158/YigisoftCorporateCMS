@@ -91,7 +91,7 @@ export function ContactMessageDetailPage() {
           <p className="text-gray-600 dark:text-gray-400">Message not found.</p>
           <Link
             to="/contact-messages"
-            className="text-primary-600 hover:text-primary-800 dark:text-primary-400 mt-4 inline-block"
+            className="text-primary-600 hover:text-primary-800 dark:text-accent-muted dark:hover:text-accent-soft mt-4 inline-block"
           >
             Back to Contact Messages
           </Link>
@@ -169,7 +169,7 @@ export function ContactMessageDetailPage() {
                   <dt className="w-32 flex-shrink-0 text-sm font-medium text-gray-500 dark:text-gray-400">Processed:</dt>
                   <dd className="text-sm">
                     {message.processedAt ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
                         {formatDate(message.processedAt)}
                       </span>
                     ) : (

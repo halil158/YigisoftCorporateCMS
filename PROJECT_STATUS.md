@@ -394,12 +394,31 @@ Modern UI overhaul with consistent design system.
 - MediaLibraryPage, ContactMessagesListPage, ContactMessageDetailPage
 - Invalid dates display as "—" instead of "Invalid Date"
 
+### Phase 2.4b — Yigisoft Brand Green Accent
+Brand identity update: blue primary color replaced with Yigisoft green.
+
+**Brand color palette:**
+- 50 #EFFBED, 100 #DFF7DB, 200 #BFEFB7, 300 #9FE793, 400 #76DC65
+- 500 #36CC1D (primary), 600 #30B41A, 700 #299B16, 800 #238313, 900 #1B660E
+
+**Updated elements:**
+- Primary buttons (Publish, Upload, Save, etc.)
+- Sidebar active state (background + text)
+- Links and hover states
+- Focus rings and outlines
+- Logo/brand icon backgrounds
+
+**Success state distinction:**
+- Success buttons and alerts now use emerald (teal-green)
+- Published/Processed badges updated to emerald
+- Ensures visual distinction from brand primary
+
 ---
 
 ## Current State (Verified)
 
 - `GET /api/info` returns phase: `1.8d`
-- Admin UI uses Tailwind CSS with dark mode support (toggle in topbar)
+- Admin UI uses Tailwind CSS with Yigisoft brand green accent and dark mode support
 - Admin UI at `/admin/` redirects to `/admin/login` if not authenticated
 - Admin login with `admin@yigisoft.local` / `Admin123!` works after seeding
 - Admin pages UI at `/admin/pages` - list, create, edit, delete, publish/unpublish

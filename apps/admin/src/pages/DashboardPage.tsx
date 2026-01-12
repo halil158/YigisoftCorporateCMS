@@ -5,9 +5,9 @@ import { Card } from '../components/ui'
 function QuickActionCard({ to, title, description, icon }: { to: string; title: string; description: string; icon: React.ReactNode }) {
   return (
     <Link to={to} className="block">
-      <Card className="hover:border-primary-300 dark:hover:border-primary-700 transition-colors h-full">
+      <Card className="hover:border-primary-300 dark:hover:border-accent-soft/40 transition-colors h-full">
         <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center text-primary-600 dark:text-primary-400">
+          <div className="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-accent-tint-dark rounded-lg flex items-center justify-center text-primary-600 dark:text-accent-muted">
             {icon}
           </div>
           <div>
@@ -27,7 +27,7 @@ export function DashboardPage() {
         {/* Welcome card */}
         <Card>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-primary-600 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-primary-600 dark:bg-accent-soft rounded-xl flex items-center justify-center">
               <span className="text-white font-bold text-xl">Y</span>
             </div>
             <div>
