@@ -252,6 +252,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Applied to all list pages: Pages, Media Library, Contact Messages
   - Toast notifications on: create, update, delete, publish, unpublish, upload, copy URL, mark processed
 
+- Admin UI Consistency Polish (Phase 2.4.4)
+  - Badge component with 5 variants: success, warning, neutral, info, danger
+    - Two sizes: sm (default), md
+    - Consistent styling across light/dark modes
+  - PageHeader component for consistent page header layout
+    - Optional description and actions slot
+    - Responsive flex layout
+  - Button component improvements:
+    - Focus rings (focus:ring-2 focus:ring-offset-2) for all variants
+    - New ghost variant for minimal UI
+  - Input, TextArea, Select improvements:
+    - Disabled state styling (bg-gray-100, cursor-not-allowed)
+    - Placeholder text color standardized (text-gray-400)
+    - Smooth transitions on focus
+    - Error state support on Select
+  - Table component polish:
+    - Header border-b for visual separation
+    - Lighter row dividers (divide-gray-100)
+    - Subtle hover transition (duration-100)
+    - Increased cell padding for breathing room
+  - TableEmpty enhancement:
+    - Title, message, icon props for better empty states
+    - Optional action button (e.g., "+ Create Page")
+  - Applied consistent components across all list pages:
+    - PagesListPage: Badge for status, PageHeader, enhanced TableEmpty with action
+    - MediaLibraryPage: Badge for file types, PageHeader, enhanced TableEmpty with action
+    - ContactMessagesListPage: Badge for processed status, enhanced TableEmpty
+    - ContactMessageDetailPage: Badge for processed status
+
 ### Fixed
 - Tuned brand green accent for dark mode readability
   - Added softer accent variants (accent-soft, accent-muted) for dark mode

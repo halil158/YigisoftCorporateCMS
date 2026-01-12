@@ -19,6 +19,8 @@ import {
   TableLoading,
   TableEmpty,
   TableError,
+  Badge,
+  PageHeader,
 } from '../components/ui'
 
 function formatDate(dateStr: string | null | undefined): string {
@@ -146,24 +148,22 @@ export function PagesListPage() {
   return (
     <AdminLayout title="Pages">
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <p className="text-gray-600 dark:text-gray-400">
-            Manage your website pages
-          </p>
-          <Button onClick={() => navigate('/pages/new')}>
-            + New Page
-          </Button>
-        </div>
+        <PageHeader
+          description="Manage your website pages"
+          actions={
+            <Button onClick={() => navigate('/pages/new')}>
+              + New Page
+            </Button>
+          }
+        />
 
-        {/* Content */}
         <Card padding="none">
           <Table>
             <TableHead>
               <TableRow>
                 <TableHeader>Slug</TableHeader>
                 <TableHeader>Title</TableHeader>
-                <TableHeader>Published</TableHeader>
+                <TableHeader>Status</TableHeader>
                 <TableHeader>Updated</TableHeader>
                 <TableHeader className="text-right">Actions</TableHeader>
               </TableRow>
@@ -180,8 +180,13 @@ export function PagesListPage() {
               ) : pages.length === 0 ? (
                 <TableEmpty
                   columns={columnCount}
-                  message="No pages yet. Create your first page!"
+                  title="No pages yet"
+                  message="Get started by creating your first page."
                   icon="document"
+                  action={{
+                    label: '+ Create Page',
+                    onClick: () => navigate('/pages/new'),
+                  }}
                 />
               ) : (
                 pages.map((page) => (
@@ -196,13 +201,9 @@ export function PagesListPage() {
                     </TableCell>
                     <TableCell>
                       {page.isPublished ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
-                          Published
-                        </span>
+                        <Badge variant="success">Published</Badge>
                       ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-gray-400">
-                          Draft
-                        </span>
+                        <Badge variant="neutral">Draft</Badge>
                       )}
                     </TableCell>
                     <TableCell>{formatDate(page.updatedAt)}</TableCell>
@@ -235,7 +236,6 @@ export function PagesListPage() {
         </Card>
       </div>
 
-      {/* Confirm Dialog */}
       {confirmProps && (
         <ConfirmDialog
           isOpen={confirmAction !== null}

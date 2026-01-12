@@ -19,6 +19,8 @@ import {
   TableLoading,
   TableEmpty,
   TableError,
+  Badge,
+  PageHeader,
 } from '../components/ui'
 
 function formatFileSize(bytes: number): string {
@@ -77,6 +79,10 @@ export function MediaLibraryPage() {
     loadUploads()
   }, [])
 
+  const triggerFileSelect = () => {
+    fileInputRef.current?.click()
+  }
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -91,7 +97,6 @@ export function MediaLibraryPage() {
       toast.error(extractErrorMessage(err))
     } finally {
       setIsUploading(false)
-      // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
@@ -121,7 +126,6 @@ export function MediaLibraryPage() {
       await navigator.clipboard.writeText(url)
       toast.success('URL copied to clipboard.')
     } catch {
-      // Fallback for older browsers
       const textArea = document.createElement('textarea')
       textArea.value = url
       document.body.appendChild(textArea)
@@ -146,18 +150,10 @@ export function MediaLibraryPage() {
     }
 
     if (item.contentType === 'application/pdf') {
-      return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-          PDF
-        </span>
-      )
+      return <Badge variant="danger" size="md">PDF</Badge>
     }
 
-    return (
-      <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-gray-400">
-        FILE
-      </span>
-    )
+    return <Badge variant="neutral" size="md">FILE</Badge>
   }
 
   const columnCount = 6
@@ -165,34 +161,28 @@ export function MediaLibraryPage() {
   return (
     <AdminLayout title="Media Library">
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <p className="text-gray-600 dark:text-gray-400">
-            Allowed: PNG, JPG, JPEG, WebP, SVG, PDF (max 10 MB)
-          </p>
-          <div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              onChange={handleFileSelect}
-              disabled={isUploading}
-              accept=".png,.jpg,.jpeg,.webp,.svg,.pdf"
-              className="hidden"
-              id="file-upload"
-            />
-            <label htmlFor="file-upload">
-              <Button
-                as="span"
-                disabled={isUploading}
-                className={isUploading ? 'cursor-wait' : 'cursor-pointer'}
-              >
-                {isUploading ? 'Uploading...' : '+ Upload File'}
-              </Button>
-            </label>
-          </div>
-        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          onChange={handleFileSelect}
+          disabled={isUploading}
+          accept=".png,.jpg,.jpeg,.webp,.svg,.pdf"
+          className="hidden"
+          id="file-upload"
+        />
 
-        {/* Content */}
+        <PageHeader
+          description="PNG, JPG, JPEG, WebP, SVG, PDF (max 10 MB)"
+          actions={
+            <Button
+              onClick={triggerFileSelect}
+              disabled={isUploading}
+            >
+              {isUploading ? 'Uploading...' : '+ Upload File'}
+            </Button>
+          }
+        />
+
         <Card padding="none">
           <Table>
             <TableHead>
@@ -217,15 +207,20 @@ export function MediaLibraryPage() {
               ) : uploads.length === 0 ? (
                 <TableEmpty
                   columns={columnCount}
-                  message="No uploads yet. Upload your first file!"
+                  title="No uploads yet"
+                  message="Upload images and documents to use in your pages."
                   icon="image"
+                  action={{
+                    label: '+ Upload File',
+                    onClick: triggerFileSelect,
+                  }}
                 />
               ) : (
                 uploads.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell>{renderPreview(item)}</TableCell>
                     <TableCell>
-                      <span title={item.originalFileName} className="block max-w-[200px] truncate">
+                      <span title={item.originalFileName} className="block max-w-[200px] truncate font-medium text-gray-900 dark:text-white">
                         {item.originalFileName}
                       </span>
                     </TableCell>
@@ -253,7 +248,6 @@ export function MediaLibraryPage() {
         </Card>
       </div>
 
-      {/* Delete Confirm Dialog */}
       <ConfirmDialog
         isOpen={deleteTarget !== null}
         onClose={() => setDeleteTarget(null)}

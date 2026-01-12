@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { contactMessagesApi, ContactMessageDetail } from '../api/client'
 import { AdminLayout } from '../components/AdminLayout'
 import { ApiErrorDisplay } from '../components/ApiErrorDisplay'
-import { Card, Button, useToast, extractErrorMessage } from '../components/ui'
+import { Card, Button, Badge, useToast, extractErrorMessage } from '../components/ui'
 
 function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '—'
@@ -164,13 +164,9 @@ export function ContactMessageDetailPage() {
                   <dt className="w-32 flex-shrink-0 text-sm font-medium text-gray-500 dark:text-gray-400">Processed:</dt>
                   <dd className="text-sm">
                     {message.processedAt ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
-                        {formatDate(message.processedAt)}
-                      </span>
+                      <Badge variant="success">{formatDate(message.processedAt)}</Badge>
                     ) : (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-                        Pending
-                      </span>
+                      <Badge variant="warning">Pending</Badge>
                     )}
                   </dd>
                 </div>

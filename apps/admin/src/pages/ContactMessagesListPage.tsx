@@ -19,6 +19,7 @@ import {
   TableLoading,
   TableEmpty,
   TableError,
+  Badge,
 } from '../components/ui'
 
 type ProcessedFilter = 'all' | 'unprocessed' | 'processed'
@@ -101,7 +102,7 @@ export function ContactMessagesListPage() {
   }
 
   const handleFilterChange = () => {
-    setSkip(0) // Reset to first page when filters change
+    setSkip(0)
   }
 
   const columnCount = 5
@@ -163,8 +164,8 @@ export function ContactMessagesListPage() {
               <TableRow>
                 <TableHeader>Created</TableHeader>
                 <TableHeader>Page Slug</TableHeader>
-                <TableHeader>Recipient Email</TableHeader>
-                <TableHeader>Processed</TableHeader>
+                <TableHeader>Recipient</TableHeader>
+                <TableHeader>Status</TableHeader>
                 <TableHeader className="text-right">Actions</TableHeader>
               </TableRow>
             </TableHead>
@@ -180,7 +181,8 @@ export function ContactMessagesListPage() {
               ) : messages.length === 0 ? (
                 <TableEmpty
                   columns={columnCount}
-                  message="No contact messages yet."
+                  title="No messages yet"
+                  message="Contact form submissions will appear here."
                   icon="message"
                 />
               ) : (
@@ -195,13 +197,9 @@ export function ContactMessagesListPage() {
                     <TableCell>{msg.recipientEmail}</TableCell>
                     <TableCell>
                       {msg.processedAt ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
-                          {formatDate(msg.processedAt)}
-                        </span>
+                        <Badge variant="success">{formatDate(msg.processedAt)}</Badge>
                       ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-                          Pending
-                        </span>
+                        <Badge variant="warning">Pending</Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -217,7 +215,7 @@ export function ContactMessagesListPage() {
             </TableBody>
           </Table>
 
-          {/* Pagination - only show when we have data */}
+          {/* Pagination */}
           {!isLoading && !error && messages.length > 0 && (
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-slate-700">
               <span className="text-sm text-gray-600 dark:text-gray-400">
