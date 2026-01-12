@@ -210,3 +210,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - nginx `client_max_body_size` set to 12m for `/api/` to allow uploads up to 10 MB (was defaulting to 1 MB, causing 413 errors)
+- Added favicon and icon assets to both public-web and admin apps (fixes 404 on /favicon.ico)
+  - favicon.ico, favicon.svg, favicon-16x16.png, favicon-32x32.png
+  - apple-touch-icon.png for iOS devices
+  - og-image.png for social media sharing
+  - Theme color meta tag (#2980b9)
