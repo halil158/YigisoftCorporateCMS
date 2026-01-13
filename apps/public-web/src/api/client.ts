@@ -112,3 +112,33 @@ export class ContactSubmissionError extends Error {
     this.name = 'ContactSubmissionError'
   }
 }
+
+// Navigation types
+export interface NavigationItem {
+  id: string
+  label: string
+  type: 'page' | 'external'
+  slug?: string
+  url?: string
+  order: number
+  isVisible: boolean
+  newTab?: boolean
+}
+
+export interface NavigationData {
+  key: string
+  items: NavigationItem[]
+}
+
+/**
+ * Fetch navigation by key
+ */
+export async function fetchNavigation(key: string): Promise<NavigationData> {
+  const res = await fetch(`${API_BASE}/public/navigation?key=${encodeURIComponent(key)}`)
+
+  if (!res.ok) {
+    throw new ApiRequestError('Failed to fetch navigation', res.status)
+  }
+
+  return res.json()
+}

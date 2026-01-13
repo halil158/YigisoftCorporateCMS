@@ -42,9 +42,18 @@ function MessagesIcon() {
   )
 }
 
+function NavigationIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  )
+}
+
 const navItems = [
   { path: '/', label: 'Dashboard', icon: DashboardIcon },
   { path: '/pages', label: 'Pages', icon: PagesIcon },
+  { path: '/navigation', label: 'Navigation', icon: NavigationIcon },
   { path: '/media', label: 'Media Library', icon: MediaIcon },
   { path: '/contact-messages', label: 'Messages', icon: MessagesIcon },
 ]

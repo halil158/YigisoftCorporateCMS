@@ -9,6 +9,7 @@ import { PageEditPage } from './pages/PageEditPage'
 import { MediaLibraryPage } from './pages/MediaLibraryPage'
 import { ContactMessagesListPage } from './pages/ContactMessagesListPage'
 import { ContactMessageDetailPage } from './pages/ContactMessageDetailPage'
+import { NavigationPage } from './pages/NavigationPage'
 
 function App() {
   return (
@@ -68,6 +69,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ContactMessageDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/navigation"
+          element={
+            <ProtectedRoute>
+              <NavigationPage />
             </ProtectedRoute>
           }
         />

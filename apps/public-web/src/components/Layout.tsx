@@ -1,10 +1,54 @@
 import type { ReactNode } from 'react'
+import { useNavigation } from '../hooks/useNavigation'
+import type { NavigationItem } from '../api/client'
 
 interface Props {
   children: ReactNode
 }
 
+function NavLink({ item }: { item: NavigationItem }) {
+  if (item.type === 'page') {
+    return (
+      <a
+        href={`/${item.slug}`}
+        className="text-gray-600 hover:text-primary-600 transition-colors"
+      >
+        {item.label}
+      </a>
+    )
+  }
+
+  // External link
+  return (
+    <a
+      href={item.url}
+      target={item.newTab ? '_blank' : undefined}
+      rel={item.newTab ? 'noopener noreferrer' : undefined}
+      className="text-gray-600 hover:text-primary-600 transition-colors"
+    >
+      {item.label}
+      {item.newTab && (
+        <svg
+          className="inline-block w-3 h-3 ml-1 -mt-0.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+          />
+        </svg>
+      )}
+    </a>
+  )
+}
+
 export function Layout({ children }: Props) {
+  const { items, isLoading } = useNavigation('main')
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-white border-b border-gray-200">
@@ -17,9 +61,16 @@ export function Layout({ children }: Props) {
               <span className="text-xl font-semibold text-gray-900">Yigisoft</span>
             </a>
             <nav className="hidden sm:flex items-center gap-6">
-              <a href="/" className="text-gray-600 hover:text-primary-600 transition-colors">
-                Home
-              </a>
+              {isLoading ? (
+                <span className="text-gray-400">...</span>
+              ) : items.length > 0 ? (
+                items.map((item) => <NavLink key={item.id} item={item} />)
+              ) : (
+                // Fallback to Home if no navigation configured
+                <a href="/" className="text-gray-600 hover:text-primary-600 transition-colors">
+                  Home
+                </a>
+              )}
             </nav>
           </div>
         </div>

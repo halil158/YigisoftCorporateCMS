@@ -20,6 +20,7 @@ public static class EndpointExtensions
         var api = app.MapGroup("/api");
         api.MapApiInfoEndpoints();
         api.MapPublicPagesEndpoints();
+        api.MapPublicNavigationEndpoints();
         api.MapAuthEndpoints();
 
         // Development-only endpoints
@@ -35,8 +36,9 @@ public static class EndpointExtensions
         admin.MapAdminPagesEndpoints();
         admin.MapAdminUploadsEndpoints();
         admin.MapAdminContactMessagesEndpoints();
+        admin.MapAdminNavigationEndpoints();
 
-        Log.Information("API started - phase {Phase}", "1.8d");
+        Log.Information("API started - phase {Phase}", "3.1");
 
         return app;
     }

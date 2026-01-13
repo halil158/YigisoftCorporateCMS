@@ -237,3 +237,35 @@ export const contactMessagesApi = {
       method: 'PATCH',
     }),
 }
+
+// Navigation API types
+export interface NavigationItem {
+  id: string
+  label: string
+  type: 'page' | 'external'
+  slug?: string
+  url?: string
+  order: number
+  isVisible: boolean
+  newTab?: boolean
+}
+
+export interface NavigationData {
+  key: string
+  items: NavigationItem[]
+}
+
+export interface NavigationUpdateRequest {
+  items: (Omit<NavigationItem, 'id'> & { id?: string })[]
+}
+
+export const navigationApi = {
+  get: (key: string) =>
+    apiRequest<NavigationData>(`/admin/navigation?key=${encodeURIComponent(key)}`),
+
+  update: (key: string, data: NavigationUpdateRequest) =>
+    apiRequest<NavigationData>(`/admin/navigation?key=${encodeURIComponent(key)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+}
