@@ -45,15 +45,32 @@ function getPublicUrl(url: string): string {
   return `${window.location.origin}${url}`
 }
 
-// Dialog for showing media usage when deletion is blocked
+// Format navigation key for display
+function formatNavigationKey(key: string): string {
+  const parts = key.split('.')
+  if (parts.length >= 2) {
+    return parts[parts.length - 1].charAt(0).toUpperCase() + parts[parts.length - 1].slice(1) + ' Navigation'
+  }
+  return key
+}
+
+// Format settings key for display
+function formatSettingsKey(key: string): string {
+  if (key === 'site.branding') return 'Site Branding'
+  if (key === 'site.theme') return 'Site Theme'
+  return key
+}
+
+// Dialog for showing media usage
 interface MediaUsageDialogProps {
   isOpen: boolean
   onClose: () => void
   fileName: string
   usage: MediaUsageInfo | null
+  isDeleteBlocked?: boolean
 }
 
-function MediaUsageDialog({ isOpen, onClose, fileName, usage }: MediaUsageDialogProps) {
+function MediaUsageDialog({ isOpen, onClose, fileName, usage, isDeleteBlocked = true }: MediaUsageDialogProps) {
   useEffect(() => {
     if (!isOpen) return
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -64,6 +81,11 @@ function MediaUsageDialog({ isOpen, onClose, fileName, usage }: MediaUsageDialog
   }, [isOpen, onClose])
 
   if (!isOpen || !usage) return null
+
+  const totalUsages = usage.total || usage.totalCount || 0
+  const pages = usage.pages || usage.usedByPages || []
+  const navigation = usage.navigation || []
+  const settings = usage.settings || usage.usedBySettings || []
 
   const dialog = (
     <div
@@ -79,38 +101,53 @@ function MediaUsageDialog({ isOpen, onClose, fileName, usage }: MediaUsageDialog
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative w-full max-w-lg transform rounded-lg bg-white p-6 shadow-xl dark:bg-slate-800 dark:ring-1 dark:ring-slate-700">
           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30">
-              <svg className="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-              </svg>
+            <div className={`flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full ${
+              isDeleteBlocked
+                ? 'bg-yellow-100 dark:bg-yellow-900/30'
+                : 'bg-blue-100 dark:bg-blue-900/30'
+            }`}>
+              {isDeleteBlocked ? (
+                <svg className="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                </svg>
+              )}
             </div>
             <div className="flex-1">
               <h3 id="usage-dialog-title" className="text-lg font-semibold text-gray-900 dark:text-white">
-                Cannot Delete File
+                {isDeleteBlocked ? 'Cannot Delete File' : 'Media Usage'}
               </h3>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                <strong>"{fileName}"</strong> is currently in use and cannot be deleted.
-                Remove all references first.
+                <strong>"{fileName}"</strong> is used in <strong>{totalUsages}</strong> {totalUsages === 1 ? 'place' : 'places'}.
+                {isDeleteBlocked && ' Remove all references to delete this file.'}
               </p>
             </div>
           </div>
 
           <div className="mt-4 space-y-4 max-h-60 overflow-y-auto">
-            {usage.usedByPages.length > 0 && (
+            {pages.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Used in Pages:</h4>
-                <ul className="space-y-1">
-                  {usage.usedByPages.map((page, i) => (
-                    <li key={i} className="text-sm">
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Pages ({pages.length})
+                </h4>
+                <ul className="space-y-1 ml-6">
+                  {pages.map((page, i) => (
+                    <li key={i} className="text-sm flex items-center gap-2">
                       <Link
                         to={`/pages/${page.pageId}`}
-                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
                         onClick={onClose}
                       >
                         {page.title}
                       </Link>
-                      <span className="text-gray-500 dark:text-gray-400 ml-2">
-                        (/{page.slug})
+                      <span className="text-gray-400 dark:text-gray-500 text-xs">
+                        /{page.slug}
                       </span>
                     </li>
                   ))}
@@ -118,26 +155,65 @@ function MediaUsageDialog({ isOpen, onClose, fileName, usage }: MediaUsageDialog
               </div>
             )}
 
-            {usage.usedBySettings.length > 0 && (
+            {navigation.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Used in Settings:</h4>
-                <ul className="space-y-1">
-                  {usage.usedBySettings.map((setting, i) => (
-                    <li key={i} className="text-sm">
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                  Navigation ({navigation.length})
+                </h4>
+                <ul className="space-y-1 ml-6">
+                  {navigation.map((nav, i) => (
+                    <li key={i} className="text-sm flex items-center gap-2">
                       <Link
-                        to="/settings"
-                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                        to="/navigation"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
                         onClick={onClose}
                       >
-                        {setting.settingsKey === 'site.branding' ? 'Site Branding' : setting.settingsKey}
+                        {formatNavigationKey(nav.key)}
                       </Link>
-                      <span className="text-gray-500 dark:text-gray-400 ml-2">
-                        ({setting.jsonPath})
+                      <span className="text-gray-400 dark:text-gray-500 text-xs">
+                        {nav.jsonPath}
                       </span>
                     </li>
                   ))}
                 </ul>
               </div>
+            )}
+
+            {settings.length > 0 && (
+              <div>
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Settings ({settings.length})
+                </h4>
+                <ul className="space-y-1 ml-6">
+                  {settings.map((setting, i) => (
+                    <li key={i} className="text-sm flex items-center gap-2">
+                      <Link
+                        to="/settings"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
+                        onClick={onClose}
+                      >
+                        {formatSettingsKey(setting.settingsKey)}
+                      </Link>
+                      <span className="text-gray-400 dark:text-gray-500 text-xs">
+                        {setting.jsonPath}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {totalUsages === 0 && (
+              <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                This file is not used anywhere.
+              </p>
             )}
           </div>
 
@@ -154,6 +230,27 @@ function MediaUsageDialog({ isOpen, onClose, fileName, usage }: MediaUsageDialog
   return createPortal(dialog, document.body)
 }
 
+// Usage badge component
+function UsageBadge({ count }: { count: number | undefined }) {
+  if (count === undefined) {
+    return <span className="text-gray-400 text-xs">...</span>
+  }
+
+  if (count === 0) {
+    return (
+      <Badge variant="neutral" size="sm">
+        Unused
+      </Badge>
+    )
+  }
+
+  return (
+    <Badge variant="info" size="sm">
+      Used: {count}
+    </Badge>
+  )
+}
+
 export function MediaLibraryPage() {
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -165,7 +262,8 @@ export function MediaLibraryPage() {
   const [error, setError] = useState<unknown>(null)
   const [deleteTarget, setDeleteTarget] = useState<UploadItem | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [usageInfo, setUsageInfo] = useState<{ fileName: string; usage: MediaUsageInfo } | null>(null)
+  const [usageInfo, setUsageInfo] = useState<{ fileName: string; usage: MediaUsageInfo; isDeleteBlocked: boolean } | null>(null)
+  const [loadingUsageFor, setLoadingUsageFor] = useState<string | null>(null)
 
   const loadUploads = async () => {
     try {
@@ -202,7 +300,8 @@ export function MediaLibraryPage() {
 
     try {
       const newUpload = await uploadsApi.upload(file)
-      setUploads([newUpload, ...uploads])
+      // New uploads have 0 usage
+      setUploads([{ ...newUpload, usageCount: 0 }, ...uploads])
       toast.success(`"${file.name}" uploaded successfully.`)
     } catch (err) {
       toast.error(extractErrorMessage(err))
@@ -228,13 +327,25 @@ export function MediaLibraryPage() {
       const apiError = err as { status?: number; error?: string; usage?: MediaUsageInfo }
       if (apiError.status === 409 && apiError.error === 'MEDIA_IN_USE' && apiError.usage) {
         // Show usage dialog instead of generic error
-        setUsageInfo({ fileName: deleteTarget.originalFileName, usage: apiError.usage })
+        setUsageInfo({ fileName: deleteTarget.originalFileName, usage: apiError.usage, isDeleteBlocked: true })
         setDeleteTarget(null)
       } else {
         toast.error(extractErrorMessage(err))
       }
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  const handleShowUsage = async (item: UploadItem) => {
+    setLoadingUsageFor(item.id)
+    try {
+      const usage = await uploadsApi.getUsage(item.id)
+      setUsageInfo({ fileName: item.originalFileName, usage, isDeleteBlocked: false })
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    } finally {
+      setLoadingUsageFor(null)
     }
   }
 
@@ -277,7 +388,7 @@ export function MediaLibraryPage() {
     return <Badge variant="neutral" size="md">FILE</Badge>
   }
 
-  const columnCount = 6
+  const columnCount = 7
 
   return (
     <AdminLayout title="Media Library">
@@ -312,6 +423,7 @@ export function MediaLibraryPage() {
                 <TableHeader>File Name</TableHeader>
                 <TableHeader>Type</TableHeader>
                 <TableHeader>Size</TableHeader>
+                <TableHeader>Used</TableHeader>
                 <TableHeader>Uploaded</TableHeader>
                 <TableHeader className="text-right">Actions</TableHeader>
               </TableRow>
@@ -351,12 +463,20 @@ export function MediaLibraryPage() {
                       </code>
                     </TableCell>
                     <TableCell>{formatFileSize(item.size)}</TableCell>
+                    <TableCell>
+                      <UsageBadge count={item.usageCount} />
+                    </TableCell>
                     <TableCell>{formatDate(item.createdAt)}</TableCell>
                     <TableCell className="text-right">
                       <RowActionsMenu
                         actions={[
                           { label: 'Copy URL', onClick: () => handleCopyUrl(item) },
                           { label: 'Open', onClick: () => window.open(getPublicUrl(item.url), '_blank') },
+                          {
+                            label: loadingUsageFor === item.id ? 'Loading...' : 'Where used',
+                            onClick: () => handleShowUsage(item),
+                            disabled: loadingUsageFor === item.id
+                          },
                           { label: 'Delete', onClick: () => setDeleteTarget(item), destructive: true },
                         ] as RowAction[]}
                       />
@@ -385,6 +505,7 @@ export function MediaLibraryPage() {
         onClose={() => setUsageInfo(null)}
         fileName={usageInfo?.fileName ?? ''}
         usage={usageInfo?.usage ?? null}
+        isDeleteBlocked={usageInfo?.isDeleteBlocked ?? true}
       />
     </AdminLayout>
   )

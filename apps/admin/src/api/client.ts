@@ -154,6 +154,7 @@ export interface UploadItem {
   height: number | null
   createdAt: string
   uploadedByUserId: string
+  usageCount?: number
 }
 
 // Media usage types
@@ -164,16 +165,27 @@ export interface PageMediaUsage {
   jsonPath: string
 }
 
+export interface NavigationMediaUsage {
+  key: string
+  jsonPath: string
+}
+
 export interface SettingsMediaUsage {
   settingsKey: string
   jsonPath: string
 }
 
 export interface MediaUsageInfo {
+  mediaId: string
+  pages: PageMediaUsage[]
+  navigation: NavigationMediaUsage[]
+  settings: SettingsMediaUsage[]
+  total: number
+  isInUse: boolean
+  // Legacy properties for backward compatibility
   usedByPages: PageMediaUsage[]
   usedBySettings: SettingsMediaUsage[]
   totalCount: number
-  isInUse: boolean
 }
 
 export interface MediaInUseError {
