@@ -16,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<UploadEntity> Uploads => Set<UploadEntity>();
     public DbSet<ContactMessageEntity> ContactMessages => Set<ContactMessageEntity>();
     public DbSet<NavigationEntity> Navigations => Set<NavigationEntity>();
+    public DbSet<SettingsEntity> Settings => Set<SettingsEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
