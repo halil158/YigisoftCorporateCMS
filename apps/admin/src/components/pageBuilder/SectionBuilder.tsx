@@ -4,11 +4,13 @@ import { SectionCard } from './SectionCard'
 import { Button, Select, ConfirmDialog } from '../ui'
 import {
   HeroEditor,
+  HeroInnerEditor,
   FeaturesEditor,
   CtaEditor,
   TestimonialsEditor,
   GalleryEditor,
   ContactFormEditor,
+  ContentBlockEditor,
 } from './editors'
 
 interface SectionBuilderProps {
@@ -99,6 +101,22 @@ export function SectionBuilder({ sections, onChange, errors = {} }: SectionBuild
       case 'hero':
         return (
           <HeroEditor
+            data={section.data as any}
+            onChange={(data) => updateSection(index, data)}
+            errors={sectionErrors}
+          />
+        )
+      case 'hero-inner':
+        return (
+          <HeroInnerEditor
+            data={section.data as any}
+            onChange={(data) => updateSection(index, data)}
+            errors={sectionErrors}
+          />
+        )
+      case 'content-block':
+        return (
+          <ContentBlockEditor
             data={section.data as any}
             onChange={(data) => updateSection(index, data)}
             errors={sectionErrors}

@@ -14,11 +14,13 @@ public static class SectionsValidator
     private static readonly Dictionary<string, Func<JsonElement, string, List<string>>> TypeValidators = new()
     {
         ["hero"] = ValidateHeroSection,
+        ["hero-inner"] = ValidateHeroInnerSection,
         ["features"] = ValidateFeaturesSection,
         ["cta"] = ValidateCtaSection,
         ["testimonials"] = ValidateTestimonialsSection,
         ["gallery"] = ValidateGallerySection,
-        ["contact-form"] = ValidateContactFormSection
+        ["contact-form"] = ValidateContactFormSection,
+        ["content-block"] = ValidateContentBlockSection
     };
 
     /// <summary>
@@ -478,6 +480,148 @@ public static class SectionsValidator
         if (fieldCount == 0)
         {
             errors.Add($"{prefix}.fields must have at least 1 element");
+        }
+
+        return errors;
+    }
+
+    /// <summary>
+    /// Content block section validator.
+    /// Required: title (non-empty string)
+    /// Optional: subtitle, content (HTML), imageUrl, layout (text-left|text-right|text-center), variant (default|highlight|muted)
+    /// </summary>
+    private static List<string> ValidateContentBlockSection(JsonElement data, string prefix)
+    {
+        var errors = new List<string>();
+        var allowedLayouts = new HashSet<string> { "text-left", "text-right", "text-center" };
+        var allowedVariants = new HashSet<string> { "default", "highlight", "muted" };
+
+        // title is required (non-empty string)
+        if (!TryGetNonEmptyString(data, "title", out _))
+        {
+            errors.Add($"{prefix}.title is required");
+        }
+
+        // subtitle is optional string
+        ValidateOptionalString(data, "subtitle", prefix, errors);
+
+        // content is optional string (can be HTML)
+        ValidateOptionalString(data, "content", prefix, errors);
+
+        // imageUrl is optional string
+        ValidateOptionalString(data, "imageUrl", prefix, errors);
+
+        // layout is optional (must be one of allowed values)
+        if (data.TryGetProperty("layout", out var layoutElement))
+        {
+            if (layoutElement.ValueKind == JsonValueKind.String)
+            {
+                var layout = layoutElement.GetString();
+                if (!string.IsNullOrEmpty(layout) && !allowedLayouts.Contains(layout))
+                {
+                    var allowed = string.Join(", ", allowedLayouts);
+                    errors.Add($"{prefix}.layout '{layout}' is not valid. Allowed values: {allowed}");
+                }
+            }
+            else if (layoutElement.ValueKind != JsonValueKind.Null)
+            {
+                errors.Add($"{prefix}.layout must be a string");
+            }
+        }
+
+        // variant is optional (must be one of allowed values)
+        if (data.TryGetProperty("variant", out var variantElement))
+        {
+            if (variantElement.ValueKind == JsonValueKind.String)
+            {
+                var variant = variantElement.GetString();
+                if (!string.IsNullOrEmpty(variant) && !allowedVariants.Contains(variant))
+                {
+                    var allowed = string.Join(", ", allowedVariants);
+                    errors.Add($"{prefix}.variant '{variant}' is not valid. Allowed values: {allowed}");
+                }
+            }
+            else if (variantElement.ValueKind != JsonValueKind.Null)
+            {
+                errors.Add($"{prefix}.variant must be a string");
+            }
+        }
+
+        return errors;
+    }
+
+    /// <summary>
+    /// Hero inner section validator (for inner pages with breadcrumb support).
+    /// Required: title (non-empty string)
+    /// Optional: subtitle, backgroundImageUrl, overlayOpacity (number 0-100), breadcrumbs (array)
+    /// Each breadcrumb: text (required), url (optional)
+    /// </summary>
+    private static List<string> ValidateHeroInnerSection(JsonElement data, string prefix)
+    {
+        var errors = new List<string>();
+
+        // title is required (non-empty string)
+        if (!TryGetNonEmptyString(data, "title", out _))
+        {
+            errors.Add($"{prefix}.title is required");
+        }
+
+        // subtitle is optional string
+        ValidateOptionalString(data, "subtitle", prefix, errors);
+
+        // backgroundImageUrl is optional string
+        ValidateOptionalString(data, "backgroundImageUrl", prefix, errors);
+
+        // overlayOpacity is optional number (0-100)
+        if (data.TryGetProperty("overlayOpacity", out var opacityElement))
+        {
+            if (opacityElement.ValueKind == JsonValueKind.Number)
+            {
+                var opacity = opacityElement.GetDouble();
+                if (opacity < 0 || opacity > 100)
+                {
+                    errors.Add($"{prefix}.overlayOpacity must be between 0 and 100");
+                }
+            }
+            else if (opacityElement.ValueKind != JsonValueKind.Null)
+            {
+                errors.Add($"{prefix}.overlayOpacity must be a number");
+            }
+        }
+
+        // breadcrumbs is optional array
+        if (data.TryGetProperty("breadcrumbs", out var breadcrumbsElement))
+        {
+            if (breadcrumbsElement.ValueKind == JsonValueKind.Array)
+            {
+                var itemCount = 0;
+                foreach (var item in breadcrumbsElement.EnumerateArray())
+                {
+                    var itemPrefix = $"{prefix}.breadcrumbs[{itemCount}]";
+
+                    if (item.ValueKind != JsonValueKind.Object)
+                    {
+                        errors.Add($"{itemPrefix} must be an object");
+                    }
+                    else
+                    {
+                        // text is required in each breadcrumb
+                        if (!TryGetNonEmptyString(item, "text", out _))
+                        {
+                            errors.Add($"{itemPrefix}.text is required");
+                        }
+
+                        // url is optional string
+                        ValidateOptionalString(item, "url", itemPrefix, errors);
+                    }
+
+                    itemCount++;
+                }
+            }
+            else if (breadcrumbsElement.ValueKind != JsonValueKind.Null)
+            {
+                errors.Add($"{prefix}.breadcrumbs must be an array");
+            }
         }
 
         return errors;

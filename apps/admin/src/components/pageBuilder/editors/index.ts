@@ -1,6 +1,8 @@
 export { HeroEditor } from './HeroEditor'
+export { HeroInnerEditor } from './HeroInnerEditor'
 export { FeaturesEditor } from './FeaturesEditor'
 export { CtaEditor } from './CtaEditor'
 export { TestimonialsEditor } from './TestimonialsEditor'
 export { GalleryEditor } from './GalleryEditor'
 export { ContactFormEditor } from './ContactFormEditor'
+export { ContentBlockEditor } from './ContentBlockEditor'

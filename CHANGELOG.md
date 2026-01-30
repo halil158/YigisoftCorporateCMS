@@ -97,6 +97,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Shows "Page not found" warning if the referenced page doesn't exist
   - Improves workflow for managing navigation-linked pages
 
+- ContentBlock Section Type (Phase 3.5)
+  - New `content-block` section for generic content with text and image
+  - Fields: title (required), subtitle, content (HTML), imageUrl
+  - Layout options: `text-left` (default), `text-right`, `text-center`
+  - Variant options: `default`, `highlight` (colored bg), `muted` (gray bg)
+  - Admin editor with layout/variant dropdowns and image picker
+  - Public rendering with responsive 2-column layouts
+  - Example JSON:
+    ```json
+    {
+      "type": "content-block",
+      "data": {
+        "title": "About Us",
+        "subtitle": "Our Story",
+        "content": "<p>We build quality products...</p>",
+        "imageUrl": "/uploads/2026/01/about.jpg",
+        "layout": "text-left",
+        "variant": "default"
+      }
+    }
+    ```
+
+- HeroInner Section Type (Phase 3.5)
+  - New `hero-inner` section for inner page headers with breadcrumb navigation
+  - Fields: title (required), subtitle, backgroundImageUrl, overlayOpacity (0-100)
+  - Breadcrumbs array: each item has text (required) and optional url
+  - Shorter height than main hero, designed for inner/subpages
+  - Breadcrumb navigation with chevron separators
+  - Admin editor with breadcrumb management (add/remove/reorder)
+  - Overlay slider for controlling background visibility
+  - Example JSON:
+    ```json
+    {
+      "type": "hero-inner",
+      "data": {
+        "title": "Products",
+        "subtitle": "Explore our product range",
+        "backgroundImageUrl": "/uploads/2026/01/products-bg.jpg",
+        "overlayOpacity": 50,
+        "breadcrumbs": [
+          { "text": "Home", "url": "/" },
+          { "text": "Products" }
+        ]
+      }
+    }
+    ```
+
 - Initial project setup
 - Repository hygiene files (.gitignore, README.md, CHANGELOG.md)
 - Monorepo folder structure (apps/, src/, infra/, docs/)

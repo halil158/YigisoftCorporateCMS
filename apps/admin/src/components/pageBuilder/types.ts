@@ -4,11 +4,13 @@
  */
 export type SectionType =
   | 'hero'
+  | 'hero-inner'
   | 'features'
   | 'cta'
   | 'testimonials'
   | 'gallery'
   | 'contact-form'
+  | 'content-block'
 
 /**
  * Section type metadata for UI display
@@ -22,6 +24,8 @@ export interface SectionTypeMeta {
 
 export const SECTION_TYPES: SectionTypeMeta[] = [
   { type: 'hero', label: 'Hero', description: 'Large header with title, subtitle, and CTA', icon: 'H' },
+  { type: 'hero-inner', label: 'Hero Inner', description: 'Shorter hero for inner pages with breadcrumb', icon: 'h' },
+  { type: 'content-block', label: 'Content Block', description: 'Generic content section with text and image', icon: 'B' },
   { type: 'features', label: 'Features', description: 'List of features with icons', icon: 'F' },
   { type: 'cta', label: 'Call to Action', description: 'Prominent button with message', icon: 'C' },
   { type: 'testimonials', label: 'Testimonials', description: 'Customer quotes and reviews', icon: 'T' },
@@ -40,6 +44,34 @@ export interface HeroData {
     text?: string
     url?: string
   }
+}
+
+/**
+ * Hero inner section data (for inner pages with breadcrumb support)
+ */
+export interface HeroInnerData {
+  title: string
+  subtitle?: string
+  backgroundImageUrl?: string
+  overlayOpacity?: number
+  breadcrumbs?: BreadcrumbItem[]
+}
+
+export interface BreadcrumbItem {
+  text: string
+  url?: string
+}
+
+/**
+ * Content block section data
+ */
+export interface ContentBlockData {
+  title: string
+  subtitle?: string
+  content?: string
+  imageUrl?: string
+  layout?: 'text-left' | 'text-right' | 'text-center'
+  variant?: 'default' | 'highlight' | 'muted'
 }
 
 /**
@@ -119,11 +151,13 @@ export interface ContactFormField {
  */
 export type SectionData =
   | HeroData
+  | HeroInnerData
   | FeaturesData
   | CtaData
   | TestimonialsData
   | GalleryData
   | ContactFormData
+  | ContentBlockData
 
 /**
  * A section in the page builder
@@ -140,6 +174,10 @@ export function createDefaultSectionData(type: SectionType): SectionData {
   switch (type) {
     case 'hero':
       return { title: '' }
+    case 'hero-inner':
+      return { title: '', breadcrumbs: [{ text: 'Home', url: '/' }] }
+    case 'content-block':
+      return { title: '', layout: 'text-left', variant: 'default' }
     case 'features':
       return { title: '', items: [{ title: '' }] }
     case 'cta':

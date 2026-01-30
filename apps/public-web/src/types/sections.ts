@@ -4,11 +4,13 @@
  */
 export type SectionType =
   | 'hero'
+  | 'hero-inner'
   | 'features'
   | 'cta'
   | 'testimonials'
   | 'gallery'
   | 'contact-form'
+  | 'content-block'
 
 /**
  * Hero section data
@@ -21,6 +23,34 @@ export interface HeroData {
     text?: string
     url?: string
   }
+}
+
+/**
+ * Hero inner section data (for inner pages with breadcrumb support)
+ */
+export interface HeroInnerData {
+  title: string
+  subtitle?: string
+  backgroundImageUrl?: string
+  overlayOpacity?: number
+  breadcrumbs?: BreadcrumbItem[]
+}
+
+export interface BreadcrumbItem {
+  text: string
+  url?: string
+}
+
+/**
+ * Content block section data
+ */
+export interface ContentBlockData {
+  title: string
+  subtitle?: string
+  content?: string
+  imageUrl?: string
+  layout?: 'text-left' | 'text-right' | 'text-center'
+  variant?: 'default' | 'highlight' | 'muted'
 }
 
 /**
@@ -100,5 +130,5 @@ export interface ContactFormField {
  */
 export interface Section {
   type: SectionType
-  data: HeroData | FeaturesData | CtaData | TestimonialsData | GalleryData | ContactFormData
+  data: HeroData | HeroInnerData | FeaturesData | CtaData | TestimonialsData | GalleryData | ContactFormData | ContentBlockData
 }
