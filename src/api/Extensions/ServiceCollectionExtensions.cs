@@ -238,6 +238,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IImageProcessingService, ImageProcessingService>();
         services.AddScoped<IUploadService, UploadService>();
+        services.AddScoped<YigisoftCorporateCMS.Api.Services.MediaUsageService>();
 
         return services;
     }

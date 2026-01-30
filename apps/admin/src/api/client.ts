@@ -156,6 +156,31 @@ export interface UploadItem {
   uploadedByUserId: string
 }
 
+// Media usage types
+export interface PageMediaUsage {
+  pageId: string
+  slug: string
+  title: string
+  jsonPath: string
+}
+
+export interface SettingsMediaUsage {
+  settingsKey: string
+  jsonPath: string
+}
+
+export interface MediaUsageInfo {
+  usedByPages: PageMediaUsage[]
+  usedBySettings: SettingsMediaUsage[]
+  totalCount: number
+  isInUse: boolean
+}
+
+export interface MediaInUseError {
+  error: 'MEDIA_IN_USE'
+  usage: MediaUsageInfo
+}
+
 // Special upload function for multipart/form-data
 async function uploadFile(file: File): Promise<UploadItem> {
   const token = localStorage.getItem('token')
@@ -184,6 +209,9 @@ export const uploadsApi = {
     apiRequest<UploadItem[]>(`/admin/uploads?take=${take}`),
 
   upload: (file: File) => uploadFile(file),
+
+  getUsage: (id: string) =>
+    apiRequest<MediaUsageInfo>(`/admin/uploads/${id}/usage`),
 
   delete: (id: string) =>
     apiRequest<void>(`/admin/uploads/${id}`, {

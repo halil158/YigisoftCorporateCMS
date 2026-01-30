@@ -5,7 +5,9 @@ using Microsoft.Extensions.Options;
 using Serilog;
 using YigisoftCorporateCMS.Api.Extensions;
 using YigisoftCorporateCMS.Api.Data;
+using YigisoftCorporateCMS.Api.Dtos;
 using YigisoftCorporateCMS.Api.Entities;
+using YigisoftCorporateCMS.Api.Services;
 using YigisoftCorporateCMS.Api.Uploads;
 
 namespace YigisoftCorporateCMS.Api.Endpoints;
@@ -111,10 +113,27 @@ public static class AdminUploadsEndpoints
             return Results.Ok(uploads);
         });
 
+        // GET /api/admin/uploads/{id}/usage - Get media usage information
+        admin.MapGet("/uploads/{id:guid}/usage", async (
+            Guid id,
+            MediaUsageService mediaUsageService,
+            AppDbContext db) =>
+        {
+            var upload = await db.Uploads.FindAsync(id);
+            if (upload is null)
+            {
+                return Results.NotFound(new { error = "NotFound", message = "Upload not found" });
+            }
+
+            var usage = await mediaUsageService.GetUsageAsync(id);
+            return Results.Ok(usage);
+        });
+
         // DELETE /api/admin/uploads/{id} - Delete an upload
         admin.MapDelete("/uploads/{id:guid}", async (
             Guid id,
             AppDbContext db,
+            MediaUsageService mediaUsageService,
             IOptions<UploadOptions> options) =>
         {
             var upload = await db.Uploads.FindAsync(id);
@@ -122,6 +141,14 @@ public static class AdminUploadsEndpoints
             if (upload is null)
             {
                 return Results.NotFound(new { error = "NotFound", message = "Upload not found" });
+            }
+
+            // Check if media is in use
+            var usage = await mediaUsageService.GetUsageAsync(id);
+            if (usage.IsInUse)
+            {
+                Log.Warning("Attempted to delete media {UploadId} that is in use by {UsageCount} resources", id, usage.TotalCount);
+                return Results.Conflict(new MediaInUseError("MEDIA_IN_USE", usage));
             }
 
             // Try to delete main file from disk
