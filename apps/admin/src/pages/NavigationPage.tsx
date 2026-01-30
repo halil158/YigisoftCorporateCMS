@@ -188,19 +188,42 @@ function NavigationItemEditor({
           </Select>
 
           {item.type === 'page' && (
-            <Select
-              id={`slug-${item.id}`}
-              label="Page *"
-              value={item.slug || ''}
-              onChange={(e) => handleFieldChange('slug', e.target.value)}
-            >
-              <option value="">Select a page...</option>
-              {pages.map((page) => (
-                <option key={page.id} value={page.slug}>
-                  {page.title} (/{page.slug})
-                </option>
-              ))}
-            </Select>
+            <div className="space-y-2">
+              <Select
+                id={`slug-${item.id}`}
+                label="Page *"
+                value={item.slug || ''}
+                onChange={(e) => handleFieldChange('slug', e.target.value)}
+              >
+                <option value="">Select a page...</option>
+                {pages.map((page) => (
+                  <option key={page.id} value={page.slug}>
+                    {page.title} (/{page.slug})
+                  </option>
+                ))}
+              </Select>
+              {item.slug && (() => {
+                const linkedPage = pages.find((p) => p.slug === item.slug)
+                if (linkedPage) {
+                  return (
+                    <a
+                      href={`/admin/pages/${linkedPage.id}`}
+                      className="inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit Page
+                    </a>
+                  )
+                }
+                return (
+                  <span className="text-sm text-amber-600 dark:text-amber-400">
+                    Page not found
+                  </span>
+                )
+              })()}
+            </div>
           )}
 
           {item.type === 'external' && (

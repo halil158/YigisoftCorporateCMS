@@ -5,6 +5,7 @@ using Serilog;
 using YigisoftCorporateCMS.Api.Data;
 using YigisoftCorporateCMS.Api.Dtos;
 using YigisoftCorporateCMS.Api.Entities;
+using YigisoftCorporateCMS.Api.Seeding;
 using YigisoftCorporateCMS.Api.Validation.Sections;
 
 namespace YigisoftCorporateCMS.Api.Endpoints;
@@ -16,6 +17,12 @@ public static class AdminPagesEndpoints
 {
     // Slug validation regex: lowercase alphanumeric with hyphens
     private static readonly Regex SlugRegex = new(@"^[a-z0-9]+(?:-[a-z0-9]+)*$", RegexOptions.Compiled);
+
+    // Reserved slugs that cannot be deleted or renamed
+    private static readonly HashSet<string> ReservedSlugs = new(StringComparer.OrdinalIgnoreCase)
+    {
+        CmsSeeder.HomePageSlug
+    };
 
     public static IEndpointRouteBuilder MapAdminPagesEndpoints(this IEndpointRouteBuilder admin)
     {
@@ -132,6 +139,13 @@ public static class AdminPagesEndpoints
 
             var slug = request.Slug.Trim().ToLowerInvariant();
 
+            // Check if trying to change a reserved slug
+            if (ReservedSlugs.Contains(page.Slug) && page.Slug != slug)
+            {
+                Log.Warning("Page update failed: cannot change reserved slug {Slug} (PageId: {PageId})", page.Slug, id);
+                return Results.BadRequest(new { error = $"Cannot change the slug of the '{page.Slug}' page. This is a reserved system page.", code = "reserved_slug" });
+            }
+
             // Check slug uniqueness (excluding current page)
             var slugExists = await db.Pages.AnyAsync(p => p.Slug == slug && p.Id != id);
             if (slugExists)
@@ -183,6 +197,13 @@ public static class AdminPagesEndpoints
             var page = await db.Pages.FirstOrDefaultAsync(p => p.Id == id);
             if (page is null)
                 return Results.NotFound(new { error = "Page not found" });
+
+            // Check if trying to delete a reserved page
+            if (ReservedSlugs.Contains(page.Slug))
+            {
+                Log.Warning("Page deletion blocked: cannot delete reserved page {Slug} (PageId: {PageId})", page.Slug, id);
+                return Results.BadRequest(new { error = $"Cannot delete the '{page.Slug}' page. This is a reserved system page.", code = "reserved_page" });
+            }
 
             var slug = page.Slug;
             db.Pages.Remove(page);

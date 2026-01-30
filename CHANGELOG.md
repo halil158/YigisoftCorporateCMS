@@ -82,6 +82,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     }
     ```
 
+- Home Page Auto-Seed (Phase 3.4)
+  - Home page (slug: "home") is automatically created on application startup if missing
+  - Seeding runs after database migrations, idempotent (safe to run multiple times)
+  - Home page is published by default with a minimal hero section
+  - Reserved page protection:
+    - Cannot delete the home page (returns 400 with code "reserved_page")
+    - Cannot change the home page slug (returns 400 with code "reserved_slug")
+  - CmsSeeder class handles startup seeding logic
+
+- Navigation Edit Page Link (Phase 3.4)
+  - Admin navigation editor now shows "Edit Page" link for page-type items
+  - Clicking the link opens the page editor for the linked page
+  - Shows "Page not found" warning if the referenced page doesn't exist
+  - Improves workflow for managing navigation-linked pages
+
 - Initial project setup
 - Repository hygiene files (.gitignore, README.md, CHANGELOG.md)
 - Monorepo folder structure (apps/, src/, infra/, docs/)

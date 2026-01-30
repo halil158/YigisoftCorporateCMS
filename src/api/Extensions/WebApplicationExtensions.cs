@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using YigisoftCorporateCMS.Api.Data;
+using YigisoftCorporateCMS.Api.Seeding;
 
 namespace YigisoftCorporateCMS.Api.Extensions;
 
@@ -16,6 +17,9 @@ public static class WebApplicationExtensions
     {
         // Apply migrations in Development
         ApplyMigrationsIfDevelopment(app);
+
+        // Seed required data (runs after migrations)
+        SeedRequiredData(app);
 
         // Forwarded headers must be FIRST to get real client IP from nginx
         app.UseForwardedHeaders();
@@ -69,6 +73,20 @@ public static class WebApplicationExtensions
         else
         {
             Log.Information("Skipping auto-migration (not in Development environment)");
+        }
+    }
+
+    private static void SeedRequiredData(WebApplication app)
+    {
+        try
+        {
+            CmsSeeder.SeedAsync(app.Services).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to seed required CMS data");
+            // Don't throw - seeding failure shouldn't prevent app startup
+            // The home page can be created manually if needed
         }
     }
 }
