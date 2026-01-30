@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, useRef, useEffect, type ReactNode } from 'react'
 import { useNavigation } from '../hooks/useNavigation'
 import { useBranding } from '../hooks/useBranding'
 import type { NavigationItem } from '../api/client'
@@ -7,9 +7,64 @@ interface Props {
   children: ReactNode
 }
 
-function NavLinkContent({ item }: { item: NavigationItem }) {
-  const href = item.type === 'page' ? `/${item.slug}` : item.url
+// External link icon component
+function ExternalLinkIcon() {
+  return (
+    <svg
+      className="inline-block w-3 h-3 ml-1 -mt-0.5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+      />
+    </svg>
+  )
+}
+
+// Chevron icons
+function ChevronDown() {
+  return (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  )
+}
+
+function ChevronRight() {
+  return (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    </svg>
+  )
+}
+
+// Navigation link for items without children
+function NavLink({ item }: { item: NavigationItem }) {
   const isExternal = item.type === 'external'
+  const href = item.type === 'page' ? `/${item.slug}` : item.url
+
+  return (
+    <a
+      href={href}
+      target={isExternal && item.newTab ? '_blank' : undefined}
+      rel={isExternal && item.newTab ? 'noopener noreferrer' : undefined}
+      className="text-gray-600 hover:text-primary-600 transition-colors"
+    >
+      {item.label}
+      {isExternal && item.newTab && <ExternalLinkIcon />}
+    </a>
+  )
+}
+
+// Dropdown link content (used in dropdown menus)
+function DropdownLinkContent({ item }: { item: NavigationItem }) {
+  const isExternal = item.type === 'external'
+  const href = item.type === 'page' ? `/${item.slug}` : item.url
 
   return (
     <a
@@ -19,94 +74,159 @@ function NavLinkContent({ item }: { item: NavigationItem }) {
       className="block px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-gray-50 transition-colors"
     >
       {item.label}
-      {isExternal && item.newTab && (
-        <svg
-          className="inline-block w-3 h-3 ml-1 -mt-0.5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-          />
-        </svg>
-      )}
+      {isExternal && item.newTab && <ExternalLinkIcon />}
     </a>
   )
 }
 
-function NavLink({ item }: { item: NavigationItem }) {
-  if (item.type === 'page') {
+// Level 3 submenu (deepest level)
+function Submenu({
+  items,
+  parentRect,
+  isVisible
+}: {
+  items: NavigationItem[]
+  parentRect: DOMRect | null
+  isVisible: boolean
+}) {
+  const [flipToLeft, setFlipToLeft] = useState(false)
+  const menuRef = useRef<HTMLUListElement>(null)
+
+  useEffect(() => {
+    if (!parentRect || !isVisible) return
+
+    const menuWidth = 200 // min-w-48 = 12rem = 192px, use 200 for safety
+    const viewportWidth = window.innerWidth
+    const rightEdge = parentRect.right + menuWidth
+    const leftEdge = parentRect.left - menuWidth
+
+    // Flip to left if opening right would overflow and left has space
+    setFlipToLeft(rightEdge > viewportWidth && leftEdge >= 0)
+  }, [parentRect, isVisible])
+
+  if (!isVisible) return null
+
+  return (
+    <div
+      className={`absolute top-0 ${flipToLeft ? 'right-full pr-2' : 'left-full pl-2'} z-50`}
+    >
+      <ul
+        ref={menuRef}
+        className="bg-white border border-gray-200 rounded-lg shadow-lg min-w-48 py-1"
+      >
+        {items.map((item) => (
+          <li key={item.id}>
+            <DropdownLinkContent item={item} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+// Level 2 dropdown item (can have Level 3 children)
+function DropdownItem({ item }: { item: NavigationItem }) {
+  const [isHovered, setIsHovered] = useState(false)
+  const itemRef = useRef<HTMLLIElement>(null)
+  const [itemRect, setItemRect] = useState<DOMRect | null>(null)
+
+  const hasChildren = item.children.length > 0
+
+  useEffect(() => {
+    if (isHovered && itemRef.current) {
+      setItemRect(itemRef.current.getBoundingClientRect())
+    }
+  }, [isHovered])
+
+  if (!hasChildren) {
+    return (
+      <li>
+        <DropdownLinkContent item={item} />
+      </li>
+    )
+  }
+
+  const renderItemContent = () => {
+    if (item.type === 'group') {
+      return <span className="flex-1">{item.label}</span>
+    }
+
+    const href = item.type === 'page' ? `/${item.slug}` : item.url
+    const isExternal = item.type === 'external'
+
     return (
       <a
-        href={`/${item.slug}`}
-        className="text-gray-600 hover:text-primary-600 transition-colors"
+        href={href}
+        target={isExternal && item.newTab ? '_blank' : undefined}
+        rel={isExternal && item.newTab ? 'noopener noreferrer' : undefined}
+        className="flex-1"
       >
         {item.label}
       </a>
     )
   }
 
-  // External link
   return (
-    <a
-      href={item.url}
-      target={item.newTab ? '_blank' : undefined}
-      rel={item.newTab ? 'noopener noreferrer' : undefined}
-      className="text-gray-600 hover:text-primary-600 transition-colors"
+    <li
+      ref={itemRef}
+      className="relative"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      {item.label}
-      {item.newTab && (
-        <svg
-          className="inline-block w-3 h-3 ml-1 -mt-0.5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-          />
-        </svg>
-      )}
-    </a>
+      <div className="flex items-center justify-between px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-gray-50 transition-colors cursor-pointer">
+        {renderItemContent()}
+        <ChevronRight />
+      </div>
+      <Submenu
+        items={item.children}
+        parentRect={itemRect}
+        isVisible={isHovered}
+      />
+    </li>
   )
 }
 
-function DropdownMenu({ item }: { item: NavigationItem }) {
+// Level 1 dropdown menu (top-level nav items with children)
+function DropdownMenu({ item, index, totalItems }: { item: NavigationItem; index: number; totalItems: number }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [alignRight, setAlignRight] = useState(false)
+
   const hasChildren = item.children.length > 0
+
+  // Determine if this dropdown should align to the right based on position
+  useEffect(() => {
+    if (!menuRef.current || !isOpen) return
+
+    const rect = menuRef.current.getBoundingClientRect()
+    const menuWidth = 200
+    const viewportWidth = window.innerWidth
+
+    // If the dropdown would overflow right, align it to the right
+    const wouldOverflowRight = rect.left + menuWidth > viewportWidth
+    // Also align right if this is one of the last items
+    const isLastItems = index >= totalItems - 2
+
+    setAlignRight(wouldOverflowRight || isLastItems)
+  }, [isOpen, index, totalItems])
 
   if (!hasChildren) {
     return <NavLink item={item} />
   }
 
-  // For group type: render as non-navigating button
-  // For page/external with children: render the link + dropdown
   const renderParentContent = () => {
     if (item.type === 'group') {
-      // Group: non-clickable, just opens dropdown on hover
-      return (
-        <span className="cursor-default">{item.label}</span>
-      )
+      return <span className="cursor-default">{item.label}</span>
     }
-    if (item.type === 'page') {
-      return (
-        <a href={`/${item.slug}`} className="hover:text-primary-600">
-          {item.label}
-        </a>
-      )
-    }
-    // external
+
+    const href = item.type === 'page' ? `/${item.slug}` : item.url
+    const isExternal = item.type === 'external'
+
     return (
       <a
-        href={item.url}
-        target={item.newTab ? '_blank' : undefined}
-        rel={item.newTab ? 'noopener noreferrer' : undefined}
+        href={href}
+        target={isExternal && item.newTab ? '_blank' : undefined}
+        rel={isExternal && item.newTab ? 'noopener noreferrer' : undefined}
         className="hover:text-primary-600"
       >
         {item.label}
@@ -115,74 +235,36 @@ function DropdownMenu({ item }: { item: NavigationItem }) {
   }
 
   return (
-    <div className="relative group">
-      {/* Parent item - group is non-navigating, page/external can be clicked */}
+    <div
+      ref={menuRef}
+      className="relative"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
       <button
         type="button"
         className="flex items-center gap-1 text-gray-600 hover:text-primary-600 transition-colors"
         aria-haspopup="true"
+        aria-expanded={isOpen}
       >
         {renderParentContent()}
-        <svg
-          className="w-4 h-4 text-gray-400 group-hover:text-primary-600 transition-colors"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+        <span className={`transition-colors ${isOpen ? 'text-primary-600' : 'text-gray-400'}`}>
+          <ChevronDown />
+        </span>
       </button>
 
-      {/* Level 2 dropdown */}
-      <div className="absolute left-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+      {/* Dropdown panel */}
+      <div
+        className={`
+          absolute top-full pt-2 z-50
+          transition-all duration-150
+          ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}
+          ${alignRight ? 'right-0' : 'left-0'}
+        `}
+      >
         <ul className="bg-white border border-gray-200 rounded-lg shadow-lg min-w-48 py-1">
           {item.children.map((child) => (
-            <li key={child.id} className="relative group/sub">
-              {child.children.length > 0 ? (
-                <>
-                  {/* Level 2 item with level 3 children */}
-                  <div className="flex items-center justify-between px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-gray-50 transition-colors cursor-pointer">
-                    {child.type === 'group' ? (
-                      <span className="flex-1">{child.label}</span>
-                    ) : child.type === 'page' ? (
-                      <a href={`/${child.slug}`} className="flex-1">
-                        {child.label}
-                      </a>
-                    ) : (
-                      <a
-                        href={child.url}
-                        target={child.newTab ? '_blank' : undefined}
-                        rel={child.newTab ? 'noopener noreferrer' : undefined}
-                        className="flex-1"
-                      >
-                        {child.label}
-                      </a>
-                    )}
-                    <svg
-                      className="w-4 h-4 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-
-                  {/* Level 3 submenu */}
-                  <div className="absolute left-full top-0 pl-2 opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-150">
-                    <ul className="bg-white border border-gray-200 rounded-lg shadow-lg min-w-48 py-1">
-                      {child.children.map((grandchild) => (
-                        <li key={grandchild.id}>
-                          <NavLinkContent item={grandchild} />
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </>
-              ) : (
-                <NavLinkContent item={child} />
-              )}
-            </li>
+            <DropdownItem key={child.id} item={child} />
           ))}
         </ul>
       </div>
@@ -190,20 +272,140 @@ function DropdownMenu({ item }: { item: NavigationItem }) {
   )
 }
 
+// Mobile menu button
+function MobileMenuButton({ isOpen, onClick }: { isOpen: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="sm:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+      aria-label={isOpen ? 'Close menu' : 'Open menu'}
+      aria-expanded={isOpen}
+    >
+      {isOpen ? (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      ) : (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      )}
+    </button>
+  )
+}
+
+// Mobile navigation menu
+function MobileNav({ items, isOpen, onClose }: { items: NavigationItem[]; isOpen: boolean; onClose: () => void }) {
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
+
+  const toggleExpand = (id: string) => {
+    setExpandedItems(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  const renderMobileItem = (item: NavigationItem, level: number = 0) => {
+    const hasChildren = item.children.length > 0
+    const isExpanded = expandedItems.has(item.id)
+    const paddingLeft = `${1 + level * 1}rem`
+
+    if (!hasChildren) {
+      const href = item.type === 'page' ? `/${item.slug}` : item.url
+      const isExternal = item.type === 'external'
+
+      return (
+        <a
+          key={item.id}
+          href={href}
+          target={isExternal && item.newTab ? '_blank' : undefined}
+          rel={isExternal && item.newTab ? 'noopener noreferrer' : undefined}
+          className="block py-3 text-gray-700 hover:text-primary-600 border-b border-gray-100"
+          style={{ paddingLeft }}
+          onClick={onClose}
+        >
+          {item.label}
+          {isExternal && item.newTab && <ExternalLinkIcon />}
+        </a>
+      )
+    }
+
+    return (
+      <div key={item.id}>
+        <button
+          type="button"
+          onClick={() => toggleExpand(item.id)}
+          className="w-full flex items-center justify-between py-3 text-gray-700 hover:text-primary-600 border-b border-gray-100"
+          style={{ paddingLeft, paddingRight: '1rem' }}
+        >
+          <span>{item.label}</span>
+          <span className={`transition-transform ${isExpanded ? 'rotate-90' : ''}`}>
+            <ChevronRight />
+          </span>
+        </button>
+        {isExpanded && (
+          <div className="bg-gray-50">
+            {item.children.map(child => renderMobileItem(child, level + 1))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className="sm:hidden fixed inset-0 top-16 z-40 bg-white overflow-y-auto">
+      <nav className="px-4 py-2">
+        {items.map(item => renderMobileItem(item))}
+      </nav>
+    </div>
+  )
+}
+
 export function Layout({ children }: Props) {
   const { items, isLoading } = useNavigation('main')
   const { branding } = useBranding()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Use logo URL from branding or fallback to placeholder
+  // Close mobile menu on resize to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 640 && mobileMenuOpen) {
+        setMobileMenuOpen(false)
+      }
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [mobileMenuOpen])
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [mobileMenuOpen])
+
   const logoUrl = branding.logoLightUrl
   const siteName = branding.siteName || 'Yigisoft'
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white border-b border-gray-200 relative z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <a href="/" className="flex items-center gap-2">
+            <a href="/" className="flex items-center gap-2 flex-shrink-0">
               {logoUrl ? (
                 <img src={logoUrl} alt={siteName} className="h-8 w-auto" />
               ) : (
@@ -215,21 +417,42 @@ export function Layout({ children }: Props) {
                 </>
               )}
             </a>
+
+            {/* Desktop navigation */}
             <nav className="hidden sm:flex items-center gap-6">
               {isLoading ? (
                 <span className="text-gray-400">...</span>
               ) : items.length > 0 ? (
-                items.map((item) => <DropdownMenu key={item.id} item={item} />)
+                items.map((item, index) => (
+                  <DropdownMenu
+                    key={item.id}
+                    item={item}
+                    index={index}
+                    totalItems={items.length}
+                  />
+                ))
               ) : (
-                // Fallback to Home if no navigation configured
                 <a href="/" className="text-gray-600 hover:text-primary-600 transition-colors">
                   Home
                 </a>
               )}
             </nav>
+
+            {/* Mobile menu button */}
+            <MobileMenuButton
+              isOpen={mobileMenuOpen}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            />
           </div>
         </div>
       </header>
+
+      {/* Mobile navigation */}
+      <MobileNav
+        items={items}
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+      />
 
       <main className="flex-1">
         {children}
