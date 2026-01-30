@@ -51,12 +51,12 @@ export function ContactFormSection({ data }: Props) {
         </div>
 
         {status === 'success' ? (
-          <div className="mt-10 bg-primary-50 border border-primary-200 rounded-xl p-8 text-center">
-            <div className="w-12 h-12 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
+          <div className="mt-10 success-card">
+            <div className="icon-bubble mx-auto mb-4">
               ✓
             </div>
-            <h3 className="text-lg font-semibold text-primary-800">Message Sent!</h3>
-            <p className="mt-2 text-primary-700">Thank you for reaching out. We'll get back to you soon.</p>
+            <h3 className="text-lg font-semibold" style={{ color: 'var(--color-primary-700)' }}>Message Sent!</h3>
+            <p className="mt-2" style={{ color: 'var(--color-primary-600)' }}>Thank you for reaching out. We'll get back to you soon.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="mt-10 space-y-6">
