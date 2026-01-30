@@ -11,6 +11,14 @@ public record PageMediaUsage(
 );
 
 /// <summary>
+/// Represents a navigation entry that uses a media file.
+/// </summary>
+public record NavigationMediaUsage(
+    string Key,
+    string JsonPath
+);
+
+/// <summary>
 /// Represents a settings entry that uses a media file.
 /// </summary>
 public record SettingsMediaUsage(
@@ -22,12 +30,19 @@ public record SettingsMediaUsage(
 /// Complete media usage information.
 /// </summary>
 public record MediaUsageInfo(
-    List<PageMediaUsage> UsedByPages,
-    List<SettingsMediaUsage> UsedBySettings
+    Guid MediaId,
+    List<PageMediaUsage> Pages,
+    List<NavigationMediaUsage> Navigation,
+    List<SettingsMediaUsage> Settings
 )
 {
-    public int TotalCount => UsedByPages.Count + UsedBySettings.Count;
-    public bool IsInUse => TotalCount > 0;
+    public int Total => Pages.Count + Navigation.Count + Settings.Count;
+    public bool IsInUse => Total > 0;
+
+    // Legacy properties for backward compatibility with existing code
+    public List<PageMediaUsage> UsedByPages => Pages;
+    public List<SettingsMediaUsage> UsedBySettings => Settings;
+    public int TotalCount => Total;
 }
 
 /// <summary>

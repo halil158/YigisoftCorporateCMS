@@ -58,6 +58,8 @@ public static class AdminUploadsEndpoints
                 db.Uploads.Add(entity);
                 await db.SaveChangesAsync();
 
+                Log.Information("Uploaded new media {MediaId}: {FileName}", uploadId, result.Data.OriginalFileName);
+
                 return Results.Created(result.Data.Url, new
                 {
                     id = entity.Id,
@@ -84,10 +86,12 @@ public static class AdminUploadsEndpoints
         }).DisableAntiforgery()
           .RequireRateLimiting(ServiceCollectionExtensions.UploadRateLimitPolicy);
 
-        // GET /api/admin/uploads - List uploads
+        // GET /api/admin/uploads - List uploads with usage counts
         admin.MapGet("/uploads", async (
             AppDbContext db,
-            int? take) =>
+            MediaUsageService mediaUsageService,
+            int? take,
+            bool includeUsage = true) =>
         {
             var limit = Math.Clamp(take ?? 50, 1, 200);
 
@@ -96,24 +100,64 @@ public static class AdminUploadsEndpoints
                 .Take(limit)
                 .Select(u => new
                 {
-                    id = u.Id,
-                    url = u.Url,
-                    thumbnailUrl = u.ThumbnailUrl,
-                    fileName = u.FileName,
-                    originalFileName = u.OriginalFileName,
-                    contentType = u.ContentType,
-                    size = u.Size,
-                    width = u.Width,
-                    height = u.Height,
-                    createdAt = u.CreatedAt,
-                    uploadedByUserId = u.UploadedByUserId
+                    u.Id,
+                    u.Url,
+                    u.ThumbnailUrl,
+                    u.FileName,
+                    u.OriginalFileName,
+                    u.ContentType,
+                    u.Size,
+                    u.Width,
+                    u.Height,
+                    u.CreatedAt,
+                    u.UploadedByUserId
                 })
                 .ToListAsync();
 
-            return Results.Ok(uploads);
+            // If usage counts requested, fetch them
+            if (includeUsage)
+            {
+                var result = new List<object>();
+                foreach (var upload in uploads)
+                {
+                    var usageCount = await mediaUsageService.GetUsageCountAsync(upload.Id);
+                    result.Add(new
+                    {
+                        id = upload.Id,
+                        url = upload.Url,
+                        thumbnailUrl = upload.ThumbnailUrl,
+                        fileName = upload.FileName,
+                        originalFileName = upload.OriginalFileName,
+                        contentType = upload.ContentType,
+                        size = upload.Size,
+                        width = upload.Width,
+                        height = upload.Height,
+                        createdAt = upload.CreatedAt,
+                        uploadedByUserId = upload.UploadedByUserId,
+                        usageCount = usageCount
+                    });
+                }
+                return Results.Ok(result);
+            }
+
+            // Return without usage counts
+            return Results.Ok(uploads.Select(u => new
+            {
+                id = u.Id,
+                url = u.Url,
+                thumbnailUrl = u.ThumbnailUrl,
+                fileName = u.FileName,
+                originalFileName = u.OriginalFileName,
+                contentType = u.ContentType,
+                size = u.Size,
+                width = u.Width,
+                height = u.Height,
+                createdAt = u.CreatedAt,
+                uploadedByUserId = u.UploadedByUserId
+            }));
         });
 
-        // GET /api/admin/uploads/{id}/usage - Get media usage information
+        // GET /api/admin/uploads/{id}/usage - Get detailed media usage information
         admin.MapGet("/uploads/{id:guid}/usage", async (
             Guid id,
             MediaUsageService mediaUsageService,
@@ -129,7 +173,7 @@ public static class AdminUploadsEndpoints
             return Results.Ok(usage);
         });
 
-        // DELETE /api/admin/uploads/{id} - Delete an upload
+        // DELETE /api/admin/uploads/{id} - Delete an upload (blocked if in use)
         admin.MapDelete("/uploads/{id:guid}", async (
             Guid id,
             AppDbContext db,
@@ -147,7 +191,8 @@ public static class AdminUploadsEndpoints
             var usage = await mediaUsageService.GetUsageAsync(id);
             if (usage.IsInUse)
             {
-                Log.Warning("Attempted to delete media {UploadId} that is in use by {UsageCount} resources", id, usage.TotalCount);
+                Log.Warning("Blocked deletion of media {MediaId} - in use by {Total} resources (pages={Pages}, nav={Nav}, settings={Settings})",
+                    id, usage.Total, usage.Pages.Count, usage.Navigation.Count, usage.Settings.Count);
                 return Results.Conflict(new MediaInUseError("MEDIA_IN_USE", usage));
             }
 
@@ -158,12 +203,12 @@ public static class AdminUploadsEndpoints
                 if (File.Exists(filePath))
                 {
                     File.Delete(filePath);
-                    Log.Information("Deleted file: {FilePath}", filePath);
+                    Log.Information("Deleted file from disk: {FilePath}", filePath);
                 }
             }
             catch (Exception ex)
             {
-                Log.Warning(ex, "Failed to delete file: {FilePath}", filePath);
+                Log.Warning(ex, "Failed to delete file from disk: {FilePath}", filePath);
                 // Continue to delete DB record even if file deletion fails
             }
 
@@ -176,12 +221,12 @@ public static class AdminUploadsEndpoints
                     if (File.Exists(thumbPath))
                     {
                         File.Delete(thumbPath);
-                        Log.Information("Deleted thumbnail: {ThumbPath}", thumbPath);
+                        Log.Information("Deleted thumbnail from disk: {ThumbPath}", thumbPath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log.Warning(ex, "Failed to delete thumbnail: {ThumbPath}", thumbPath);
+                    Log.Warning(ex, "Failed to delete thumbnail from disk: {ThumbPath}", thumbPath);
                 }
             }
 
@@ -189,7 +234,7 @@ public static class AdminUploadsEndpoints
             db.Uploads.Remove(upload);
             await db.SaveChangesAsync();
 
-            Log.Information("Deleted upload record: {UploadId}", id);
+            Log.Information("Deleted media {MediaId}: {FileName}", id, upload.OriginalFileName);
 
             return Results.NoContent();
         });
