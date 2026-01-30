@@ -1,10 +1,18 @@
 import type { GalleryData } from '../../types/sections'
+import { ResilientImage } from '../ResilientImage'
 
 interface Props {
   data: GalleryData
 }
 
 export function GallerySection({ data }: Props) {
+  // Filter out items without valid imageUrl
+  const validItems = data.items.filter(item => item.imageUrl)
+
+  if (validItems.length === 0) {
+    return null // Don't render empty gallery
+  }
+
   return (
     <section className="py-16 bg-white sm:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -14,9 +22,9 @@ export function GallerySection({ data }: Props) {
           </h2>
         </div>
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {data.items.map((item, index) => (
+          {validItems.map((item, index) => (
             <div key={index} className="group relative overflow-hidden rounded-xl">
-              <img
+              <ResilientImage
                 src={item.imageUrl}
                 alt={item.alt || ''}
                 className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"

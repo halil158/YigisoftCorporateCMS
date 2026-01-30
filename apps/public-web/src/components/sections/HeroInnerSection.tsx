@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import type { HeroInnerData } from '../../types/sections'
 
 interface Props {
@@ -6,11 +7,27 @@ interface Props {
 
 export function HeroInnerSection({ data }: Props) {
   const overlayOpacity = data.overlayOpacity ?? 50
+  const [imageLoaded, setImageLoaded] = useState(false)
+
+  // Preload background image to check if it exists
+  useEffect(() => {
+    if (!data.backgroundImageUrl) return
+
+    const img = new Image()
+    img.onload = () => setImageLoaded(true)
+    img.onerror = () => setImageLoaded(false)
+    img.src = data.backgroundImageUrl
+
+    return () => {
+      img.onload = null
+      img.onerror = null
+    }
+  }, [data.backgroundImageUrl])
 
   return (
     <section className="relative bg-gradient-to-br from-primary-700 to-primary-900 text-white">
       {/* Background image with overlay */}
-      {data.backgroundImageUrl && (
+      {data.backgroundImageUrl && imageLoaded && (
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{

@@ -1,7 +1,16 @@
 import type { TestimonialsData } from '../../types/sections'
+import { ResilientImage } from '../ResilientImage'
 
 interface Props {
   data: TestimonialsData
+}
+
+function AvatarPlaceholder({ name }: { name: string }) {
+  return (
+    <div className="w-12 h-12 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-semibold">
+      {name.charAt(0).toUpperCase()}
+    </div>
+  )
 }
 
 export function TestimonialsSection({ data }: Props) {
@@ -24,15 +33,14 @@ export function TestimonialsSection({ data }: Props) {
               </blockquote>
               <div className="mt-6 flex items-center gap-4">
                 {item.avatarUrl ? (
-                  <img
+                  <ResilientImage
                     src={item.avatarUrl}
                     alt={item.name}
                     className="w-12 h-12 rounded-full object-cover"
+                    placeholder={<AvatarPlaceholder name={item.name} />}
                   />
                 ) : (
-                  <div className="w-12 h-12 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-semibold">
-                    {item.name.charAt(0).toUpperCase()}
-                  </div>
+                  <AvatarPlaceholder name={item.name} />
                 )}
                 <div>
                   <div className="font-semibold text-gray-900">{item.name}</div>

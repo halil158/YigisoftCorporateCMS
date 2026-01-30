@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import type { HeroData } from '../../types/sections'
 
 interface Props {
@@ -5,9 +6,26 @@ interface Props {
 }
 
 export function HeroSection({ data }: Props) {
+  const [imageLoaded, setImageLoaded] = useState(false)
+
+  // Preload background image to check if it exists
+  useEffect(() => {
+    if (!data.imageUrl) return
+
+    const img = new Image()
+    img.onload = () => setImageLoaded(true)
+    img.onerror = () => setImageLoaded(false)
+    img.src = data.imageUrl
+
+    return () => {
+      img.onload = null
+      img.onerror = null
+    }
+  }, [data.imageUrl])
+
   return (
     <section className="relative bg-gradient-to-br from-primary-600 to-primary-800 text-white">
-      {data.imageUrl && (
+      {data.imageUrl && imageLoaded && (
         <div
           className="absolute inset-0 bg-cover bg-center opacity-20"
           style={{ backgroundImage: `url(${data.imageUrl})` }}

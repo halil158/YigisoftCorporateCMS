@@ -1,4 +1,5 @@
 import type { ContentBlockData } from '../../types/sections'
+import { ResilientImage } from '../ResilientImage'
 
 interface Props {
   data: ContentBlockData
@@ -40,10 +41,11 @@ export function ContentBlockSection({ data }: Props) {
 
   const imageContent = data.imageUrl ? (
     <div className="relative">
-      <img
+      <ResilientImage
         src={data.imageUrl}
         alt={data.title}
         className="w-full h-auto rounded-lg shadow-lg object-cover"
+        placeholder="hide"
       />
     </div>
   ) : null
