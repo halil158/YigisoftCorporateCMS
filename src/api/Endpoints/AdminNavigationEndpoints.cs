@@ -14,7 +14,7 @@ namespace YigisoftCorporateCMS.Api.Endpoints;
 public static class AdminNavigationEndpoints
 {
     private static readonly Regex UrlRegex = new(@"^https?://", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly HashSet<string> ValidTypes = new() { "page", "external" };
+    private static readonly HashSet<string> ValidTypes = new() { "page", "external", "group" };
     private const int MaxDepth = 3;
 
     public static IEndpointRouteBuilder MapAdminNavigationEndpoints(this IEndpointRouteBuilder admin)
@@ -95,6 +95,7 @@ public static class AdminNavigationEndpoints
             order = item.Order,
             isVisible = item.IsVisible,
             newTab = item.Type == "external" ? item.NewTab : null,
+            // group type: no slug, url, or newTab - just children
             children = item.Children != null && item.Children.Count > 0
                 ? BuildItemsJson(item.Children)
                 : new List<object>()
@@ -178,13 +179,15 @@ public static class AdminNavigationEndpoints
             }
 
             // Type validation
+            var hasChildren = item.Children != null && item.Children.Count > 0;
+
             if (string.IsNullOrWhiteSpace(item.Type))
             {
                 errors.Add($"{itemPrefix}.type is required");
             }
             else if (!ValidTypes.Contains(item.Type))
             {
-                errors.Add($"{itemPrefix}.type must be 'page' or 'external'");
+                errors.Add($"{itemPrefix}.type must be 'page', 'external', or 'group'");
             }
             else
             {
@@ -205,6 +208,14 @@ public static class AdminNavigationEndpoints
                     else if (!UrlRegex.IsMatch(item.Url))
                     {
                         errors.Add($"{itemPrefix}.url must start with http:// or https://");
+                    }
+                }
+                else if (item.Type == "group")
+                {
+                    // Group items must have children
+                    if (!hasChildren)
+                    {
+                        errors.Add($"{itemPrefix}: type 'group' requires at least one child item");
                     }
                 }
             }

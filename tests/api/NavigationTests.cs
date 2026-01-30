@@ -634,4 +634,215 @@ public class NavigationTests : IClassFixture<ApiWebApplicationFactory>
 
         client.Dispose();
     }
+
+    [Fact]
+    public async Task AdminNavigation_GroupWithChildren_Succeeds()
+    {
+        // Arrange
+        var (client, _) = await GetAuthenticatedClientAsync();
+
+        var navRequest = new
+        {
+            items = new object[]
+            {
+                new
+                {
+                    id = "about",
+                    label = "Hakkımızda",
+                    type = "group",
+                    order = 1,
+                    isVisible = true,
+                    children = new object[]
+                    {
+                        new
+                        {
+                            id = "company",
+                            label = "Şirket",
+                            type = "page",
+                            slug = "about/company",
+                            order = 1,
+                            isVisible = true
+                        },
+                        new
+                        {
+                            id = "team",
+                            label = "Ekip",
+                            type = "page",
+                            slug = "about/team",
+                            order = 2,
+                            isVisible = true
+                        }
+                    }
+                }
+            }
+        };
+
+        // Act
+        var response = await client.PutAsJsonAsync("/api/admin/navigation?key=test-group-valid", navRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var content = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(content);
+        var items = doc.RootElement.GetProperty("items");
+
+        Assert.Equal(1, items.GetArrayLength());
+        var groupItem = items[0];
+        Assert.Equal("group", groupItem.GetProperty("type").GetString());
+        Assert.Equal("Hakkımızda", groupItem.GetProperty("label").GetString());
+
+        var children = groupItem.GetProperty("children");
+        Assert.Equal(2, children.GetArrayLength());
+        Assert.Equal("Şirket", children[0].GetProperty("label").GetString());
+        Assert.Equal("Ekip", children[1].GetProperty("label").GetString());
+
+        client.Dispose();
+    }
+
+    [Fact]
+    public async Task AdminNavigation_GroupWithoutChildren_Returns400()
+    {
+        // Arrange
+        var (client, _) = await GetAuthenticatedClientAsync();
+
+        var navRequest = new
+        {
+            items = new object[]
+            {
+                new
+                {
+                    id = "empty-group",
+                    label = "Empty Group",
+                    type = "group",
+                    order = 1,
+                    isVisible = true
+                    // No children!
+                }
+            }
+        };
+
+        // Act
+        var response = await client.PutAsJsonAsync("/api/admin/navigation?key=test-group-empty", navRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var content = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(content);
+        var root = doc.RootElement;
+
+        Assert.Equal("ValidationFailed", root.GetProperty("error").GetString());
+        var details = root.GetProperty("details").ToString();
+        Assert.Contains("group", details.ToLower());
+        Assert.Contains("child", details.ToLower());
+
+        client.Dispose();
+    }
+
+    [Fact]
+    public async Task AdminNavigation_GroupWithEmptyChildrenArray_Returns400()
+    {
+        // Arrange
+        var (client, _) = await GetAuthenticatedClientAsync();
+
+        var navRequest = new
+        {
+            items = new object[]
+            {
+                new
+                {
+                    id = "empty-group",
+                    label = "Empty Group",
+                    type = "group",
+                    order = 1,
+                    isVisible = true,
+                    children = Array.Empty<object>() // Explicit empty array
+                }
+            }
+        };
+
+        // Act
+        var response = await client.PutAsJsonAsync("/api/admin/navigation?key=test-group-empty-arr", navRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var content = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(content);
+        var root = doc.RootElement;
+
+        Assert.Equal("ValidationFailed", root.GetProperty("error").GetString());
+        var details = root.GetProperty("details").ToString();
+        Assert.Contains("group", details.ToLower());
+        Assert.Contains("child", details.ToLower());
+
+        client.Dispose();
+    }
+
+    [Fact]
+    public async Task AdminNavigation_NestedGroupsValid()
+    {
+        // Arrange - Group at level 1 with group at level 2, pages at level 3
+        var (client, _) = await GetAuthenticatedClientAsync();
+
+        var navRequest = new
+        {
+            items = new object[]
+            {
+                new
+                {
+                    id = "services",
+                    label = "Services",
+                    type = "group",
+                    order = 1,
+                    isVisible = true,
+                    children = new object[]
+                    {
+                        new
+                        {
+                            id = "consulting",
+                            label = "Consulting",
+                            type = "group",
+                            order = 1,
+                            isVisible = true,
+                            children = new object[]
+                            {
+                                new
+                                {
+                                    id = "strategy",
+                                    label = "Strategy",
+                                    type = "page",
+                                    slug = "services/consulting/strategy",
+                                    order = 1,
+                                    isVisible = true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        // Act
+        var response = await client.PutAsJsonAsync("/api/admin/navigation?key=test-nested-groups", navRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var content = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(content);
+        var items = doc.RootElement.GetProperty("items");
+
+        Assert.Equal(1, items.GetArrayLength());
+        Assert.Equal("group", items[0].GetProperty("type").GetString());
+
+        var level2 = items[0].GetProperty("children")[0];
+        Assert.Equal("group", level2.GetProperty("type").GetString());
+
+        var level3 = level2.GetProperty("children")[0];
+        Assert.Equal("page", level3.GetProperty("type").GetString());
+
+        client.Dispose();
+    }
 }

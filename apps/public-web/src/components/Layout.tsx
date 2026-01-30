@@ -84,27 +84,44 @@ function DropdownMenu({ item }: { item: NavigationItem }) {
     return <NavLink item={item} />
   }
 
+  // For group type: render as non-navigating button
+  // For page/external with children: render the link + dropdown
+  const renderParentContent = () => {
+    if (item.type === 'group') {
+      // Group: non-clickable, just opens dropdown on hover
+      return (
+        <span className="cursor-default">{item.label}</span>
+      )
+    }
+    if (item.type === 'page') {
+      return (
+        <a href={`/${item.slug}`} className="hover:text-primary-600">
+          {item.label}
+        </a>
+      )
+    }
+    // external
+    return (
+      <a
+        href={item.url}
+        target={item.newTab ? '_blank' : undefined}
+        rel={item.newTab ? 'noopener noreferrer' : undefined}
+        className="hover:text-primary-600"
+      >
+        {item.label}
+      </a>
+    )
+  }
+
   return (
     <div className="relative group">
-      {/* Parent item - can be both a link and dropdown trigger */}
+      {/* Parent item - group is non-navigating, page/external can be clicked */}
       <button
         type="button"
         className="flex items-center gap-1 text-gray-600 hover:text-primary-600 transition-colors"
+        aria-haspopup="true"
       >
-        {item.type === 'page' ? (
-          <a href={`/${item.slug}`} className="hover:text-primary-600">
-            {item.label}
-          </a>
-        ) : (
-          <a
-            href={item.url}
-            target={item.newTab ? '_blank' : undefined}
-            rel={item.newTab ? 'noopener noreferrer' : undefined}
-            className="hover:text-primary-600"
-          >
-            {item.label}
-          </a>
-        )}
+        {renderParentContent()}
         <svg
           className="w-4 h-4 text-gray-400 group-hover:text-primary-600 transition-colors"
           fill="none"
@@ -124,7 +141,9 @@ function DropdownMenu({ item }: { item: NavigationItem }) {
                 <>
                   {/* Level 2 item with level 3 children */}
                   <div className="flex items-center justify-between px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-gray-50 transition-colors cursor-pointer">
-                    {child.type === 'page' ? (
+                    {child.type === 'group' ? (
+                      <span className="flex-1">{child.label}</span>
+                    ) : child.type === 'page' ? (
                       <a href={`/${child.slug}`} className="flex-1">
                         {child.label}
                       </a>

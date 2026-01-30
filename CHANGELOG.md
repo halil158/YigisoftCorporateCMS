@@ -56,6 +56,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     ]
     ```
 
+- Navigation Group Type (Phase 3.3)
+  - Navigation items can now be containers (type="group") for multi-level menus
+  - Group items act as dropdown triggers without a target link
+  - Validation rules:
+    - Group items must have at least one child (400 error otherwise)
+    - Leaf items (no children) must be type="page" or type="external"
+    - Parent items can be type="group", "page", or "external"
+  - Admin UI: new "Group (No Link)" option in Type dropdown
+    - Shows inline validation error if group has no children
+    - Page/URL fields hidden for group type
+  - Public website: group items render as non-clickable dropdown triggers
+  - Example group structure:
+    ```json
+    {
+      "id": "about",
+      "label": "Hakkımızda",
+      "type": "group",
+      "order": 1,
+      "isVisible": true,
+      "children": [
+        { "id": "company", "label": "Şirket", "type": "page", "slug": "/about/company", ... },
+        { "id": "team", "label": "Ekip", "type": "page", "slug": "/about/team", ... }
+      ]
+    }
+    ```
+
 - Initial project setup
 - Repository hygiene files (.gitignore, README.md, CHANGELOG.md)
 - Monorepo folder structure (apps/, src/, infra/, docs/)

@@ -45,15 +45,23 @@ function NavigationItemEditor({
         updated.url = undefined
         updated.newTab = undefined
         updated.slug = ''
-      } else {
+      } else if (value === 'external') {
         updated.slug = undefined
         updated.url = ''
         updated.newTab = false
+      } else if (value === 'group') {
+        // Group has no target - clear all link fields
+        updated.slug = undefined
+        updated.url = undefined
+        updated.newTab = undefined
       }
     }
 
     onUpdate(updated)
   }
+
+  // Group without children validation
+  const isGroupWithoutChildren = item.type === 'group' && item.children.length === 0
 
   const handleChildUpdate = (childIndex: number, updatedChild: NavigationItem) => {
     const newChildren = [...item.children]
@@ -176,9 +184,10 @@ function NavigationItemEditor({
           >
             <option value="page">Internal Page</option>
             <option value="external">External Link</option>
+            <option value="group">Group (No Link)</option>
           </Select>
 
-          {item.type === 'page' ? (
+          {item.type === 'page' && (
             <Select
               id={`slug-${item.id}`}
               label="Page *"
@@ -192,7 +201,9 @@ function NavigationItemEditor({
                 </option>
               ))}
             </Select>
-          ) : (
+          )}
+
+          {item.type === 'external' && (
             <Input
               id={`url-${item.id}`}
               label="URL *"
@@ -200,6 +211,20 @@ function NavigationItemEditor({
               onChange={(e) => handleFieldChange('url', e.target.value)}
               placeholder="https://..."
             />
+          )}
+
+          {item.type === 'group' && (
+            <div className="flex items-center">
+              {isGroupWithoutChildren ? (
+                <p className="text-sm text-red-500 dark:text-red-400">
+                  Group items must have at least one child item.
+                </p>
+              ) : (
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  This item opens a dropdown menu only (no link).
+                </p>
+              )}
+            </div>
           )}
 
           <div className="flex items-center gap-6">

@@ -239,10 +239,12 @@ export const contactMessagesApi = {
 }
 
 // Navigation API types
+export type NavigationItemType = 'page' | 'external' | 'group'
+
 export interface NavigationItem {
   id: string
   label: string
-  type: 'page' | 'external'
+  type: NavigationItemType
   slug?: string
   url?: string
   order: number
@@ -259,7 +261,7 @@ export interface NavigationData {
 export interface NavigationItemRequest {
   id?: string
   label: string
-  type: 'page' | 'external'
+  type: NavigationItemType
   slug?: string
   url?: string
   order: number

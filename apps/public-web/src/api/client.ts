@@ -114,10 +114,12 @@ export class ContactSubmissionError extends Error {
 }
 
 // Navigation types
+export type NavigationItemType = 'page' | 'external' | 'group'
+
 export interface NavigationItem {
   id: string
   label: string
-  type: 'page' | 'external'
+  type: NavigationItemType
   slug?: string
   url?: string
   order: number
