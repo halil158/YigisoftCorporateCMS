@@ -145,3 +145,62 @@ export async function fetchNavigation(key: string): Promise<NavigationData> {
 
   return res.json()
 }
+
+// Settings types
+export interface SettingsData {
+  key: string
+  data: Record<string, unknown>
+  updatedAt: string
+}
+
+export interface ResolvedBrandingSettings {
+  siteName: string | null
+  logoLightUrl: string | null
+  logoDarkUrl: string | null
+  faviconUrl: string | null
+  appleTouchIconUrl: string | null
+  defaultOgImageUrl: string | null
+}
+
+export interface ThemeTokens {
+  primary?: string | null
+  primaryContrast?: string | null
+  accent?: string | null
+  background?: string | null
+  surface?: string | null
+  text?: string | null
+  mutedText?: string | null
+  border?: string | null
+}
+
+export interface ThemeSettings {
+  mode: string
+  tokens?: ThemeTokens
+}
+
+/**
+ * Fetch resolved branding settings (with media URLs)
+ */
+export async function fetchBranding(): Promise<ResolvedBrandingSettings> {
+  const res = await fetch(`${API_BASE}/public/settings/site.branding/resolved`)
+
+  if (!res.ok) {
+    throw new ApiRequestError('Failed to fetch branding', res.status)
+  }
+
+  return res.json()
+}
+
+/**
+ * Fetch theme settings
+ */
+export async function fetchTheme(): Promise<ThemeSettings> {
+  const res = await fetch(`${API_BASE}/public/settings/site.theme`)
+
+  if (!res.ok) {
+    throw new ApiRequestError('Failed to fetch theme', res.status)
+  }
+
+  const data: SettingsData = await res.json()
+  return data.data as unknown as ThemeSettings
+}

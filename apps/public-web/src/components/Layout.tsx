@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { useNavigation } from '../hooks/useNavigation'
+import { useBranding } from '../hooks/useBranding'
 import type { NavigationItem } from '../api/client'
 
 interface Props {
@@ -191,6 +192,11 @@ function DropdownMenu({ item }: { item: NavigationItem }) {
 
 export function Layout({ children }: Props) {
   const { items, isLoading } = useNavigation('main')
+  const { branding } = useBranding()
+
+  // Use logo URL from branding or fallback to placeholder
+  const logoUrl = branding.logoLightUrl
+  const siteName = branding.siteName || 'Yigisoft'
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -198,10 +204,16 @@ export function Layout({ children }: Props) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <a href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold">
-                Y
-              </div>
-              <span className="text-xl font-semibold text-gray-900">Yigisoft</span>
+              {logoUrl ? (
+                <img src={logoUrl} alt={siteName} className="h-8 w-auto" />
+              ) : (
+                <>
+                  <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold">
+                    {siteName.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-xl font-semibold text-gray-900">{siteName}</span>
+                </>
+              )}
             </a>
             <nav className="hidden sm:flex items-center gap-6">
               {isLoading ? (
@@ -227,13 +239,19 @@ export function Layout({ children }: Props) {
         <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-primary-600 rounded flex items-center justify-center text-white text-sm font-bold">
-                Y
-              </div>
-              <span className="text-white font-medium">Yigisoft</span>
+              {logoUrl ? (
+                <img src={logoUrl} alt={siteName} className="h-6 w-auto brightness-0 invert" />
+              ) : (
+                <>
+                  <div className="w-6 h-6 bg-primary-600 rounded flex items-center justify-center text-white text-sm font-bold">
+                    {siteName.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-white font-medium">{siteName}</span>
+                </>
+              )}
             </div>
             <p className="text-sm">
-              &copy; {new Date().getFullYear()} Yigisoft. All rights reserved.
+              &copy; {new Date().getFullYear()} {siteName}. All rights reserved.
             </p>
           </div>
         </div>

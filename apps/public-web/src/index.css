@@ -2,8 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS Variables for theme tokens - defaults that can be overridden at runtime */
+:root {
+  --color-primary: #22c55e;
+  --color-primary-contrast: #ffffff;
+  --color-accent: #16a34a;
+  --color-bg: #ffffff;
+  --color-surface: #f6f7f9;
+  --color-text: #0f172a;
+  --color-muted-text: #475569;
+  --color-border: #e2e8f0;
+}
+
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Theme-aware utility overrides */
+.bg-primary-600 {
+  background-color: var(--color-primary);
+}
+
+.text-primary-600,
+.hover\:text-primary-600:hover {
+  color: var(--color-primary);
+}
+
+.bg-primary-700,
+.hover\:bg-primary-700:hover {
+  background-color: var(--color-accent);
+}
+
+.border-primary-600 {
+  border-color: var(--color-primary);
 }
