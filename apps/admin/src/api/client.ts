@@ -284,3 +284,48 @@ export const navigationApi = {
       body: JSON.stringify(data),
     }),
 }
+
+// Settings API types
+export interface SettingsData {
+  key: string
+  data: Record<string, unknown>
+  updatedAt: string
+}
+
+export interface BrandingSettings {
+  siteName?: string | null
+  logoLight?: string | null
+  logoDark?: string | null
+  favicon?: string | null
+  appleTouchIcon?: string | null
+  defaultOgImage?: string | null
+}
+
+export interface ThemeTokens {
+  primary?: string | null
+  primaryContrast?: string | null
+  accent?: string | null
+  background?: string | null
+  surface?: string | null
+  text?: string | null
+  mutedText?: string | null
+  border?: string | null
+}
+
+export interface ThemeSettings {
+  mode: 'single'
+  tokens?: ThemeTokens
+}
+
+export const settingsApi = {
+  list: () => apiRequest<SettingsData[]>('/admin/settings'),
+
+  get: (key: string) =>
+    apiRequest<SettingsData>(`/admin/settings/${encodeURIComponent(key)}`),
+
+  update: (key: string, data: Record<string, unknown>) =>
+    apiRequest<SettingsData>(`/admin/settings/${encodeURIComponent(key)}`, {
+      method: 'PUT',
+      body: JSON.stringify({ data }),
+    }),
+}

@@ -10,6 +10,7 @@ import { MediaLibraryPage } from './pages/MediaLibraryPage'
 import { ContactMessagesListPage } from './pages/ContactMessagesListPage'
 import { ContactMessageDetailPage } from './pages/ContactMessageDetailPage'
 import { NavigationPage } from './pages/NavigationPage'
+import { SettingsPage } from './pages/SettingsPage'
 
 function App() {
   return (
@@ -77,6 +78,14 @@ function App() {
           element={
             <ProtectedRoute>
               <NavigationPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <SettingsPage />
             </ProtectedRoute>
           }
         />
