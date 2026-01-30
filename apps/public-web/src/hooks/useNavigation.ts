@@ -7,6 +7,20 @@ interface UseNavigationResult {
   error: Error | null
 }
 
+/**
+ * Recursively filter to visible items and sort by order.
+ * Also ensures children array is always present.
+ */
+function filterAndSortItems(items: NavigationItem[]): NavigationItem[] {
+  return items
+    .filter((item) => item.isVisible)
+    .sort((a, b) => a.order - b.order)
+    .map((item) => ({
+      ...item,
+      children: item.children ? filterAndSortItems(item.children) : [],
+    }))
+}
+
 export function useNavigation(key: string = 'main'): UseNavigationResult {
   const [items, setItems] = useState<NavigationItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -21,10 +35,8 @@ export function useNavigation(key: string = 'main'): UseNavigationResult {
         setError(null)
         const data = await fetchNavigation(key)
         if (!cancelled) {
-          // Filter to visible items and sort by order
-          const visibleItems = data.items
-            .filter((item) => item.isVisible)
-            .sort((a, b) => a.order - b.order)
+          // Recursively filter to visible items and sort by order
+          const visibleItems = filterAndSortItems(data.items)
           setItems(visibleItems)
         }
       } catch (err) {

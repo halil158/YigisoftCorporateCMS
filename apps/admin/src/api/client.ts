@@ -248,6 +248,7 @@ export interface NavigationItem {
   order: number
   isVisible: boolean
   newTab?: boolean
+  children: NavigationItem[]
 }
 
 export interface NavigationData {
@@ -255,8 +256,20 @@ export interface NavigationData {
   items: NavigationItem[]
 }
 
+export interface NavigationItemRequest {
+  id?: string
+  label: string
+  type: 'page' | 'external'
+  slug?: string
+  url?: string
+  order: number
+  isVisible: boolean
+  newTab?: boolean
+  children?: NavigationItemRequest[]
+}
+
 export interface NavigationUpdateRequest {
-  items: (Omit<NavigationItem, 'id'> & { id?: string })[]
+  items: NavigationItemRequest[]
 }
 
 export const navigationApi = {

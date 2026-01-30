@@ -13,7 +13,8 @@ public record NavigationItemDto(
     string? Url,
     int Order,
     bool IsVisible,
-    bool? NewTab
+    bool? NewTab,
+    List<NavigationItemDto> Children
 );
 
 public record NavigationUpsertRequest(
@@ -28,5 +29,6 @@ public record NavigationItemRequest(
     string? Url,
     int Order,
     bool IsVisible,
-    bool? NewTab
+    bool? NewTab,
+    List<NavigationItemRequest>? Children
 );

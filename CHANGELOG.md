@@ -8,6 +8,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+- Hierarchical Navigation (Phase 3.2)
+  - Navigation now supports up to 3 levels of nesting (parent → child → grandchild)
+  - Backward compatible: existing flat navigation JSON is treated as level-1 items
+  - Backend validation enforces max depth of 3; depth 4+ returns 400 error
+  - Duplicate item IDs across the tree are detected and rejected
+  - Items sorted by `order` field at each level
+  - Admin UI: hierarchical editor with color-coded depth indicators
+    - Add child button (+) on level 1 and 2 items
+    - Move up/down within same level
+    - Visual nesting with left border colors (green → blue → purple)
+  - Public website: CSS-only dropdown menus for level 2, submenus for level 3
+  - New `children: NavigationItem[]` property on NavigationItem type
+  - Example 3-level structure:
+    ```json
+    [
+      {
+        "id": "products",
+        "label": "Products",
+        "type": "page",
+        "slug": "/products",
+        "order": 1,
+        "isVisible": true,
+        "children": [
+          {
+            "id": "batteries",
+            "label": "Batteries",
+            "type": "page",
+            "slug": "/products/batteries",
+            "order": 1,
+            "isVisible": true,
+            "children": [
+              {
+                "id": "lifepo4",
+                "label": "LiFePO4",
+                "type": "page",
+                "slug": "/products/batteries/lifepo4",
+                "order": 1,
+                "isVisible": true,
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+    ```
+
 - Initial project setup
 - Repository hygiene files (.gitignore, README.md, CHANGELOG.md)
 - Monorepo folder structure (apps/, src/, infra/, docs/)

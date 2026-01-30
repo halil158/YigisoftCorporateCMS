@@ -651,6 +651,7 @@
           "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.0, )",
           "Serilog.AspNetCore": "[9.0.0, )",
           "Serilog.Sinks.File": "[6.0.0, )",
+          "SixLabors.ImageSharp": "[3.1.6, )",
           "Swashbuckle.AspNetCore": "[7.2.0, )"
         }
       },
@@ -709,6 +710,12 @@
         "dependencies": {
           "Serilog": "4.0.0"
         }
+      },
+      "SixLabors.ImageSharp": {
+        "type": "CentralTransitive",
+        "requested": "[3.1.6, )",
+        "resolved": "3.1.6",
+        "contentHash": "dHQ5jugF9v+5/LCVHCWVzaaIL6WOehqJy6eju/0VFYFPEj2WtqkGPoEV9EVQP83dHsdoqYaTuWpZdwAd37UwfA=="
       },
       "Swashbuckle.AspNetCore": {
         "type": "CentralTransitive",

@@ -123,6 +123,7 @@ export interface NavigationItem {
   order: number
   isVisible: boolean
   newTab?: boolean
+  children: NavigationItem[]
 }
 
 export interface NavigationData {
