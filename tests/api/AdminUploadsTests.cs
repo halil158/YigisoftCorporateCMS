@@ -155,4 +155,67 @@ public class AdminUploadsTests : IClassFixture<ApiWebApplicationFactory>
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    [Fact]
+    public async Task GetUsage_AfterUpload_Returns200WithUsageInfo()
+    {
+        // Arrange - upload a file first
+        using var client = await GetAuthenticatedClientAsync();
+
+        var fileContent = Convert.FromBase64String(TestPngBase64);
+        using var uploadContent = new MultipartFormDataContent();
+        var fileStreamContent = new ByteArrayContent(fileContent);
+        fileStreamContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+        uploadContent.Add(fileStreamContent, "file", "usage-test.png");
+
+        var uploadResponse = await client.PostAsync("/api/admin/uploads", uploadContent);
+        Assert.Equal(HttpStatusCode.Created, uploadResponse.StatusCode);
+
+        var uploadResponseContent = await uploadResponse.Content.ReadAsStringAsync();
+        using var uploadDoc = JsonDocument.Parse(uploadResponseContent);
+        var uploadedId = uploadDoc.RootElement.GetProperty("id").GetString();
+
+        // Act - get usage info (this was failing with 500 due to ILIKE on jsonb)
+        var usageResponse = await client.GetAsync($"/api/admin/uploads/{uploadedId}/usage");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, usageResponse.StatusCode);
+
+        var usageContent = await usageResponse.Content.ReadAsStringAsync();
+        using var usageDoc = JsonDocument.Parse(usageContent);
+        var root = usageDoc.RootElement;
+
+        // Verify response structure
+        Assert.True(root.TryGetProperty("mediaId", out var mediaId));
+        Assert.Equal(uploadedId, mediaId.GetString());
+
+        Assert.True(root.TryGetProperty("pages", out var pages));
+        Assert.Equal(JsonValueKind.Array, pages.ValueKind);
+
+        Assert.True(root.TryGetProperty("navigation", out var navigation));
+        Assert.Equal(JsonValueKind.Array, navigation.ValueKind);
+
+        Assert.True(root.TryGetProperty("settings", out var settings));
+        Assert.Equal(JsonValueKind.Array, settings.ValueKind);
+
+        Assert.True(root.TryGetProperty("total", out var total));
+        Assert.True(total.TryGetInt32(out _));
+
+        Assert.True(root.TryGetProperty("isInUse", out var isInUse));
+        Assert.Equal(JsonValueKind.False, isInUse.ValueKind); // Not used yet
+    }
+
+    [Fact]
+    public async Task GetUsage_ForNonExistentUpload_Returns404()
+    {
+        // Arrange
+        using var client = await GetAuthenticatedClientAsync();
+        var nonExistentId = Guid.NewGuid();
+
+        // Act
+        var response = await client.GetAsync($"/api/admin/uploads/{nonExistentId}/usage");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
 }

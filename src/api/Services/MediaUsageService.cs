@@ -58,21 +58,43 @@ public class MediaUsageService
 
         var mediaIdString = mediaId.ToString();
 
-        // Count pages containing the URL
-        var pageCount = await _db.Pages
-            .Where(p => EF.Functions.ILike(p.Sections, $"%{upload.Url}%") ||
-                       (upload.ThumbnailUrl != null && EF.Functions.ILike(p.Sections, $"%{upload.ThumbnailUrl}%")))
-            .CountAsync();
+        // Count pages containing the URL (cast jsonb to text for ILIKE)
+        var urlPattern = $"%{upload.Url}%";
+        var thumbPattern = upload.ThumbnailUrl != null ? $"%{upload.ThumbnailUrl}%" : null;
 
-        // Count navigation entries containing the URL
-        var navCount = await _db.Navigations
-            .Where(n => EF.Functions.ILike(n.Data, $"%{upload.Url}%") ||
-                       (upload.ThumbnailUrl != null && EF.Functions.ILike(n.Data, $"%{upload.ThumbnailUrl}%")))
-            .CountAsync();
+        int pageCount;
+        if (thumbPattern != null)
+        {
+            pageCount = await _db.Pages
+                .FromSqlInterpolated($"SELECT * FROM pages WHERE sections::text ILIKE {urlPattern} OR sections::text ILIKE {thumbPattern}")
+                .CountAsync();
+        }
+        else
+        {
+            pageCount = await _db.Pages
+                .FromSqlInterpolated($"SELECT * FROM pages WHERE sections::text ILIKE {urlPattern}")
+                .CountAsync();
+        }
 
-        // Count settings containing the media ID
+        // Count navigation entries containing the URL (cast jsonb to text for ILIKE)
+        int navCount;
+        if (thumbPattern != null)
+        {
+            navCount = await _db.Navigations
+                .FromSqlInterpolated($"SELECT * FROM navigation WHERE data::text ILIKE {urlPattern} OR data::text ILIKE {thumbPattern}")
+                .CountAsync();
+        }
+        else
+        {
+            navCount = await _db.Navigations
+                .FromSqlInterpolated($"SELECT * FROM navigation WHERE data::text ILIKE {urlPattern}")
+                .CountAsync();
+        }
+
+        // Count settings containing the media ID (cast jsonb to text for ILIKE)
+        var idPattern = $"%{mediaIdString}%";
         var settingsCount = await _db.Settings
-            .Where(s => EF.Functions.ILike(s.Data, $"%{mediaIdString}%"))
+            .FromSqlInterpolated($"SELECT * FROM settings WHERE data::text ILIKE {idPattern}")
             .CountAsync();
 
         return pageCount + navCount + settingsCount;
@@ -80,16 +102,28 @@ public class MediaUsageService
 
     /// <summary>
     /// Scans all pages for references to the media URL in sections JSON.
+    /// Uses raw SQL with jsonb::text cast since ILIKE doesn't work directly on jsonb.
     /// </summary>
     private async Task<List<PageMediaUsage>> GetPageUsagesAsync(UploadEntity upload)
     {
         var usages = new List<PageMediaUsage>();
 
-        var pages = await _db.Pages
-            .Where(p => EF.Functions.ILike(p.Sections, $"%{upload.Url}%") ||
-                       (upload.ThumbnailUrl != null && EF.Functions.ILike(p.Sections, $"%{upload.ThumbnailUrl}%")))
-            .Select(p => new { p.Id, p.Slug, p.Title, p.Sections })
-            .ToListAsync();
+        var urlPattern = $"%{upload.Url}%";
+        var thumbPattern = upload.ThumbnailUrl != null ? $"%{upload.ThumbnailUrl}%" : null;
+
+        List<PageEntity> pages;
+        if (thumbPattern != null)
+        {
+            pages = await _db.Pages
+                .FromSqlInterpolated($"SELECT * FROM pages WHERE sections::text ILIKE {urlPattern} OR sections::text ILIKE {thumbPattern}")
+                .ToListAsync();
+        }
+        else
+        {
+            pages = await _db.Pages
+                .FromSqlInterpolated($"SELECT * FROM pages WHERE sections::text ILIKE {urlPattern}")
+                .ToListAsync();
+        }
 
         foreach (var page in pages)
         {
@@ -105,16 +139,28 @@ public class MediaUsageService
 
     /// <summary>
     /// Scans all navigation entries for references to the media URL in data JSON.
+    /// Uses raw SQL with jsonb::text cast since ILIKE doesn't work directly on jsonb.
     /// </summary>
     private async Task<List<NavigationMediaUsage>> GetNavigationUsagesAsync(UploadEntity upload)
     {
         var usages = new List<NavigationMediaUsage>();
 
-        var navigations = await _db.Navigations
-            .Where(n => EF.Functions.ILike(n.Data, $"%{upload.Url}%") ||
-                       (upload.ThumbnailUrl != null && EF.Functions.ILike(n.Data, $"%{upload.ThumbnailUrl}%")))
-            .Select(n => new { n.Key, n.Data })
-            .ToListAsync();
+        var urlPattern = $"%{upload.Url}%";
+        var thumbPattern = upload.ThumbnailUrl != null ? $"%{upload.ThumbnailUrl}%" : null;
+
+        List<NavigationEntity> navigations;
+        if (thumbPattern != null)
+        {
+            navigations = await _db.Navigations
+                .FromSqlInterpolated($"SELECT * FROM navigation WHERE data::text ILIKE {urlPattern} OR data::text ILIKE {thumbPattern}")
+                .ToListAsync();
+        }
+        else
+        {
+            navigations = await _db.Navigations
+                .FromSqlInterpolated($"SELECT * FROM navigation WHERE data::text ILIKE {urlPattern}")
+                .ToListAsync();
+        }
 
         foreach (var nav in navigations)
         {
@@ -131,20 +177,20 @@ public class MediaUsageService
     /// <summary>
     /// Scans settings for references to the media ID in JSONB data.
     /// Settings store media IDs (GUIDs) rather than URLs.
+    /// Uses raw SQL with jsonb::text cast since ILIKE doesn't work directly on jsonb.
     /// </summary>
     private async Task<List<SettingsMediaUsage>> GetSettingsUsagesAsync(Guid mediaId)
     {
         var usages = new List<SettingsMediaUsage>();
-        var mediaIdString = mediaId.ToString();
+        var idPattern = $"%{mediaId}%";
 
         var settings = await _db.Settings
-            .Where(s => EF.Functions.ILike(s.Data, $"%{mediaIdString}%"))
-            .Select(s => new { s.Key, s.Data })
+            .FromSqlInterpolated($"SELECT * FROM settings WHERE data::text ILIKE {idPattern}")
             .ToListAsync();
 
         foreach (var setting in settings)
         {
-            var paths = FindGuidPathsInJson(setting.Data, mediaIdString);
+            var paths = FindGuidPathsInJson(setting.Data, mediaId.ToString());
             foreach (var path in paths)
             {
                 usages.Add(new SettingsMediaUsage(setting.Key, path));

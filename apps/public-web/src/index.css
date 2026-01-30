@@ -4,6 +4,7 @@
 
 /* CSS Variables for theme tokens - defaults that can be overridden at runtime */
 :root {
+  /* Base theme colors */
   --color-primary: #22c55e;
   --color-primary-contrast: #ffffff;
   --color-accent: #16a34a;
@@ -12,6 +13,22 @@
   --color-text: #0f172a;
   --color-muted-text: #475569;
   --color-border: #e2e8f0;
+
+  /* Derived primary color palette - set by ThemeProvider */
+  --color-primary-50: #f0fdf4;
+  --color-primary-100: #dcfce7;
+  --color-primary-200: #bbf7d0;
+  --color-primary-300: #86efac;
+  --color-primary-400: #4ade80;
+  --color-primary-500: #22c55e;
+  --color-primary-600: #22c55e;
+  --color-primary-700: #16a34a;
+  --color-primary-800: #166534;
+  --color-primary-900: #14532d;
+
+  /* Soft/muted variants for backgrounds */
+  --color-primary-soft: #f0fdf4;
+  --color-accent-soft: #dcfce7;
 }
 
 /* Prevent horizontal overflow from dropdowns or absolute elements */
@@ -23,23 +40,87 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg);
+  color: var(--color-text);
 }
 
-/* Theme-aware utility overrides */
+/* Theme-aware Tailwind class overrides */
+/* Primary color palette */
+.bg-primary-50 {
+  background-color: var(--color-primary-50);
+}
+
+.bg-primary-100 {
+  background-color: var(--color-primary-100);
+}
+
+.bg-primary-200 {
+  background-color: var(--color-primary-200);
+}
+
 .bg-primary-600 {
-  background-color: var(--color-primary);
-}
-
-.text-primary-600,
-.hover\:text-primary-600:hover {
-  color: var(--color-primary);
+  background-color: var(--color-primary-600);
 }
 
 .bg-primary-700,
 .hover\:bg-primary-700:hover {
-  background-color: var(--color-accent);
+  background-color: var(--color-primary-700);
+}
+
+.bg-primary-800 {
+  background-color: var(--color-primary-800);
+}
+
+.text-primary-100 {
+  color: var(--color-primary-100);
+}
+
+.text-primary-600,
+.hover\:text-primary-600:hover {
+  color: var(--color-primary-600);
+}
+
+.text-primary-700 {
+  color: var(--color-primary-700);
+}
+
+.text-primary-800 {
+  color: var(--color-primary-800);
+}
+
+.border-primary-200 {
+  border-color: var(--color-primary-200);
 }
 
 .border-primary-600 {
+  border-color: var(--color-primary-600);
+}
+
+/* Hover states */
+.hover\:bg-primary-50:hover {
+  background-color: var(--color-primary-50);
+}
+
+.hover\:bg-primary-100:hover {
+  background-color: var(--color-primary-100);
+}
+
+/* Gradient support using CSS variables */
+.from-primary-600 {
+  --tw-gradient-from: var(--color-primary-600) var(--tw-gradient-from-position);
+  --tw-gradient-to: transparent var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.to-primary-800 {
+  --tw-gradient-to: var(--color-primary-800) var(--tw-gradient-to-position);
+}
+
+/* Focus states */
+.focus\:ring-primary-500:focus {
+  --tw-ring-color: var(--color-primary);
+}
+
+.focus\:border-primary-500:focus {
   border-color: var(--color-primary);
 }
