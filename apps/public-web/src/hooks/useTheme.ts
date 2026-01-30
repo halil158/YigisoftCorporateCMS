@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { fetchTheme, ThemeTokens } from '../api/client'
 
-// Default theme tokens (should match admin defaults)
+// Default theme tokens (should match admin defaults and index.css fallbacks)
 const DEFAULT_TOKENS: Required<ThemeTokens> = {
-  primary: '#22c55e',
+  primary: '#dc2626',
   primaryContrast: '#ffffff',
-  accent: '#16a34a',
+  accent: '#b91c1c',
   background: '#ffffff',
   surface: '#f6f7f9',
   text: '#0f172a',

@@ -132,8 +132,17 @@ function generateColorPalette(baseColor: string): Record<string, string> {
   return palette
 }
 
-// Default fallback colors
-const DEFAULT_PRIMARY = '#22c55e'
+/**
+ * Darkens a color by a percentage for hover/active states.
+ */
+function darkenColor(hex: string, percent: number): string {
+  const { h, s, l } = hexToHsl(hex)
+  const newL = Math.max(0, l * (1 - percent / 100))
+  return hslToHex(h, s, newL)
+}
+
+// Default fallback colors (should match useTheme.ts and index.css defaults)
+const DEFAULT_PRIMARY = '#dc2626'
 
 export function ThemeProvider({ children }: Props) {
   const { tokens } = useTheme()
@@ -144,7 +153,7 @@ export function ThemeProvider({ children }: Props) {
     // Ensure we have valid color strings (fallback to defaults if null)
     const primary = tokens.primary || DEFAULT_PRIMARY
     const primaryContrast = tokens.primaryContrast || '#ffffff'
-    const accent = tokens.accent || '#16a34a'
+    const accent = tokens.accent || '#b91c1c'
     const background = tokens.background || '#ffffff'
     const surface = tokens.surface || '#f6f7f9'
     const text = tokens.text || '#0f172a'
@@ -173,6 +182,10 @@ export function ThemeProvider({ children }: Props) {
     // Set soft/muted variants
     root.style.setProperty('--color-primary-soft', palette['50'])
     root.style.setProperty('--color-accent-soft', palette['100'])
+
+    // Set button hover/active states (darken primary by 12% and 22%)
+    root.style.setProperty('--color-primary-hover', darkenColor(primary, 12))
+    root.style.setProperty('--color-primary-active', darkenColor(primary, 22))
 
   }, [tokens])
 

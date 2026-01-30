@@ -2,12 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CSS Variables for theme tokens - defaults that can be overridden at runtime */
+/* CSS Variables for theme tokens - defaults that are overridden by ThemeProvider */
 :root {
-  /* Base theme colors */
-  --color-primary: #22c55e;
+  /* Base theme colors - these are just fallbacks, actual values come from ThemeProvider */
+  --color-primary: #dc2626;
   --color-primary-contrast: #ffffff;
-  --color-accent: #16a34a;
+  --color-accent: #b91c1c;
   --color-bg: #ffffff;
   --color-surface: #f6f7f9;
   --color-text: #0f172a;
@@ -15,20 +15,24 @@
   --color-border: #e2e8f0;
 
   /* Derived primary color palette - set by ThemeProvider */
-  --color-primary-50: #f0fdf4;
-  --color-primary-100: #dcfce7;
-  --color-primary-200: #bbf7d0;
-  --color-primary-300: #86efac;
-  --color-primary-400: #4ade80;
-  --color-primary-500: #22c55e;
-  --color-primary-600: #22c55e;
-  --color-primary-700: #16a34a;
-  --color-primary-800: #166534;
-  --color-primary-900: #14532d;
+  --color-primary-50: #fef2f2;
+  --color-primary-100: #fee2e2;
+  --color-primary-200: #fecaca;
+  --color-primary-300: #fca5a5;
+  --color-primary-400: #f87171;
+  --color-primary-500: #ef4444;
+  --color-primary-600: #dc2626;
+  --color-primary-700: #b91c1c;
+  --color-primary-800: #991b1b;
+  --color-primary-900: #7f1d1d;
 
   /* Soft/muted variants for backgrounds */
-  --color-primary-soft: #f0fdf4;
-  --color-accent-soft: #dcfce7;
+  --color-primary-soft: #fef2f2;
+  --color-accent-soft: #fee2e2;
+
+  /* Derived button states - computed from primary by ThemeProvider */
+  --color-primary-hover: #c41f1f;
+  --color-primary-active: #a91a1a;
 }
 
 /* Prevent horizontal overflow from dropdowns or absolute elements */
@@ -44,85 +48,31 @@ body {
   color: var(--color-text);
 }
 
-/* Theme-aware Tailwind class overrides */
-/* Primary color palette */
-.bg-primary-50 {
-  background-color: var(--color-primary-50);
+/* ============================================
+   NAVIGATION - Theme-aware hover states
+   ============================================ */
+
+/* Desktop nav links */
+.nav-link {
+  color: var(--color-text);
+  transition: color 0.2s ease;
 }
 
-.bg-primary-100 {
-  background-color: var(--color-primary-100);
+.nav-link:hover {
+  color: var(--color-primary);
 }
 
-.bg-primary-200 {
-  background-color: var(--color-primary-200);
+/* Dropdown menu items */
+.dropdown-item {
+  display: block;
+  padding: 0.5rem 1rem;
+  color: var(--color-text);
+  transition: color 0.2s ease, background-color 0.2s ease;
 }
 
-.bg-primary-600 {
-  background-color: var(--color-primary-600);
-}
-
-.bg-primary-700,
-.hover\:bg-primary-700:hover {
-  background-color: var(--color-primary-700);
-}
-
-.bg-primary-800 {
-  background-color: var(--color-primary-800);
-}
-
-.text-primary-100 {
-  color: var(--color-primary-100);
-}
-
-.text-primary-600,
-.hover\:text-primary-600:hover {
-  color: var(--color-primary-600);
-}
-
-.text-primary-700 {
-  color: var(--color-primary-700);
-}
-
-.text-primary-800 {
-  color: var(--color-primary-800);
-}
-
-.border-primary-200 {
-  border-color: var(--color-primary-200);
-}
-
-.border-primary-600 {
-  border-color: var(--color-primary-600);
-}
-
-/* Hover states */
-.hover\:bg-primary-50:hover {
-  background-color: var(--color-primary-50);
-}
-
-.hover\:bg-primary-100:hover {
-  background-color: var(--color-primary-100);
-}
-
-/* Gradient support using CSS variables */
-.from-primary-600 {
-  --tw-gradient-from: var(--color-primary-600) var(--tw-gradient-from-position);
-  --tw-gradient-to: transparent var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-.to-primary-800 {
-  --tw-gradient-to: var(--color-primary-800) var(--tw-gradient-to-position);
-}
-
-/* Focus states */
-.focus\:ring-primary-500:focus {
-  --tw-ring-color: var(--color-primary);
-}
-
-.focus\:border-primary-500:focus {
-  border-color: var(--color-primary);
+.dropdown-item:hover {
+  color: var(--color-primary);
+  background-color: var(--color-surface);
 }
 
 /* ============================================
@@ -167,6 +117,24 @@ body {
   transform: translateY(-3px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
   border-color: var(--color-primary);
+}
+
+/* Feature Card V2 - Tinted background, no border, icon-right layout */
+/* Uses explicit Tailwind hover classes (e.g. hover:bg-primary-100) for pastel hover */
+.feature-card-v2 {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  border-radius: 16px;
+  border: none;
+  box-shadow: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.feature-card-v2:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 /* Card Title */
@@ -311,4 +279,77 @@ body {
 .gallery-caption p {
   color: white;
   font-size: 0.875rem;
+}
+
+/* ============================================
+   BUTTON SYSTEM - Theme-driven states
+   ============================================ */
+
+/* Primary button base and all states */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-primary-contrast);
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.btn-primary:active {
+  background-color: var(--color-primary-active);
+  transform: translateY(1px);
+}
+
+.btn-primary:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.btn-primary:disabled {
+  background-color: var(--color-muted-text);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Override any Tailwind-generated button styles */
+/* Exclude light shades (50-200) which are used for pastel backgrounds */
+[class*="bg-primary-"]:not(.bg-primary-50):not(.bg-primary-100):not(.bg-primary-200) {
+  background-color: var(--color-primary);
+}
+
+/* Global hover for primary buttons - exclude feature cards and light pastel shades */
+/* Feature cards use .feature-card-v2 and define their own pastel hover (50->100) */
+[class*="bg-primary-"]:not(.feature-card-v2):not(.bg-primary-50):not(.bg-primary-100):not(.bg-primary-200):hover {
+  background-color: var(--color-primary-hover);
+}
+
+[class*="bg-primary-"]:not(.feature-card-v2):not(.bg-primary-50):not(.bg-primary-100):not(.bg-primary-200):active {
+  background-color: var(--color-primary-active);
+}
+
+/* Text color overrides for theme consistency */
+[class*="text-primary-"]:not([class*="text-primary-contrast"]) {
+  color: var(--color-primary);
+}
+
+/* Hover text color overrides */
+[class*="hover:text-primary"]:hover {
+  color: var(--color-primary);
+}
+
+/* ============================================
+   HERO SECTIONS - Theme-aware overlays
+   ============================================ */
+
+/* Hero overlay using theme primary color */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--color-primary);
+}
+
+/* Gradient backgrounds for heroes */
+.hero-gradient {
+  background: linear-gradient(to bottom right, var(--color-primary-700), var(--color-primary-900));
 }

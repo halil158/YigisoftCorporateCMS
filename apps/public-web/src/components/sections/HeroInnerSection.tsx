@@ -25,22 +25,27 @@ export function HeroInnerSection({ data }: Props) {
   }, [data.backgroundImageUrl])
 
   return (
-    <section className="relative bg-gradient-to-br from-primary-700 to-primary-900 text-white">
-      {/* Background image with overlay */}
+    <section
+      className="relative bg-gradient-to-br from-primary-700 to-primary-900"
+      style={{ color: 'var(--color-primary-contrast)' }}
+    >
+      {/* Background image */}
       {data.backgroundImageUrl && imageLoaded && (
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage: `url(${data.backgroundImageUrl})`,
-            opacity: (100 - overlayOpacity) / 100,
           }}
         />
       )}
 
-      {/* Dark overlay */}
+      {/* Theme-aware overlay using primary color */}
       <div
-        className="absolute inset-0 bg-black"
-        style={{ opacity: overlayOpacity / 100 }}
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(to bottom right, var(--color-primary-700), var(--color-primary-900))`,
+          opacity: overlayOpacity / 100
+        }}
       />
 
       {/* Content */}
@@ -53,7 +58,8 @@ export function HeroInnerSection({ data }: Props) {
                 <li key={index} className="flex items-center">
                   {index > 0 && (
                     <svg
-                      className="w-4 h-4 mx-2 text-primary-300"
+                      className="w-4 h-4 mx-2"
+                      style={{ color: 'var(--color-primary-300)' }}
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -69,12 +75,20 @@ export function HeroInnerSection({ data }: Props) {
                   {crumb.url ? (
                     <a
                       href={crumb.url}
-                      className="text-primary-200 hover:text-white transition-colors"
+                      className="transition-colors"
+                      style={{ color: 'var(--color-primary-200)' }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-primary-contrast)'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-primary-200)'}
                     >
                       {crumb.text}
                     </a>
                   ) : (
-                    <span className="text-white font-medium">{crumb.text}</span>
+                    <span
+                      className="font-medium"
+                      style={{ color: 'var(--color-primary-contrast)' }}
+                    >
+                      {crumb.text}
+                    </span>
                   )}
                 </li>
               ))}
@@ -89,7 +103,10 @@ export function HeroInnerSection({ data }: Props) {
 
         {/* Subtitle */}
         {data.subtitle && (
-          <p className="mt-4 text-lg text-primary-100 max-w-3xl">
+          <p
+            className="mt-4 text-lg max-w-3xl"
+            style={{ color: 'var(--color-primary-100)' }}
+          >
             {data.subtitle}
           </p>
         )}

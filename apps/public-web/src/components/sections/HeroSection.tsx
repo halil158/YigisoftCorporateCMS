@@ -24,7 +24,10 @@ export function HeroSection({ data }: Props) {
   }, [data.imageUrl])
 
   return (
-    <section className="relative bg-gradient-to-br from-primary-600 to-primary-800 text-white">
+    <section
+      className="relative bg-gradient-to-br from-primary-600 to-primary-800"
+      style={{ color: 'var(--color-primary-contrast)' }}
+    >
       {data.imageUrl && imageLoaded && (
         <div
           className="absolute inset-0 bg-cover bg-center opacity-20"
@@ -37,7 +40,10 @@ export function HeroSection({ data }: Props) {
             {data.title}
           </h1>
           {data.subtitle && (
-            <p className="mt-6 text-xl text-primary-100 max-w-3xl mx-auto">
+            <p
+              className="mt-6 text-xl max-w-3xl mx-auto"
+              style={{ color: 'var(--color-primary-100)' }}
+            >
               {data.subtitle}
             </p>
           )}
@@ -45,7 +51,17 @@ export function HeroSection({ data }: Props) {
             <div className="mt-10">
               <a
                 href={data.primaryCta.url}
-                className="inline-block rounded-lg bg-white px-8 py-4 text-lg font-semibold text-primary-700 shadow-lg hover:bg-primary-50 transition-colors"
+                className="inline-block rounded-lg px-8 py-4 text-lg font-semibold shadow-lg transition-colors"
+                style={{
+                  backgroundColor: 'var(--color-primary-contrast)',
+                  color: 'var(--color-primary-700)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-50)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-contrast)'
+                }}
               >
                 {data.primaryCta.text}
               </a>
