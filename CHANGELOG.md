@@ -9,6 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Site Settings for branding and theme customization (Phase 4.0)
+  - New `settings` table with key-value JSONB storage
+  - Two settings keys: `site.branding` and `site.theme`
+  - Admin API endpoints:
+    - GET `/api/admin/settings` - List all settings
+    - GET `/api/admin/settings/{key}` - Get settings by key
+    - PUT `/api/admin/settings/{key}` - Upsert settings
+  - Public API endpoints:
+    - GET `/api/public/settings/{key}` - Get settings
+    - GET `/api/public/settings/site.branding/resolved` - Get branding with resolved media URLs
+  - Branding settings:
+    - siteName (string)
+    - logoLight, logoDark (media IDs)
+    - favicon, appleTouchIcon, defaultOgImage (media IDs)
+    - Media IDs are validated against existing uploads
+    - Recommended sizes shown in admin UI
+  - Theme settings:
+    - Mode: "single" (dark mode architecture-ready for future)
+    - Color tokens: primary, primaryContrast, accent, background, surface, text, mutedText, border
+    - Hex color validation (#RRGGBB or #RGB)
+    - Live preview panel in admin UI
+    - Reset to defaults button
+  - Admin UI:
+    - New "Settings" page with Branding and Theme tabs
+    - Media picker for selecting branding images
+    - Color picker + hex input for theme tokens
+    - Settings navigation item in sidebar
+  - Public site integration:
+    - CSS variables injected at runtime via ThemeProvider
+    - Logo and site name from branding settings
+    - Favicon, apple-touch-icon, og:image from branding
+    - Fallback to defaults if settings missing
+  - Settings changes apply on page reload (no restart required)
+
 - Hierarchical Navigation (Phase 3.2)
   - Navigation now supports up to 3 levels of nesting (parent → child → grandchild)
   - Backward compatible: existing flat navigation JSON is treated as level-1 items
